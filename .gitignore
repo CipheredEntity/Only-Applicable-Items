@@ -1,0 +1,12 @@
+
+# .NET build output
+bin/
+obj/
+artifacts/
+
+# Visual Studio temporary files
+.vs/
+
+# User-specific development files
+*.user
+*.suo
