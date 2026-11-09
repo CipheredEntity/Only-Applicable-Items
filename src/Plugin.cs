@@ -13,13 +13,13 @@ public sealed class Plugin : BaseUnityPlugin
 {
     public const string Guid = "ciphe.gk2.onlyapplicableitems";
     public const string Name = "Only Applicable Items";
-    public const string Version = "0.1.0";
+    public const string Version = "0.2.0";
     internal static Plugin? Instance { get; private set; }
     internal ActionSettings Settings { get; private set; } = null!;
     private readonly List<ApplicableItemsSession> sessions = new List<ApplicableItemsSession>();
     private readonly HashSet<string> warnings = new HashSet<string>(StringComparer.Ordinal);
     private Harmony? harmony;
-    private SeedPickerContract? contract;
+    private GardenPickerContract? contract;
 
     private void Awake()
     {
@@ -27,13 +27,16 @@ public sealed class Plugin : BaseUnityPlugin
         Settings = new ActionSettings(Config);
         try
         {
-            contract = new SeedPickerContract();
+            contract = new GardenPickerContract();
             harmony = new Harmony(Guid);
             harmony.Patch(contract.PickerConstructor,
                 postfix: new HarmonyMethod(typeof(PickerPatches), nameof(PickerPatches.AfterPickerConstructed)));
             harmony.Patch(contract.InventoryRedrawNotification,
                 prefix: new HarmonyMethod(typeof(PickerPatches), nameof(PickerPatches.BeforeInventoryRedrawNotification)));
-            Logger.LogInfo(Name + " " + Version + " loaded. Seeds: " + Settings.Seeds.Value);
+            if (!contract.SupportsFertilizers)
+                WarnOnce("fertilizer-contract", "The garden fertilizer predicate was not found; fertilizer consolidation is inactive. Seeds remain supported.");
+            Logger.LogInfo(Name + " " + Version + " loaded. Seeds: " + Settings.Seeds.Value +
+                "; Fertilizers: " + Settings.Fertilizers.Value);
         }
         catch (Exception exception)
         {
@@ -45,18 +48,22 @@ public sealed class Plugin : BaseUnityPlugin
 
     internal void TryConsolidate(UIMultiInventoryWindowData data, Action<UIItemCell> callback, Func<Item, bool> predicate)
     {
-        if (contract == null || !Settings.Seeds.Value || !contract.IsSeedPicker(callback, predicate))
+        if (contract == null)
+            return;
+        var policy = contract.GetPolicy(callback, predicate, Settings);
+        if (policy == null || !policy.IsEnabled)
             return;
         ApplicableItemsSession? session = null;
         try
         {
-            session = new ApplicableItemsSession(this, contract, data, predicate);
+            session = new ApplicableItemsSession(this, policy, data, predicate);
             session.Commit();
         }
         catch (Exception exception)
         {
             session?.Dispose();
-            WarnOnce("construction", "Leaving the original seed picker in place because consolidation was unsafe. " + exception);
+            WarnOnce("construction-" + policy.Title, "Leaving the original " + policy.Title +
+                " picker in place because consolidation was unsafe. " + exception);
         }
     }
 

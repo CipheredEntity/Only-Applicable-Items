@@ -1,10 +1,13 @@
-Only Applicable Items 0.1.0
+Only Applicable Items 0.2.0
 ===========================
 
 A BepInEx 5 plugin for Graveyard Keeper 2. Garden seed selection displays one
 "Seeds" inventory containing eligible seeds and combined quantities from the
-player, bags, and accessible zone storage. Planting still uses the game's own
-eligibility, quantities, and consumption. Other selection actions are unaffected.
+player, bags, and accessible zone storage. Garden fertilizer selection displays
+one "Fertilizers" inventory containing all owned fertilizer types. Already-applied
+fertilizers remain visible with their combined quantities, grayed out and
+unselectable. Non-fertilizers are excluded. Both actions retain the game's own
+selection, application, quantities, and consumption. Other actions are unaffected.
 
 Configuration
 -------------
@@ -13,12 +16,15 @@ After the plugin first loads, BepInEx creates:
 
   [Actions]
   Seeds = true
+  Fertilizers = true
 
-Set Seeds to false to use the original picker. No configuration-manager plugin
-is required. Compatible configuration managers can expose the built-in entry
-as "Seeds". A live setting change disables an open consolidated picker on the
-next frame; enabling applies to the next opening. For manual file edits, close
-the game, edit the file, and launch again.
+Both options are enabled by default and independent. Set either option to false
+to use the original interface for that action. Existing Seeds settings are kept
+when the new Fertilizers entry is added. No configuration-manager plugin is
+required. Compatible managers expose the entries as "Seeds" and "Fertilizers".
+A live setting change disables an open picker for that action on the next frame;
+enabling applies to the next opening. For manual file edits, close the game,
+edit the file, and launch again.
 
 Build prerequisites and paths
 ----------------------------
@@ -55,8 +61,9 @@ From this repository in PowerShell:
   dotnet run --project tests/OnlyApplicableItems.Checks.csproj -c Release
 
 The checks use the installed .NET 10 SDK and exercise aggregation, source identity,
-overflow recovery, snapshot changes, and exact delegate gating. They do not load
-or execute the game. Details of the game integration are in docs/IMPLEMENTATION.md.
+overflow recovery, snapshot changes, action detection, independent settings,
+disabled fertilizer visibility, and click-time availability checks. They do not
+load or execute the game. Integration details are in docs/IMPLEMENTATION.md.
 
 Build output:
   bin/Release/net472/OnlyApplicableItems.dll
@@ -84,7 +91,7 @@ No build step installs the DLL, launches the game, or accesses save files.
 
 Manual validation checklist
 ---------------------------
-1. Confirm BepInEx/LogOutput.log shows the plugin loaded with Seeds enabled.
+1. Confirm BepInEx/LogOutput.log shows the plugin loaded with both actions enabled.
 2. Open garden seed selection with eligible stacks split across player inventory,
    a bag, and zone storage. Confirm a single Seeds display with the exact total
    (for example, 20 + 35 + 50 = 105) and no ineligible entries.
@@ -98,13 +105,26 @@ Manual validation checklist
    mouse input, controller focus, and Back/close with zero entries.
 6. Disable Seeds. Confirm the original picker; if changing through a live config
    manager, also check disabling while the consolidated picker is open.
-7. Open fertilizer, organ, alchemy, and normal inventory screens immediately
-   after closing Seeds. They must keep their original behavior.
+7. Open fertilizer selection with fertilizers in multiple source inventories.
+   Confirm a single Fertilizers display, correct combined quantities, no unrelated
+   items, and separate entries for distinct fertilizer definitions/qualities.
+8. Apply a fertilizer, reopen the picker, and confirm that owned stacks of that
+   fertilizer remain visible with the disabled appearance and cannot be selected
+   using mouse or controller. Check empty and already-occupied fertilizer slots.
+9. Select a usable fertilizer. Verify exactly the game's recipe cost is consumed,
+   including when the cost is distributed across stacks. Closing alone must
+   consume nothing; selecting a fertilizer applies immediately, unlike seeds.
+10. Check both toggles in all four combinations, including live changes. Toggling
+    Seeds must not affect an open Fertilizers picker, or vice versa. Check repeated
+    transitions between both pickers and stock/availability changes while open.
+11. Open organ, alchemy, and normal inventory screens immediately after both
+    consolidated pickers. They must keep their original behavior.
 
-The prototype falls back to vanilla for unexpected instance properties on seeds
+The prototype falls back to vanilla for unexpected instance properties on garden items
 or an unsupported picker contract. These cases appear once per failure category
-in LogOutput.log. Definition-ID planting does not support selecting a particular
-same-ID property variant; the mod deliberately does not invent consumption rules.
+in LogOutput.log. The garden actions consume by definition ID and cannot select
+a particular same-ID property variant; the mod does not invent consumption rules.
 
-In-game behavior still requires manual validation. Do not treat a successful
-build or pure-logic checks as proof that Unity UI/Harmony integration works.
+The Seeds implementation was tested in-game before the Fertilizers extension.
+The extension and seed regression checks still need manual in-game validation.
+Do not treat a successful build or logic checks as proof of Unity UI integration.

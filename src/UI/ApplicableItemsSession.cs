@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using OnlyApplicableItems.Core;
-using OnlyApplicableItems.Integration;
 using UnityEngine;
 
 namespace OnlyApplicableItems.UI;
@@ -9,7 +8,7 @@ namespace OnlyApplicableItems.UI;
 internal sealed class ApplicableItemsSession : IDisposable
 {
     private readonly Plugin plugin;
-    private readonly SeedPickerContract contract;
+    public PickerPolicy<Item> Policy { get; }
     private readonly MultiInventory realInventories;
     private readonly MultiInventoryWidgetData container;
     private readonly InventoryWidgetDataBase[] originalSections;
@@ -27,18 +26,18 @@ internal sealed class ApplicableItemsSession : IDisposable
     private float nextPoll;
     public bool IsDisposed { get; private set; }
 
-    public ApplicableItemsSession(Plugin plugin, SeedPickerContract contract, UIMultiInventoryWindowData data,
+    public ApplicableItemsSession(Plugin plugin, PickerPolicy<Item> policy, UIMultiInventoryWindowData data,
         Func<Item, bool> eligible)
     {
         this.plugin = plugin;
-        this.contract = contract;
+        Policy = policy;
         this.eligible = eligible;
         realInventories = data.MultiInventory;
         container = data.MultiInventoryWidgetData;
         originalSections = container.inventoriesData.ToArray();
         originalHeader = container.HeaderLocaleId;
         if (originalSections.Length == 0 || container.WidgetSelectionMode != MultiInventoryWidgetMode.Default)
-            throw new NotSupportedException("The seed picker has an unsupported section layout.");
+            throw new NotSupportedException("The " + Policy.Title + " picker has an unsupported section layout.");
         template = originalSections[0];
         foreach (var section in originalSections)
         {
@@ -47,25 +46,25 @@ internal sealed class ApplicableItemsSession : IDisposable
                 section.OnItemCellPress != template.OnItemCellPress || section.OnItemCellPress2 != template.OnItemCellPress2 ||
                 section.OnItemCellDown != template.OnItemCellDown ||
                 section.ExtraRedTooltipLocIdProvider != template.ExtraRedTooltipLocIdProvider)
-                throw new NotSupportedException("Another customization changed the seed picker's filtering or selection mode.");
+                throw new NotSupportedException("Another customization changed the " + Policy.Title + " picker's filtering or selection mode.");
         }
         if (template.OnItemCellPress == null)
-            throw new NotSupportedException("The original seed callback is missing.");
+            throw new NotSupportedException("The original " + Policy.Title + " callback is missing.");
     }
 
     public void Commit()
     {
         // Build completely before replacing anything. Failure here leaves vanilla data intact.
-        var view = CreateView(BuildGroups());
+        var view = CreateView(BuildSnapshot());
         current = view;
         container.inventoriesData.Clear();
         container.inventoriesData.Add(view);
-        container.HeaderLocaleId = "Seeds";
+        container.HeaderLocaleId = Policy.Title;
         container.onWidgetHide += Dispose;
         committed = true;
     }
 
-    private List<StackGroup<Item>> BuildGroups()
+    private PickerSnapshot<Item> BuildSnapshot()
     {
         var sources = new List<StackSource<Item>>();
         var containers = new HashSet<Item>(ReferenceComparer<Item>.Instance);
@@ -80,7 +79,7 @@ internal sealed class ApplicableItemsSession : IDisposable
                 if (item != null && item.IsBag)
                     Collect(item);
         }
-        return StackAggregation.Build(sources);
+        return PickerSnapshot<Item>.Build(sources, Policy);
 
         void Collect(Item sourceContainer)
         {
@@ -88,22 +87,22 @@ internal sealed class ApplicableItemsSession : IDisposable
                 return;
             foreach (var item in sourceContainer.Inventory)
             {
-                if (item == null || item.IsEmpty || !eligible(item))
+                if (item == null || item.IsEmpty)
                     continue;
-                contract.ValidateSeed(item);
                 sources.Add(new StackSource<Item>(sourceContainer, item, item.id, item.Count, item.Definition.sortOrder));
             }
         }
     }
 
-    private ApplicableInventoryWidgetData CreateView(IReadOnlyList<StackGroup<Item>> groups)
+    private ApplicableInventoryWidgetData CreateView(PickerSnapshot<Item> snapshot)
     {
+        var groups = snapshot.Groups;
         var display = new Inventory("inventory", groups.Count);
         foreach (var group in groups)
             display.Data.Inventory.Add(group.Representative);
         // Only the new holder/list is populated. Stored items and their Count/UID/properties
         // are never copied, split, merged, or assigned to while constructing the view.
-        return new ApplicableInventoryWidgetData(this, display, groups, template)
+        return new ApplicableInventoryWidgetData(this, display, snapshot, template)
         {
             OnWidgetPressed = current?.OnWidgetPressed
         };
@@ -174,7 +173,7 @@ internal sealed class ApplicableItemsSession : IDisposable
             Dispose();
             return;
         }
-        if (fallbackRequested || !plugin.Settings.Seeds.Value)
+        if (fallbackRequested || !Policy.IsEnabled)
         {
             RestoreVanilla();
             return;
@@ -186,9 +185,9 @@ internal sealed class ApplicableItemsSession : IDisposable
         nextPoll = Time.unscaledTime + 0.5f;
         try
         {
-            var groups = BuildGroups();
-            if (current == null || !StackAggregation.SameSnapshot(current.Groups, groups))
-                Refresh(groups);
+            var snapshot = BuildSnapshot();
+            if (current == null || !current.Snapshot.SameAs(snapshot))
+                Refresh(snapshot);
         }
         catch (Exception exception)
         {
@@ -197,11 +196,11 @@ internal sealed class ApplicableItemsSession : IDisposable
         }
     }
 
-    private void Refresh(IReadOnlyList<StackGroup<Item>> groups)
+    private void Refresh(PickerSnapshot<Item> snapshot)
     {
         if (container.inventoriesData.Count != 1 || !ReferenceEquals(container.inventoriesData[0], current))
             throw new InvalidOperationException("The picker sections were replaced by another system.");
-        var replacement = CreateView(groups);
+        var replacement = CreateView(snapshot);
         current = replacement;
         container.inventoriesData[0] = replacement;
         // Redraw the existing child widget. Calling window.Redraw/child.Draw would run
@@ -215,7 +214,7 @@ internal sealed class ApplicableItemsSession : IDisposable
     {
         if (IsDisposed || current == null)
             return;
-        if (!plugin.Settings.Seeds.Value || fallbackRequested)
+        if (!Policy.IsEnabled || fallbackRequested)
         {
             RestoreVanilla();
             return;
@@ -230,17 +229,16 @@ internal sealed class ApplicableItemsSession : IDisposable
                     key = group.Key;
             if (key == null)
                 throw new InvalidOperationException("The clicked cell has no source group.");
-            var fresh = BuildGroups();
-            foreach (var group in fresh)
-                if (group.Key == key)
-                    representative = group.Representative;
-            if (representative == null)
+            var fresh = BuildSnapshot();
+            // A visible fertilizer may be disabled. Resolve only against freshly evaluated
+            // selectability before Draw can restore a cell's default interaction state.
+            if (!fresh.TryResolveSelectable(key, out representative) || representative == null)
             {
                 Refresh(fresh);
                 return;
             }
             // Only the cell is rebound. The original callback receives a currently accessible
-            // real item and continues to choose its ID; vanilla planting owns consumption.
+            // real item; the original garden action owns application and consumption.
             cell.Draw(representative);
         }
         catch (Exception exception)
@@ -259,8 +257,8 @@ internal sealed class ApplicableItemsSession : IDisposable
         if (IsDisposed || fallbackRequested)
             return;
         fallbackRequested = true;
-        plugin.WarnOnce("session-" + operation,
-            "Could not safely continue " + operation + "; restoring the original seed picker. " + exception);
+        plugin.WarnOnce("session-" + Policy.Title + "-" + operation,
+            "Could not safely continue " + operation + "; restoring the original " + Policy.Title + " picker. " + exception);
     }
 
     public void RestoreVanilla()
@@ -289,7 +287,7 @@ internal sealed class ApplicableItemsSession : IDisposable
         }
         catch (Exception exception)
         {
-            plugin.WarnOnce("restore", "Could not restore the original picker; closing it safely. " + exception);
+            plugin.WarnOnce("restore-" + Policy.Title, "Could not restore the original picker; closing it safely. " + exception);
             var window = widget.GetComponentInParent<UIMultiInventoryWindow>();
             if (window != null)
                 window.Close();

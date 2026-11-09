@@ -17,7 +17,14 @@ internal static class Program
             DetectsSourceChangesWithTheSameTotal,
             SupportsEmptyAndDepletedInventories,
             ProducesStableOrdering,
-            RecognizesOnlyTheExactActionAndOwner
+            RecognizesOnlyTheExactActionAndOwner,
+            FertilizersIncludeAppliedItemsButExcludeOtherItems,
+            SeedsStillExcludeUnavailableItems,
+            AvailabilityChangesInvalidateSnapshotsWithoutStockChanges,
+            BlockedFertilizerCannotResolveAfterBedChanges,
+            ActionSettingsRemainIndependent,
+            FertilizerContextAcceptsSlotClosuresOnlyWithItsExactPredicate,
+            ValidatesUnavailableFertilizerInstances
         };
         foreach (var check in checks)
         {
@@ -135,6 +142,140 @@ internal static class Program
         Assert(!DelegateContext.Matches(null, validSeed, seed.Method, validSeed.Method), "Missing callbacks must use vanilla.");
     }
 
+    private static void FertilizersIncludeAppliedItemsButExcludeOtherItems()
+    {
+        var applied = new Stack("fertilizer_applied", 20, fertilizer: true);
+        var appliedInBag = new Stack("fertilizer_applied", 35, fertilizer: true);
+        var usable = new Stack("fertilizer_usable", 50, fertilizer: true);
+        var irrelevant = new Stack("stone", 99);
+        var policy = new PickerPolicy<Stack>("Fertilizers", () => true,
+            item => item.IsFertilizer, item => item.IsFertilizer && item.Id != applied.Id, _ => { });
+        var snapshot = PickerSnapshot<Stack>.Build(new[]
+        {
+            Source(new object(), applied), Source(new object(), appliedInBag),
+            Source(new object(), usable), Source(new object(), irrelevant)
+        }, policy);
+        Assert(snapshot.Groups.Count == 2, "Only fertilizers should appear, including applied fertilizers.");
+        Assert(snapshot.Groups[0].Key == applied.Id && snapshot.Groups[0].Total == 55,
+            "Unavailable fertilizer stacks must be combined and retain their total.");
+        Assert(!snapshot.TryResolveSelectable(applied.Id, out _), "Applied fertilizer must remain unselectable.");
+        Assert(snapshot.TryResolveSelectable(usable.Id, out var selected) && ReferenceEquals(selected, usable),
+            "Usable fertilizer must resolve to a real owned item.");
+        Assert(applied.Count == 20 && appliedInBag.Count == 35 && usable.Count == 50 && irrelevant.Count == 99,
+            "Neither enabled nor disabled display entries may change source quantities.");
+    }
+
+    private static void SeedsStillExcludeUnavailableItems()
+    {
+        var owner = new object();
+        var valid = new Stack("seed_valid", 10);
+        var invalid = new Stack("seed_invalid", 20);
+        Func<Stack, bool> nativeSeedPredicate = item => item.Id == valid.Id;
+        var policy = new PickerPolicy<Stack>("Seeds", () => true,
+            nativeSeedPredicate, nativeSeedPredicate, _ => { });
+        var snapshot = PickerSnapshot<Stack>.Build(new[] { Source(owner, valid), Source(owner, invalid) }, policy);
+        Assert(snapshot.Groups.Count == 1 && snapshot.Groups[0].Key == valid.Id,
+            "The existing seed mode must continue to hide items rejected by its original predicate.");
+        Assert(snapshot.TryResolveSelectable(valid.Id, out var item) && ReferenceEquals(item, valid),
+            "Seed selection must retain its original real representative.");
+    }
+
+    private static void AvailabilityChangesInvalidateSnapshotsWithoutStockChanges()
+    {
+        var fertilizer = new Stack("fertilizer", 10, fertilizer: true);
+        var sources = new[] { Source(new object(), fertilizer) };
+        bool applied = true;
+        var policy = new PickerPolicy<Stack>("Fertilizers", () => true,
+            item => item.IsFertilizer, _ => !applied, _ => { });
+        var disabled = PickerSnapshot<Stack>.Build(sources, policy);
+        var unchanged = PickerSnapshot<Stack>.Build(sources, policy);
+        Assert(disabled.SameAs(unchanged), "Unchanged availability must not force a redraw.");
+        applied = false;
+        var enabled = PickerSnapshot<Stack>.Build(sources, policy);
+        Assert(StackAggregation.SameSnapshot(disabled.Groups, enabled.Groups), "The stock remains unchanged.");
+        Assert(!disabled.SameAs(enabled), "Re-enabling must trigger a full redraw, including native interaction flags.");
+        Assert(enabled.TryResolveSelectable(fertilizer.Id, out _), "A newly available fertilizer must resolve.");
+        applied = true;
+        var disabledAgain = PickerSnapshot<Stack>.Build(sources, policy);
+        Assert(!enabled.SameAs(disabledAgain) && !disabledAgain.TryResolveSelectable(fertilizer.Id, out _),
+            "Disabling must also trigger a redraw and block resolution.");
+    }
+
+    private static void BlockedFertilizerCannotResolveAfterBedChanges()
+    {
+        var fertilizer = new Stack("fertilizer", 10, fertilizer: true);
+        var sources = new[] { Source(new object(), fertilizer) };
+        bool canApply = true;
+        var policy = new PickerPolicy<Stack>("Fertilizers", () => true,
+            item => item.IsFertilizer, _ => canApply, _ => { });
+        var displayed = PickerSnapshot<Stack>.Build(sources, policy);
+        Assert(displayed.TryResolveSelectable(fertilizer.Id, out _), "The displayed snapshot starts selectable.");
+        canApply = false;
+        var fresh = PickerSnapshot<Stack>.Build(sources, policy);
+        Assert(!fresh.TryResolveSelectable(fertilizer.Id, out var blocked) && blocked == null,
+            "The click-time snapshot must reject a previously enabled fertilizer after the bed changes.");
+        Assert(fresh.Groups.Count == 1 && fertilizer.Count == 10, "Rejected selection must preserve visibility and stock.");
+    }
+
+    private static void ActionSettingsRemainIndependent()
+    {
+        bool seedsEnabled = true;
+        bool fertilizersEnabled = true;
+        var seeds = new PickerPolicy<Stack>("Seeds", () => seedsEnabled, _ => true, _ => true, _ => { });
+        var fertilizers = new PickerPolicy<Stack>("Fertilizers", () => fertilizersEnabled, _ => true, _ => true, _ => { });
+        foreach (bool seedsValue in new[] { false, true })
+        {
+            foreach (bool fertilizersValue in new[] { false, true })
+            {
+                seedsEnabled = seedsValue;
+                fertilizersEnabled = fertilizersValue;
+                Assert(seeds.IsEnabled == seedsValue && fertilizers.IsEnabled == fertilizersValue,
+                    "Each action must read its own live setting, including during an open session.");
+            }
+        }
+    }
+
+    private static void FertilizerContextAcceptsSlotClosuresOnlyWithItsExactPredicate()
+    {
+        var garden = new FakePicker();
+        var slot = new object();
+        Action<object> callback = value => garden.ApplyFertilizer(value, slot);
+        Func<object, bool> predicate = garden.IsFertilizerValid;
+        Assert(!ReferenceEquals(callback.Target, predicate.Target), "The native callback captures a separate slot closure.");
+        Assert(DelegateContext.MatchesPredicate(callback, predicate, predicate.Method), "Recognize the exact fertilizer predicate.");
+        Assert(!DelegateContext.Matches(callback, predicate, ((Action<object>)garden.SelectSeed).Method,
+            ((Func<object, bool>)garden.IsSeedValid).Method), "The seed matcher must not broaden to fertilizer closures.");
+        Assert(!DelegateContext.MatchesPredicate(callback, (Func<object, bool>)garden.IsSeedValid, predicate.Method),
+            "Seed and other predicates must not enter fertilizer mode.");
+        Assert(!DelegateContext.MatchesPredicate(callback + garden.SelectSeed, predicate, predicate.Method),
+            "Reject composite fertilizer callbacks.");
+        Assert(!DelegateContext.MatchesPredicate(callback, predicate + garden.IsSeedValid, predicate.Method),
+            "Reject composite predicates.");
+        Assert(!DelegateContext.MatchesPredicate(callback, (Func<object, bool>)(value => predicate(value)), predicate.Method),
+            "Unknown predicate wrappers must preserve vanilla.");
+        Assert(!DelegateContext.MatchesPredicate(null, predicate, predicate.Method), "Reject missing callbacks.");
+        Assert(!DelegateContext.MatchesPredicate((Action<object>)FakePicker.StaticSelect, predicate, predicate.Method),
+            "Reject unexpected static callbacks.");
+    }
+
+    private static void ValidatesUnavailableFertilizerInstances()
+    {
+        var invalidFertilizer = new Stack("fertilizer", 10, fertilizer: true);
+        var policy = new PickerPolicy<Stack>("Fertilizers", () => true,
+            item => item.IsFertilizer, _ => false,
+            _ => throw new NotSupportedException("Unsupported instance properties"));
+        bool rejected = false;
+        try
+        {
+            PickerSnapshot<Stack>.Build(new[] { Source(new object(), invalidFertilizer) }, policy);
+        }
+        catch (NotSupportedException) { rejected = true; }
+        Assert(rejected, "Unavailable fertilizers must receive the same instance-data safety checks as selectable items.");
+        var nonFertilizer = new Stack("stone", 10);
+        var irrelevant = PickerSnapshot<Stack>.Build(new[] { Source(new object(), nonFertilizer) }, policy);
+        Assert(irrelevant.Groups.Count == 0, "Unrelated items must not be validated as fertilizer or cause fallback.");
+    }
+
     private static StackSource<Stack> Source(object owner, Stack stack, int order = 0)
         => new StackSource<Stack>(owner, stack, stack.Id, stack.Count, order);
 
@@ -148,7 +289,8 @@ internal static class Program
     {
         public string Id { get; }
         public int Count { get; set; }
-        public Stack(string id, int count) { Id = id; Count = count; }
+        public bool IsFertilizer { get; }
+        public Stack(string id, int count, bool fertilizer = false) { Id = id; Count = count; IsFertilizer = fertilizer; }
     }
 
     private sealed class FakePicker
@@ -156,5 +298,8 @@ internal static class Program
         public void SelectSeed(object value) { }
         public void SelectFertilizer(object value) { }
         public bool IsSeedValid(object value) => true;
+        public bool IsFertilizerValid(object value) => true;
+        public void ApplyFertilizer(object value, object slot) { }
+        public static void StaticSelect(object value) { }
     }
 }

@@ -1,4 +1,4 @@
-# Seed picker implementation
+# Garden picker implementation
 
 ## Verified game contract
 
@@ -11,6 +11,11 @@ The current source still has the relevant flow:
 
 - `UIGardenBedWindow.OnSeedItemCellPress` constructs `UIMultiInventoryWindowData`
   with `OnSeedSelected` and `IsSeedValid` delegates on the same window instance.
+- `UIGardenBedWindow.TryApplyFertilizer` constructs the same picker with
+  `IsItemValid` and a callback capturing the clicked fertilizer slot. IsItemValid
+  is used only for fertilizer picking in the inspected garden-window source.
+  `Item.IsFertilizer` identifies display candidates; IsItemValid rejects fertilizers
+  referenced by active bed perks through PerkDef.fertilizerItemId.
 - That constructor uses `MultiInventory` and `InventoryWidgetDataHelper` for
   player, zone storage, and directly contained bags. It wraps clicks with audio.
 - `MultiInventoryWidget.SetData` creates pooled sections; `Redraw` draws existing
@@ -23,6 +28,9 @@ The current source still has the relevant flow:
   through `GardenInteractionHandler.TryApplySeed/FormNeedItems`.
   `CraftElementBase.RemoveCraftRequirements` uses the craftable object's real
   multi-inventory; `MultiInventory.RemoveItems` handles distributed quantities.
+- Fertilizer selection immediately calls AddFertilizerPerk/TryApplyFertilizer,
+  which uses ProcessInstantCraft and the same distributed requirements removal.
+  The original closure retains slot assignment and replacement behavior.
 - Closing reaches `MultiInventoryWidget.Hide`, which releases pooled sections
   and calls `MultiInventoryWidgetData.onWidgetHide`.
 
@@ -34,8 +42,12 @@ Two explicit Harmony patches are installed after checking method signatures and
 the private item-property field's type:
 
 1. Postfix on the exact `UIMultiInventoryWindowData` constructor. Both original
-   delegate methods and their common target must match the seed action. Unknown,
-   wrapped, multicast, fertilizer, and all other action callbacks use vanilla.
+   delegate methods and their common target must match the seed action. The
+   fertilizer branch instead requires the exact UIGardenBedWindow.IsItemValid
+   predicate on a garden window and a single instance callback. Its callback
+   target is a slot closure, so comparing it to the predicate's target would
+   incorrectly reject the native action. No compiler-generated names are used.
+   Unknown predicates, multicast delegates, and unsupported actions use vanilla.
 2. Prefix on `InventoryWidget.OnRedraw`. It only handles the mod's
    `ApplicableInventoryWidgetData` subclass. Normal section data is untouched.
 
@@ -44,17 +56,31 @@ list of references to real representative stacks. Only that new list is filled;
 no inventory-add, merge, split, Count/UID assignment, or save operation is used
 to build the display. Quantities are checked integer sums, without stack caps.
 
-The seed policy rejects items with instance properties, contents, internal inventory
-capacity, bag status, or durability. This is intentional: vanilla seed selection discards instance identity
-and consumes by definition ID. Pretending to support property-sensitive seed
-consumption would be misleading. Ordinary seeds group by full definition ID,
-which also preserves definition-based quality differences. Unknown variants
-cause the entire picker to fall back rather than silently combine them.
+GardenPickerContract creates independent PickerPolicy<Item> objects:
+
+| Action | Included in display | Native selectability | Live setting / title |
+| --- | --- | --- | --- |
+| Seeds | IsSeedValid | IsSeedValid | Seeds |
+| Fertilizers | Item.IsFertilizer | IsItemValid | Fertilizers |
+
+The session excludes empty stacks for both policies. Each policy rejects instance
+properties, contents, internal inventory capacity, bag status, or durability.
+Both actions consume by definition ID. Unknown variants cause the entire picker
+to fall back rather than silently combine them, including when a visible
+fertilizer is currently disabled. Ordinary items group by their full definition
+ID, preserving definition-based quality differences.
+
+The original CustomItemsAvailableCondition is retained on the virtual widget
+data, so InventoryWidget.Redraw and UIItemCell implement disabled appearance and
+input blocking. The quantity decorator changes counters only, not widget state.
 
 The click wrapper rebuilds and revalidates sources, rebinds the cell to a real
 current representative, and invokes the original click/audio callback once.
-Game callback exceptions are not caught and retried. The plugin never removes
-seeds; planting, mastery checks, and recipe quantities stay with the game.
+Fresh snapshots only resolve selectable entries. This is essential for fertilizers:
+visibility alone must never authorize application, especially before cell.Draw
+can reset interaction state. Game callback exceptions are not caught and retried.
+The plugin never consumes items or changes bed perks. Native slot replacement,
+planting, application, mastery checks, and recipe quantities stay with the game.
 
 ## Refresh and lifetime
 
@@ -66,16 +92,20 @@ container and stack references and captured counts.
 
 Subscriptions to accessible inventory and original bag wrapper notifications
 mark sessions dirty. A half-second scan also catches direct Count changes and
-new/removed bags without relying on a particular wrapper's events. Unchanged
-snapshots do not redraw. Main-thread LateUpdate coalesces updates.
+new/removed bags without relying on a particular wrapper's events. PickerSnapshot
+also captures per-group selectability. Perk changes therefore trigger refresh
+even when stock is identical. Unchanged snapshots do not redraw. Main-thread
+LateUpdate coalesces updates.
 
 Refresh replaces the single section's data and calls OnItemsAvailabilityChanged,
 which the game binds to the child widget's Redraw. This preserves the section
 count and lets InventoryWidget.SetData unsubscribe from its old display holder.
 It does not call the shared window's Redraw, which would add duplicate sections.
+Availability changes use that full child redraw, not just SetWidgetState: the
+native UIItemCell.Draw also updates its separate isInteractable flag.
 
 onWidgetHide disposes source subscriptions and restores original data references.
-Owner destruction/reuse and plugin teardown also clean up. Disabling Seeds or
+Owner destruction/reuse and plugin teardown also clean up. Disabling the session's action or
 a recoverable runtime failure releases the child sections and redraws vanilla
 sections generated by the game's original helper. If that restoration itself
 fails, the picker is closed rather than retrying an item action.
@@ -85,18 +115,24 @@ per-frame or per-item informational messages are emitted.
 
 ## Configuration and future scope
 
-Config.Bind creates the independent `[Actions] Seeds = true` entry. The key is
-already the desired GUI label, so no configuration-manager dependency or custom
-metadata type is required. Disable takes effect on the next plugin frame for an
-open consolidated picker; enable takes effect when the next seed picker opens.
+Config.Bind creates independent `[Actions] Seeds = true` and `Fertilizers = true`
+entries. The keys are the GUI labels; no configuration-manager dependency or
+custom metadata type is required. Each policy reads only its own live setting.
+Disable takes effect on the next plugin frame for that action's open picker;
+enable takes effect when its next picker opens. Existing Seeds values are retained.
 
 Future actions should get their own settings and explicit delegate registrations,
-then a reviewed selection policy. Do not simply remove the seed gate: UID-based
+then a reviewed selection policy. Do not remove the action gates: UID-based
 consumption and equipment transfers have different contracts.
 
 ## Remaining validation
 
 Successful compilation and the pure-logic checks do not validate Harmony runtime
 installation, Unity prefabs, pooled component behavior, or controller input.
+The user validated Seeds in-game before this extension. The new fertilizer path
+and regression testing of Seeds still require in-game checks. Unit checks cover
+all existing aggregation cases plus fertilizer inclusion/disabled resolution,
+availability-only refreshes, stale selection rejection, live independent settings,
+slot-closure recognition, and validation of disabled item variants.
 The game and saves were not launched or modified during development. Follow the
 manual checklist in README.txt using the user's chosen in-game test setup.

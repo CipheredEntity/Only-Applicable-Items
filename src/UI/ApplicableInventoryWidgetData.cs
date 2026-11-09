@@ -6,16 +6,17 @@ namespace OnlyApplicableItems.UI;
 internal sealed class ApplicableInventoryWidgetData : InventoryWidgetData
 {
     public ApplicableItemsSession Session { get; }
-    public IReadOnlyList<StackGroup<Item>> Groups { get; }
+    public PickerSnapshot<Item> Snapshot { get; }
+    public IReadOnlyList<StackGroup<Item>> Groups => Snapshot.Groups;
 
     public ApplicableInventoryWidgetData(ApplicableItemsSession session, Inventory display,
-        IReadOnlyList<StackGroup<Item>> groups, InventoryWidgetDataBase original)
-        : base(display, new InventoryHeaderWidgetData(display, customHeaderId: "Seeds") { DrawHeader = false },
+        PickerSnapshot<Item> snapshot, InventoryWidgetDataBase original)
+        : base(display, new InventoryHeaderWidgetData(display, customHeaderId: session.Policy.Title) { DrawHeader = false },
             original.OnItemCellOver, original.OnItemCellOut, session.Select, null, null,
             original.CustomItemsAvailableCondition)
     {
         Session = session;
-        Groups = groups;
+        Snapshot = snapshot;
         ExtraRedTooltipLocIdProvider = original.ExtraRedTooltipLocIdProvider;
     }
 }
