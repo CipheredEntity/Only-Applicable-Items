@@ -10,3 +10,17 @@ artifacts/
 # User-specific development files
 *.user
 *.suo
+
+# Local reference paths, dependencies, and SDK/NuGet state
+*.local.props
+.dotnet/
+.nuget/
+dependencies/
+lib/
+*.dll
+*.pdb
+
+# Editor and operating-system state
+.vscode/
+.DS_Store
+Thumbs.db

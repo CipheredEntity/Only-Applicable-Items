@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RestorePackagesPath>$(MSBuildProjectDirectory)\..\.nuget\packages</RestorePackagesPath>
+    <RestoreSources>$(MSBuildProjectDirectory)\..\.nuget\packages</RestoreSources>
+    <NuGetAudit>false</NuGetAudit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\src\Core\StackAggregation.cs" Link="Core\StackAggregation.cs" />
+    <Compile Include="..\src\Core\DelegateContext.cs" Link="Core\DelegateContext.cs" />
+  </ItemGroup>
+</Project>

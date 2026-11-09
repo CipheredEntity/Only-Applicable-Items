@@ -1,0 +1,51 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="OnlyApplicableItems.local.props" Condition="Exists('OnlyApplicableItems.local.props')" />
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <AssemblyName>OnlyApplicableItems</AssemblyName>
+    <RootNamespace>OnlyApplicableItems</RootNamespace>
+    <Version>0.1.0</Version>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+    <GameManagedPath Condition="'$(GameManagedPath)' == ''">$(MSBuildProjectDirectory)\..\Game Assemblies Copies\Managed</GameManagedPath>
+    <GameInstallPath Condition="'$(GameInstallPath)' == ''">$(MSBuildProgramFiles32)\Steam\steamapps\common\Graveyard Keeper 2</GameInstallPath>
+    <BepInExCorePath Condition="'$(BepInExCorePath)' == ''">$(GameInstallPath)\BepInEx\core</BepInExCorePath>
+    <!-- Compile against Unity's own BCL copies, without downloading a targeting pack. -->
+    <AutomaticallyUseReferenceAssemblyPackages>false</AutomaticallyUseReferenceAssemblyPackages>
+    <FrameworkPathOverride>$(GameManagedPath)</FrameworkPathOverride>
+    <_TargetFrameworkDirectories>$(GameManagedPath)</_TargetFrameworkDirectories>
+    <_FullFrameworkReferenceAssemblyPaths>$(GameManagedPath)</_FullFrameworkReferenceAssemblyPaths>
+    <RestorePackagesPath>$(MSBuildProjectDirectory)\.nuget\packages</RestorePackagesPath>
+    <NuGetAudit>false</NuGetAudit>
+    <RestoreSources>$(MSBuildProjectDirectory)\.nuget\packages</RestoreSources>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="src\**\*.cs" />
+    <Reference Include="mscorlib" HintPath="$(GameManagedPath)\mscorlib.dll" Private="false" />
+    <Reference Include="System" HintPath="$(GameManagedPath)\System.dll" Private="false" />
+    <Reference Include="System.Core" HintPath="$(GameManagedPath)\System.Core.dll" Private="false" />
+    <Reference Include="netstandard" HintPath="$(GameManagedPath)\netstandard.dll" Private="false" />
+    <Reference Include="Assembly-CSharp" HintPath="$(GameManagedPath)\Assembly-CSharp.dll" Private="false" />
+    <Reference Include="LazyBearTechnology" HintPath="$(GameManagedPath)\LazyBearTechnology.dll" Private="false" />
+    <Reference Include="UnityEngine" HintPath="$(GameManagedPath)\UnityEngine.dll" Private="false" />
+    <Reference Include="UnityEngine.CoreModule" HintPath="$(GameManagedPath)\UnityEngine.CoreModule.dll" Private="false" />
+    <Reference Include="UnityEngine.UI" HintPath="$(GameManagedPath)\UnityEngine.UI.dll" Private="false" />
+    <Reference Include="UnityEngine.UIModule" HintPath="$(GameManagedPath)\UnityEngine.UIModule.dll" Private="false" />
+    <Reference Include="Unity.TextMeshPro" HintPath="$(GameManagedPath)\Unity.TextMeshPro.dll" Private="false" />
+    <Reference Include="BepInEx" HintPath="$(BepInExCorePath)\BepInEx.dll" Private="false" />
+    <Reference Include="0Harmony" HintPath="$(BepInExCorePath)\0Harmony.dll" Private="false" />
+  </ItemGroup>
+  <Target Name="CheckLocalReferences" BeforeTargets="ResolveReferences">
+    <Error Condition="!Exists('$(GameManagedPath)\Assembly-CSharp.dll')" Text="Set GameManagedPath to the external Managed assembly copies (OnlyApplicableItems.local.props or -p:GameManagedPath=...)." />
+    <Error Condition="!Exists('$(BepInExCorePath)\BepInEx.dll') or !Exists('$(BepInExCorePath)\0Harmony.dll')" Text="Set BepInExCorePath to the installed game's BepInEx/core directory. Dependencies are referenced in place and are never packaged." />
+  </Target>
+  <Target Name="PackageLocalItem" AfterTargets="Build" Condition="'$(Configuration)' == 'Release'">
+    <PropertyGroup>
+      <ItemOutputPath>$(MSBuildProjectDirectory)\artifacts\OnlyApplicableItems</ItemOutputPath>
+    </PropertyGroup>
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(ItemOutputPath)\BepInEx\plugins\OnlyApplicableItems" />
+    <Copy SourceFiles="modinfo.json" DestinationFolder="$(ItemOutputPath)" />
+  </Target>
+</Project>
