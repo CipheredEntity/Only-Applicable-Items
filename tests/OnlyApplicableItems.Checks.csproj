@@ -12,5 +12,6 @@
     <Compile Include="..\src\Core\DelegateContext.cs" Link="Core\DelegateContext.cs" />
     <Compile Include="..\src\Core\PickerPolicy.cs" Link="Core\PickerPolicy.cs" />
     <Compile Include="..\src\Core\QuantityDisplayScope.cs" Link="Core\QuantityDisplayScope.cs" />
+    <Compile Include="..\src\Core\AlchemyVisibility.cs" Link="Core\AlchemyVisibility.cs" />
   </ItemGroup>
 </Project>

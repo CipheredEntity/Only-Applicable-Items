@@ -230,7 +230,7 @@ internal sealed class ApplicableItemsSession : IDisposable
             if (key == null)
                 throw new InvalidOperationException("The clicked cell has no source group.");
             var fresh = BuildSnapshot();
-            // A visible fertilizer may be disabled. Resolve only against freshly evaluated
+            // A visible fertilizer or alchemical ingredient may be disabled. Resolve only against freshly evaluated
             // selectability before Draw can restore a cell's default interaction state.
             if (!fresh.TryResolveSelectable(key, out representative) || representative == null)
             {

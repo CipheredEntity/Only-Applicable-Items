@@ -29,8 +29,10 @@ internal sealed class AlchemyFeatures : IDisposable
         if (!(predicate?.Target is UIAlchemyWindow) ||
             !DelegateContext.MatchesPredicate(callback, predicate, contract.IngredientPredicate))
             return null;
-        // Keep the original research/rune/other-slot predicate for both visibility and input.
-        return new PickerPolicy<Item>("Alchemical Ingredients", () => IsEnabled, predicate, predicate, validateItem);
+        // Research/type controls visibility. The unchanged native predicate still disables
+        // ingredients blocked by any rune limit and revalidates them before selection.
+        return new PickerPolicy<Item>("Alchemical Ingredients", () => IsEnabled,
+            contract.CanDisplayIngredient, predicate, validateItem);
     }
 
     public QuantityDisplayScope<UIItemCell>? BeginCountUpdate(UIAlchemyWindow window)

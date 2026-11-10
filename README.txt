@@ -1,4 +1,4 @@
-Only Applicable Items 0.3.0
+Only Applicable Items 0.3.1
 ===========================
 
 A BepInEx 5 plugin for Graveyard Keeper 2. Garden seed selection displays one
@@ -9,8 +9,10 @@ fertilizers remain visible with their combined quantities, grayed out and
 unselectable. Non-fertilizers are excluded.
 
 Alchemy ingredient selection displays one "Alchemical Ingredients" inventory
-containing eligible ingredients and combined quantities. Native research and
-rune restrictions still apply, and the same ingredient can occupy multiple slots.
+containing research-eligible alchemical items and combined quantities. Ingredients
+blocked by rune limits stay visible, grayed out and unselectable. Non-alchemical
+items and those that fail the native research requirements stay hidden. The
+native selection restrictions still apply, including repeated ingredient slots.
 Laboratory ingredient counters show total accessible stock rather than just the
 originally selected stack. All actions retain the game's own selection, crafting
 calculations, and consumption. Unsupported actions are unaffected.
@@ -138,8 +140,11 @@ Manual validation checklist
     consolidated garden pickers. Organ selection and normal inventory management
     must retain their original behavior; alchemy follows its own option.
 12. Open ingredient selection in small and larger laboratories. Confirm only
-    eligible ingredients, correct totals across player/bags/storage, and the
-    original research/rune restrictions when adding or replacing a slot.
+    research-eligible alchemical ingredients and correct totals across
+    player/bags/storage. Ingredients exceeding any rune limit must remain visible
+    with their combined count but disabled for both mouse and controller. Verify
+    that unresearched and non-alchemical items stay hidden, and replacing a slot
+    recalculates which visible entries can be selected.
 13. Select the same ingredient in two or three slots. With 100 units across two
     stacks of 50, two matching slots and a batch of 50 should each show 100/100
     without a false red warning. A requirement above 100 should still turn red.

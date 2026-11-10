@@ -19,6 +19,7 @@ internal sealed class ActionSettings
             "Disabling restores an open fertilizer picker on the next frame. Enabling takes effect the next time it opens.");
         AlchemicalIngredients = config.Bind("Actions", "Alchemical Ingredients", true,
             "Consolidate eligible alchemical ingredients and show total accessible stock in laboratory ingredient counters. " +
+            "Researched ingredients blocked by rune limits remain visible but disabled; unresearched and non-alchemical items stay hidden. " +
             "Controls both improvements independently of Seeds and Fertilizers. Disabling restores the original picker and counters. " +
             "Enabling refreshes an open laboratory; consolidation applies the next time its ingredient picker opens.");
     }

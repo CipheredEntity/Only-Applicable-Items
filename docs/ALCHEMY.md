@@ -1,4 +1,4 @@
-# Alchemical Ingredients (0.3.0)
+# Alchemical Ingredients (0.3.1)
 
 ## Scope and selection
 
@@ -8,11 +8,27 @@ window and a single instance callback. The callback captures the destination
 ingredient slot, so its target is not required to equal the predicate's target.
 Compiler-generated closure names are never inspected.
 
-Both inclusion and selectability use the original predicate. This preserves its
-research checks, canBeUsedInAlchemy flag, and the rune sum computed for the other
-selected slots by OnIngredientPressed. Neither research nor rune rules are
-reimplemented. Boosts, the folio, research-resource pickers, and other interfaces
-are outside the matcher. Existing Seeds and Fertilizers policies are unchanged.
+Visibility uses AlchemyVisibility<Item, SurveyDef>, matching the non-slot-specific
+front portion of the inspected native predicate. It rejects null/empty items and
+definitions without canBeUsedInAlchemy, then delegates survey lookup to
+GameBalance.GetSurveyDefForItemOrNull and completion to KnowledgeSystem.IsSurveyCompleted.
+It preserves the native special cases: nonzero runes with no survey remain hidden;
+zero-rune items with no survey are allowed; any existing survey must be completed
+even for a zero-rune item. No completion state is cached or inferred from flags.
+
+Visibility intentionally does not check rune totals. Researched ingredients that
+would exceed any limit stay visible and aggregated. Selectability still uses the
+unchanged IsItemValidForMix delegate, including both upper and lower rune bounds
+and the other-slot sum computed by OnIngredientPressed. InventoryWidget draws
+rejected entries with its native disabled state, and click-time snapshots reject
+them before the original callback can run. Availability-only changes use the
+existing full cell redraw, updating both appearance and interaction flags.
+
+This split duplicates only the native predicate's front-end visibility conditions;
+review them against IsItemValidForMix after game updates. Research completion and
+all slot-dependent selection rules remain owned by the game. Boosts, the folio,
+research-resource pickers, and other interfaces are outside the matcher. Existing
+Seeds, Fertilizers, quantity correction, and consumption paths are unchanged.
 
 PlainItem validation is shared with the garden integration. Meaningful unknown
 instance properties, contents/capacity, bags, or durability cause picker fallback.
@@ -88,7 +104,9 @@ the display correction can still use native ID-based totals safely.
 
 The checks execute production core policy, snapshot, and quantity-scope code with
 plain test objects. They exercise repeated IDs, selection without reservations,
-predicate isolation, all eight setting combinations, corrected totals/colors under
+predicate isolation, visible-but-disabled rune overflow/underflow entries,
+research/type hiding and native survey exceptions, availability-only refreshes,
+stale-click rejection, all eight setting combinations, corrected totals/colors under
 a simulated native renderer, disabled-mode restoration, alias deduplication,
 counting/setter rollback, exception cleanup, and cleanup after one restore fails.
 They do not execute game assemblies or prove Harmony/Unity rendering behavior.

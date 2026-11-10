@@ -12,20 +12,27 @@ internal static partial class Program
         var researched = new AlchemyIngredient("researched", 50, 2);
         var unknown = new AlchemyIngredient("unknown", 50, 1);
         var excessiveRunes = new AlchemyIngredient("excessive", 50, 4);
+        var excessiveInStorage = new AlchemyIngredient("excessive", 35, 4);
         laboratory.Researched.Add(researched.Id);
         laboratory.Researched.Add(excessiveRunes.Id);
         laboratory.OtherRunes = 2;
         Func<AlchemyIngredient, bool> nativePredicate = laboratory.IsValid;
+        var visibility = CreateAlchemyVisibility(laboratory);
         var policy = new PickerPolicy<AlchemyIngredient>("Alchemical Ingredients", () => true,
-            nativePredicate, nativePredicate, _ => { });
-        var sources = new[] { AlchemySource(researched), AlchemySource(unknown), AlchemySource(excessiveRunes) };
+            visibility.CanDisplay, nativePredicate, _ => { });
+        var sources = new[] { AlchemySource(researched), AlchemySource(unknown), AlchemySource(excessiveRunes), AlchemySource(excessiveInStorage) };
         var initial = PickerSnapshot<AlchemyIngredient>.Build(sources, policy);
-        Assert(initial.Groups.Count == 1 && initial.Groups[0].Key == researched.Id,
-            "The supplied native research/other-slot predicate must control both inclusion and selection.");
+        Assert(initial.Groups.Count == 2 && initial.Groups[0].Key == excessiveRunes.Id && initial.Groups[0].Total == 85,
+            "Researched rune-blocked stacks must stay visible and retain their combined total.");
+        Assert(initial.TryResolveSelectable(researched.Id, out _) && !initial.TryResolveSelectable(excessiveRunes.Id, out _),
+            "The supplied native predicate must continue to prevent selection of rune-blocked ingredients.");
+        Assert(!initial.TryResolveSelectable(unknown.Id, out _), "Unresearched items must stay hidden and unselectable.");
         laboratory.Researched.Add(unknown.Id);
         laboratory.OtherRunes = 0; // Opening a different/replacement slot can change the native context.
         var changed = PickerSnapshot<AlchemyIngredient>.Build(sources, policy);
         Assert(changed.Groups.Count == 3 && !initial.SameAs(changed), "Context changes must not reuse stale eligibility.");
+        Assert(changed.TryResolveSelectable(excessiveRunes.Id, out _), "An ingredient can become selectable after replacing another slot.");
+        Assert(excessiveRunes.Count == 50 && excessiveInStorage.Count == 35, "Disabled entries must not change stored quantities.");
     }
 
     private static void AlchemyAllowsRepeatedIngredientSelections()
@@ -184,14 +191,25 @@ internal static partial class Program
         public string Id { get; }
         public int Count { get; }
         public int Runes { get; }
-        public AlchemyIngredient(string id, int count, int runes) { Id = id; Count = count; Runes = runes; }
+        public int Green { get; }
+        public int Blue { get; }
+        public bool CanBeUsedInAlchemy { get; }
+        public bool HasSurvey { get; }
+        public AlchemyIngredient(string id, int count, int runes, bool canBeUsedInAlchemy = true,
+            bool hasSurvey = true, int green = 0, int blue = 0)
+        {
+            Id = id; Count = count; Runes = runes; Green = green; Blue = blue;
+            CanBeUsedInAlchemy = canBeUsedInAlchemy; HasSurvey = hasSurvey;
+        }
     }
 
     private sealed class FakeLaboratory
     {
         public HashSet<string> Researched { get; } = new HashSet<string>();
         public int OtherRunes { get; set; }
-        public bool IsValid(AlchemyIngredient item) => Researched.Contains(item.Id) && OtherRunes + item.Runes <= 5;
+        public bool IsValid(AlchemyIngredient item) => Researched.Contains(item.Id)
+            && OtherRunes + item.Runes >= 0 && OtherRunes + item.Runes <= 5
+            && item.Green >= 0 && item.Green <= 5 && item.Blue >= 0 && item.Blue <= 5;
         public void Select(object item, object slot) { }
     }
 

@@ -64,7 +64,7 @@ GardenPickerContract creates independent PickerPolicy<Item> objects:
 | --- | --- | --- | --- |
 | Seeds | IsSeedValid | IsSeedValid | Seeds |
 | Fertilizers | Item.IsFertilizer | IsItemValid | Fertilizers |
-| Alchemical Ingredients | IsItemValidForMix | IsItemValidForMix | Alchemical Ingredients |
+| Alchemical Ingredients | Native type/research conditions via game survey APIs | IsItemValidForMix | Alchemical Ingredients |
 
 The session excludes empty stacks for both policies. Each policy rejects instance
 properties, contents, internal inventory capacity, bag status, or durability.

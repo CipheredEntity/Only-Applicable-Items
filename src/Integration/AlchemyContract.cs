@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using OnlyApplicableItems.Core;
+using UnityEngine;
 
 namespace OnlyApplicableItems.Integration;
 
@@ -11,6 +13,7 @@ internal sealed class AlchemyContract
     public MethodInfo Hide { get; }
     private readonly MethodInfo redraw;
     private readonly FieldInfo ingredients;
+    private readonly AlchemyVisibility<Item, SurveyDef> visibility;
 
     public AlchemyContract()
     {
@@ -22,7 +25,15 @@ internal sealed class AlchemyContract
             ?? throw new MissingFieldException(typeof(UIAlchemyWindow).FullName, "ingredients");
         if (ingredients.FieldType != typeof(List<UIAlchemyIngredient>))
             throw new NotSupportedException("The laboratory ingredient-slot representation has changed.");
+        visibility = new AlchemyVisibility<Item, SurveyDef>(
+            item => !item.IsEmpty,
+            item => item.Definition.canBeUsedInAlchemy,
+            item => item.Definition.GetRunesAsVector3Int() != Vector3Int.zero,
+            item => GameBalance.GetSurveyDefForItemOrNull(item.Definition.id),
+            survey => MainGame.Instance.GameSave.knowledgeSystem.IsSurveyCompleted(survey));
     }
+
+    public bool CanDisplayIngredient(Item item) => visibility.CanDisplay(item);
 
     public List<UIItemCell> GetPopulatedCells(UIAlchemyWindow window)
     {
