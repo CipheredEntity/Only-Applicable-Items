@@ -69,7 +69,7 @@ stand-ins for its game types, plus the real aggregation/snapshot/delegate code.
 They cover all six titles for insertion/replacement, exact delegate ownership,
 unsupported categories, full-ID variants, alias deduplication, disabled/mistake
 visibility, changed availability, safety rejection, surviving source resolution,
-and the shared live toggle. Other checks cover all sixteen action-toggle
+and the shared live toggle. Other checks cover all 32 action-toggle
 combinations and existing seed/fertilizer/alchemy behavior. These do not execute
 game assemblies, native collar arithmetic, Harmony, or Unity prefabs.
 

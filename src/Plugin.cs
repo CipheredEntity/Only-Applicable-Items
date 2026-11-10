@@ -14,7 +14,7 @@ public sealed class Plugin : BaseUnityPlugin
 {
     public const string Guid = "ciphe.gk2.onlyapplicableitems";
     public const string Name = "Only Applicable Items";
-    public const string Version = "0.4.0";
+    public const string Version = "0.5.0";
     internal static Plugin? Instance { get; private set; }
     internal ActionSettings Settings { get; private set; } = null!;
     private readonly List<ApplicableItemsSession> sessions = new List<ApplicableItemsSession>();
@@ -23,6 +23,7 @@ public sealed class Plugin : BaseUnityPlugin
     private Harmony? alchemyHarmony;
     private GardenPickerContract? contract;
     private BodyPartPickerContract? bodyParts;
+    private EmbalmingPickerContract? embalming;
     internal AlchemyFeatures? Alchemy { get; private set; }
 
     private void Awake()
@@ -52,6 +53,21 @@ public sealed class Plugin : BaseUnityPlugin
         {
             InitializeAlchemy();
             InitializeBodyParts();
+            InitializeEmbalming();
+        }
+    }
+
+    private void InitializeEmbalming()
+    {
+        try
+        {
+            embalming = new EmbalmingPickerContract(() => Settings.EmbalmingFluids.Value, contract!.ValidatePlainItem);
+            Logger.LogInfo("Embalming Fluids ready. Enabled: " + Settings.EmbalmingFluids.Value);
+        }
+        catch (Exception exception)
+        {
+            embalming = null;
+            WarnOnce("embalming-startup", "Embalming Fluids is unavailable; existing actions remain supported. " + exception);
         }
     }
 
@@ -104,7 +120,7 @@ public sealed class Plugin : BaseUnityPlugin
             // Discovery includes private-field reads for autopsy pickers. If it fails,
             // the constructor's original inventory sections must remain usable.
             policy = contract.GetPolicy(callback, predicate, Settings) ?? Alchemy?.GetPolicy(callback, predicate)
-                ?? bodyParts?.GetPolicy(callback, predicate);
+                ?? bodyParts?.GetPolicy(callback, predicate) ?? embalming?.GetPolicy(callback, predicate);
             if (policy == null || !policy.IsEnabled)
                 return;
             session = new ApplicableItemsSession(this, policy, data, predicate);

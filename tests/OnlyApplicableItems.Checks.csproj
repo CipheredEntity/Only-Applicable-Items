@@ -14,5 +14,6 @@
     <Compile Include="..\src\Core\QuantityDisplayScope.cs" Link="Core\QuantityDisplayScope.cs" />
     <Compile Include="..\src\Core\AlchemyVisibility.cs" Link="Core\AlchemyVisibility.cs" />
     <Compile Include="..\src\Integration\BodyPartPickerContract.cs" Link="Integration\BodyPartPickerContract.cs" />
+    <Compile Include="..\src\Integration\EmbalmingPickerContract.cs" Link="Integration\EmbalmingPickerContract.cs" />
   </ItemGroup>
 </Project>

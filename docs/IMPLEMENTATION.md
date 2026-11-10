@@ -50,7 +50,9 @@ the private item-property field's type:
    Alchemy uses its exact UIAlchemyWindow.IsItemValidForMix predicate and preserves
    the native slot closure. BodyPartPickerContract requires exact insertion or
    replacement callback/predicate pairs on one UIAutopsyWindowData instance and
-   reads its validated selectedItemType field. Unknown predicates, multicast delegates, and unsupported
+   reads its validated selectedItemType field. EmbalmingPickerContract requires
+   TryEmbalm/CanEmbalm on the same UIEmbalmWindowData instance.
+   Unknown predicates, multicast delegates, and unsupported
    actions use vanilla.
 2. Prefix on `InventoryWidget.OnRedraw`. It only handles the mod's
    `ApplicableInventoryWidgetData` subclass. Normal section data is untouched.
@@ -68,11 +70,14 @@ Action-specific contracts create independent PickerPolicy<Item> objects:
 | Fertilizers | Item.IsFertilizer | IsItemValid | Fertilizers |
 | Alchemical Ingredients | Native type/research conditions via game survey APIs | IsItemValidForMix | Alchemical Ingredients |
 | Body Parts | Matching ItemType, including disabled entries | CanInsertOrgan or CanChangeOrgan | Body Parts / six category titles |
+| Embalming Fluids | ItemType.Embalm, including disabled entries | CanEmbalm | Embalming Fluids |
 
 The session excludes empty stacks for all policies. Each policy rejects instance
 properties, contents, internal inventory capacity, bag status, or durability.
 Garden/alchemy actions consume by definition ID; autopsy captures a real item's
 UID and removes one unit on craft confirmation, then recreates the result by ID.
+Embalming consumes one real item by UID immediately on selection and leaves craft
+effects/definition-based pocket insertion to the native callback and completion.
 Unknown instance variants cause the entire picker
 to fall back rather than silently combine them, including when a visible
 fertilizer is currently disabled. Ordinary items group by their full definition
@@ -91,6 +96,8 @@ The plugin never consumes items or changes bed perks. Native slot replacement,
 planting, application, mastery checks, recipe quantities, and autopsy operations
 stay with the game. See [BODY_PARTS.md](BODY_PARTS.md) for confirmation timing,
 variant safeguards, and the distinction between corpse insertion and zombie replacement.
+See [EMBALMING.md](EMBALMING.md) for fluid rules, special zombie effects, and native
+full-pocket/craft-start behavior, all left unchanged.
 
 ## Refresh and lifetime
 
@@ -126,7 +133,8 @@ per-frame or per-item informational messages are emitted.
 ## Configuration and future scope
 
 Config.Bind creates independent `[Actions] Seeds = true`, `Fertilizers = true`,
-`Alchemical Ingredients = true`, and `Body Parts = true` entries. The keys are the GUI labels; no configuration-manager dependency or
+`Alchemical Ingredients = true`, `Body Parts = true`, and `Embalming Fluids = true`
+entries. The keys are the GUI labels; no configuration-manager dependency or
 custom metadata type is required. Each policy reads only its own live setting.
 Disable takes effect on the next plugin frame for that action's open picker;
 enable takes effect when its next picker opens. Existing values are retained.
@@ -135,6 +143,7 @@ The alchemy option also controls the laboratory counter correction described in
 
 Body Parts controls all six category titles and both autopsy picker paths through
 one live setting. Its separate initialization failure leaves other actions active.
+Embalming Fluids also has an independent contract initialization and live setting.
 Future actions should get their own settings and explicit delegate registrations,
 then a reviewed selection policy. Keep the action gates: each action's consumption
 and equipment transfers have different contracts.
@@ -152,7 +161,10 @@ slot-closure recognition, validation of disabled item variants, alchemy predicat
 isolation, repeated ingredients, temporary quantity override cleanup, and the
 production body-part contract using test-only game stand-ins. The latter exercise
 both action pairs, all six categories, disabled entries, instance safety, real
-source resolution, and the shared live setting. Settings checks cover all sixteen
-combinations of the four independent options.
+source resolution, and the shared live setting. The production embalming contract
+is checked with test-only game stand-ins for action isolation, disabled visibility,
+variant safety, live native eligibility, real sources, and the independent setting.
+Embalming still requires in-game validation. Settings checks cover all 32
+combinations of the five independent options.
 The game and saves were not launched or modified during development. Follow the
 manual checklist in README.txt using the user's chosen in-game test setup.

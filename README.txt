@@ -1,4 +1,4 @@
-Only Applicable Items 0.4.0
+Only Applicable Items 0.5.0
 ===========================
 
 A BepInEx 5 plugin for Graveyard Keeper 2. Garden seed selection displays one
@@ -25,6 +25,11 @@ but disabled, with the original failure tooltips. Items remain in their real
 inventories; confirming the normal operation consumes one real source part.
 Ordinary corpses still require extraction before inserting into an occupied slot.
 
+Embalming fluid selection displays one "Embalming Fluids" inventory with combined
+quantities from the same accessible sources. Unusable fluids remain visible but
+disabled. The game retains its normal corpse/zombie rules, application effects,
+and immediate consumption of one real source item when a fluid is selected.
+
 Configuration
 -------------
 After the plugin first loads, BepInEx creates:
@@ -35,8 +40,9 @@ After the plugin first loads, BepInEx creates:
   Fertilizers = true
   Alchemical Ingredients = true
   Body Parts = true
+  Embalming Fluids = true
 
-All four options are enabled by default and independent. Body Parts controls all
+All five options are enabled by default and independent. Body Parts controls all
 six categories and both insertion and replacement. Set an option to false to use
 the original interface for that action. Existing settings are kept when the new
 entry is added. No configuration-manager plugin
@@ -99,7 +105,9 @@ temporary laboratory quantity overrides including failure rollback. Body-part
 checks run the production action contract with test-only stand-ins, covering
 both action pairs, all six titles, disabled entries, variant safety, live settings,
 and real source resolution. They do not load or execute the game. Integration
-details are in docs/IMPLEMENTATION.md, docs/ALCHEMY.md, and docs/BODY_PARTS.md.
+details are in docs/IMPLEMENTATION.md, docs/ALCHEMY.md, docs/BODY_PARTS.md, and
+docs/EMBALMING.md. Embalming checks exercise the production contract with test-only
+game stand-ins and the shared snapshot logic; no game assemblies are executed.
 
 Build output:
   bin/Release/net472/OnlyApplicableItems.dll
@@ -169,7 +177,7 @@ Manual validation checklist
 14. Verify selection alone consumes nothing and actual crafting consumes exactly
     the original requirements across real stacks. Check boosts and flask limits
     retain their normal behavior. No recipe or consumption code is patched.
-15. Check all sixteen combinations of the four toggles. Disable/re-enable Alchemical
+15. Check all 32 combinations of the five toggles. Disable/re-enable Alchemical
     Ingredients with the lab open and verify native/corrected counters switch
     without losing selections or resetting batch size. Check stock depletion and
     replenishment, closing/reopening, scene changes, and unsupported pickers.
@@ -178,15 +186,23 @@ Manual validation checklist
     entries and failure tooltips, confirmation consuming exactly one real part,
     cancellation, and the independent Body Parts toggle. Check disabling while
     its picker is open. The detailed checklist is in docs/BODY_PARTS.md.
+17. Open embalming fluid selection for ordinary corpses and zombies. Check combined
+    counts across player/bags/storage, distinct variants, blocked fluids, immediate
+    one-item consumption, cancellation, special zombie-effect fluids, and live
+    Embalming Fluids toggle changes. See docs/EMBALMING.md for native limitations
+    and a detailed checklist.
 
 The mod falls back to vanilla for unexpected instance properties on included items
 or an unsupported picker contract. These cases appear once per failure category
 in LogOutput.log. Garden and alchemy actions consume by definition ID. Autopsy
 removes one real source item by UID, then recreates its result by definition ID;
-the mod does not invent instance comparisons or consumption rules.
+embalming also consumes by UID and uses definition-based results. The mod does not
+invent instance comparisons or consumption rules.
 
 Seeds, Fertilizers, and Alchemical Ingredients were tested in-game before the Body
 Parts extension. Body Parts and regression checks require manual in-game validation.
+Embalming Fluids also requires in-game validation; automated checks do not prove
+Unity rendering, native craft effects, or Harmony runtime behavior.
 An alchemy reflection/display failure disables that feature for the current plugin
 session and logs a warning; restart after resolving it. Garden features remain
 available. Do not treat a successful build or logic checks as proof of UI integration.
