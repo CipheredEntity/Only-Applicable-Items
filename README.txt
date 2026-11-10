@@ -1,4 +1,4 @@
-Only Applicable Items 0.6.0
+Only Applicable Items 0.7.0
 ===========================
 
 A BepInEx 5 plugin for Graveyard Keeper 2. Garden seed selection displays one
@@ -35,6 +35,12 @@ with equivalent definitions and their quantities combined across accessible
 inventories. Native eligibility and craft selection remain unchanged. Occupied
 slots still require the normal removal operation before installing a replacement.
 
+Zombie collar upgrades display one "Collars" inventory. All owned collars from
+the player's inventory and bags appear with combined quantities; collars rejected
+by the native upgrade rules stay visible but disabled. Zone storage is excluded,
+matching this action's normal access. The game still consumes one source collar
+and removes the old collar. Other zombie equipment pickers remain unchanged.
+
 Configuration
 -------------
 After the plugin first loads, BepInEx creates:
@@ -47,10 +53,12 @@ After the plugin first loads, BepInEx creates:
   Body Parts = true
   Embalming Fluids = true
   Grave Decorations = true
+  Zombie Equipment = true
 
-All six options are enabled by default and independent. Body Parts controls all
+All seven options are enabled by default and independent. Body Parts controls all
 six body-part categories and both insertion and replacement. Grave Decorations
-controls both Tombstones and Fences. Set an option to false to use
+controls both Tombstones and Fences. Zombie Equipment currently controls Collars
+only; armor, weapons, and tools are not supported yet. Set an option to false to use
 the original interface for that action. Existing settings are kept when the new
 entry is added. No configuration-manager plugin
 is required. Compatible managers expose the entries using these same names.
@@ -118,6 +126,9 @@ game stand-ins and the shared snapshot logic; no game assemblies are executed.
 Grave decoration checks cover both titles/groups, the shared live toggle, exact
 action isolation, variant/instance safety, disabled visibility, and real sources.
 See docs/GRAVE_DECORATIONS.md for integration details and in-game validation.
+Collar checks exercise the production two-owner action matcher, native disabled
+entries, instance safety, source resolution, and the shared Zombie Equipment
+setting. See docs/ZOMBIE_EQUIPMENT.md for scope and a manual checklist.
 
 Build output:
   bin/Release/net472/OnlyApplicableItems.dll
@@ -187,7 +198,7 @@ Manual validation checklist
 14. Verify selection alone consumes nothing and actual crafting consumes exactly
     the original requirements across real stacks. Check boosts and flask limits
     retain their normal behavior. No recipe or consumption code is patched.
-15. Check the six independent toggles (automated checks cover all 64 combinations).
+15. Check the seven independent toggles (automated checks cover all 128 combinations).
     Disable/re-enable Alchemical
     Ingredients with the lab open and verify native/corrected counters switch
     without losing selections or resetting batch size. Check stock depletion and
@@ -206,6 +217,11 @@ Manual validation checklist
     exact totals across player/bags/storage, separate variants, normal craft costs,
     cancellation, and live Grave Decorations changes. Remove and replace existing
     decorations through the original flow. See docs/GRAVE_DECORATIONS.md.
+19. Open a zombie's collar upgrade picker. Confirm Collars, totals across player
+    inventory/bags, excluded zone storage, distinct variants, disabled equal/lower
+    and incompatible collars, one-unit source consumption, and native old-collar
+    removal. Check cancellation, live Zombie Equipment changes, and unchanged
+    armor/weapon/tool pickers. See docs/ZOMBIE_EQUIPMENT.md.
 
 The mod falls back to vanilla for unexpected instance properties on included items
 or an unsupported picker contract. These cases appear once per failure category
@@ -218,6 +234,8 @@ Seeds, Fertilizers, Alchemical Ingredients, Body Parts, and Embalming Fluids wer
 tested in-game before the Grave Decorations extension. Grave Decorations and
 regression checks require manual in-game validation; automated checks do not prove
 Unity rendering, native craft effects, or Harmony runtime behavior.
+Collars also requires in-game validation; automated checks do not execute native
+collar arithmetic, consumption, or equipment assignment.
 An alchemy reflection/display failure disables that feature for the current plugin
 session and logs a warning; restart after resolving it. Garden features remain
 available. Do not treat a successful build or logic checks as proof of UI integration.

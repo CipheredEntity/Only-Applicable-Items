@@ -68,7 +68,7 @@ stand-ins and execute production snapshot/aggregation code. They cover exact
 delegate ownership and isolation, full-ID variants, aliases, blocked fluids,
 availability-only changes and stale selection rejection, unusual-instance safety,
 real surviving sources, and live settings. Native craft rules and consumption
-are not simulated or executed; all 64 combinations of the six settings are checked.
+are not simulated or executed; all 128 combinations of the seven settings are checked.
 The TryEmbalm/CanEmbalm signatures and ItemType.Embalm were also verified against
 the reference Assembly-CSharp.dll through reflection-only metadata loading,
 without executing game code.

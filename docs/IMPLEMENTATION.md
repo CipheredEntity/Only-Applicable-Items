@@ -54,6 +54,9 @@ the private item-property field's type:
    TryEmbalm/CanEmbalm on the same UIEmbalmWindowData instance.
    GraveDecorationPickerContract requires OnGraveItemSelected/IsGraveItem on one
    UIGraveElementWidgetData and reads its public GraveElementType property.
+   ZombieEquipmentPickerContract currently registers only UpgradeCollar with
+   ZombieWgoData.CanUpgradeCollarTo, requiring the equipment owner's ZombieWgoData
+   to be the predicate's exact target (these two delegates have different owners).
    Unknown predicates, multicast delegates, and unsupported
    actions use vanilla.
 2. Prefix on `InventoryWidget.OnRedraw`. It only handles the mod's
@@ -74,6 +77,7 @@ Action-specific contracts create independent PickerPolicy<Item> objects:
 | Body Parts | Matching ItemType, including disabled entries | CanInsertOrgan or CanChangeOrgan | Body Parts / six category titles |
 | Embalming Fluids | ItemType.Embalm, including disabled entries | CanEmbalm | Embalming Fluids |
 | Grave Decorations | gravetop or gravebot group | IsGraveItem | Grave Decorations / Tombstones or Fences |
+| Zombie Equipment (Collars only) | ItemType.Collar, including disabled upgrades | CanUpgradeCollarTo | Zombie Equipment / Collars |
 
 The session excludes empty stacks for all policies. Each policy rejects instance
 properties, contents, internal inventory capacity, bag status, or durability.
@@ -83,6 +87,8 @@ Embalming consumes one real item by UID immediately on selection and leaves craf
 effects/definition-based pocket insertion to the native callback and completion.
 Grave decorations choose a native craft by full definition ID; the craft system
 removes recipe quantities through its own multi-inventory, not the clicked UID.
+Collar upgrades remove one source unit by UID through their original inventory
+list, recreate the new collar by definition, and remove the old collar natively.
 Unknown instance variants cause the entire picker
 to fall back rather than silently combine them, including when a visible
 fertilizer is currently disabled. Ordinary items group by their full definition
@@ -105,6 +111,8 @@ See [EMBALMING.md](EMBALMING.md) for fluid rules, special zombie effects, and na
 full-pocket/craft-start behavior, all left unchanged.
 See [GRAVE_DECORATIONS.md](GRAVE_DECORATIONS.md) for ID-based craft selection,
 native category-only eligibility, and the unchanged removal/replacement flow.
+See [ZOMBIE_EQUIPMENT.md](ZOMBIE_EQUIPMENT.md) for collar owner matching, player/bag
+access without zone storage, native upgrade rules, and deferred equipment support.
 
 ## Refresh and lifetime
 
@@ -141,7 +149,7 @@ per-frame or per-item informational messages are emitted.
 
 Config.Bind creates independent `[Actions] Seeds = true`, `Fertilizers = true`,
 `Alchemical Ingredients = true`, `Body Parts = true`, `Embalming Fluids = true`,
-and `Grave Decorations = true`
+`Grave Decorations = true`, and `Zombie Equipment = true`
 entries. The keys are the GUI labels; no configuration-manager dependency or
 custom metadata type is required. Each policy reads only its own live setting.
 Disable takes effect on the next plugin frame for that action's open picker;
@@ -153,6 +161,8 @@ Body Parts controls all six category titles and both autopsy picker paths throug
 one live setting. Its separate initialization failure leaves other actions active.
 Embalming Fluids also has an independent contract initialization and live setting.
 Grave Decorations has the same isolation, with one live setting for both titles.
+Zombie Equipment currently controls Collars only; other equipment remains vanilla.
+Its contract initialization failure cannot disable earlier action contracts.
 Future actions should get their own settings and explicit delegate registrations,
 then a reviewed selection policy. Keep the action gates: each action's consumption
 and equipment transfers have different contracts.
@@ -176,7 +186,10 @@ is checked with test-only game stand-ins for action isolation, disabled visibili
 variant safety, live native eligibility, real sources, and the independent setting.
 The production grave-decoration contract is checked with test-only game stand-ins
 for both groups/titles, action ownership, instance/variant safety, native disabled
-states, real sources, and its shared setting. Settings checks cover all 64
-combinations of the six independent options.
+states, real sources, and its shared setting. The production collar contract is
+checked with test-only stand-ins for linked delegate owners, unsupported equipment
+isolation, disabled visibility, variants, instance safety, and real sources.
+Collars still needs in-game validation. Settings checks cover all 128
+combinations of the seven independent options.
 The game and saves were not launched or modified during development. Follow the
 manual checklist in README.txt using the user's chosen in-game test setup.

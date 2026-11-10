@@ -56,7 +56,13 @@ internal static partial class Program
             GraveDecorationsAggregateOnlyTheirGroupAndKeepVariants,
             GraveDecorationsPreserveNativeAvailabilityAndRefresh,
             GraveDecorationsRejectInstanceDataIncludingDisabledItems,
-            GraveDecorationsResolveRealSourcesWithoutChangingDefinitions
+            GraveDecorationsResolveRealSourcesWithoutChangingDefinitions,
+            CollarsRequireTheExactUpgradePairAndLinkedZombie,
+            CollarsLeaveOtherEquipmentAndActionsUnsupported,
+            CollarsConsolidateAllOwnedVariantsWithoutMutatingSources,
+            CollarsKeepRejectedUpgradesVisibleAndRevalidateAvailability,
+            CollarsRejectInstanceDataEvenForBlockedUpgrades,
+            CollarsResolveRealSourcesAndReadTheZombieEquipmentToggle
         };
         foreach (var check in checks)
         {
@@ -251,7 +257,7 @@ internal static partial class Program
 
     private static void ActionSettingsRemainIndependent()
     {
-        var settings = new bool[6];
+        var settings = new bool[7];
         var policies = new[]
         {
             new PickerPolicy<Stack>("Seeds", () => settings[0], _ => true, _ => true, _ => { }),
@@ -259,7 +265,8 @@ internal static partial class Program
             new PickerPolicy<Stack>("Alchemical Ingredients", () => settings[2], _ => true, _ => true, _ => { }),
             new PickerPolicy<Stack>("Brains", () => settings[3], _ => true, _ => true, _ => { }),
             new PickerPolicy<Stack>("Embalming Fluids", () => settings[4], _ => true, _ => true, _ => { }),
-            new PickerPolicy<Stack>("Tombstones", () => settings[5], _ => true, _ => true, _ => { })
+            new PickerPolicy<Stack>("Tombstones", () => settings[5], _ => true, _ => true, _ => { }),
+            new PickerPolicy<Stack>("Collars", () => settings[6], _ => true, _ => true, _ => { })
         };
         for (int combination = 0; combination < (1 << settings.Length); combination++)
         {
@@ -268,7 +275,7 @@ internal static partial class Program
             for (int i = 0; i < policies.Length; i++)
             {
                 Assert(policies[i].IsEnabled == ((combination & (1 << i)) != 0),
-                    "Each action must read its own live setting in all sixty-four combinations.");
+                    "Each action must read its own live setting in all 128 combinations.");
             }
         }
     }

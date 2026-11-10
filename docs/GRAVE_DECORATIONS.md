@@ -66,7 +66,7 @@ and production aggregation/snapshot/delegate code. They cover both titles/groups
 one shared live toggle, unknown contexts/categories, variant separation, alias
 deduplication, disabled visibility and availability-only refreshes, instance-data
 rejection, real surviving sources, and preservation of the selected definition.
-The shared settings check covers all 64 combinations of six action settings.
+The shared settings check covers all 128 combinations of seven action settings.
 These checks do not execute native crafting, Unity, or Harmony.
 The two callback/predicate signatures, public category getter, and group constants
 were also verified against the reference Assembly-CSharp.dll using reflection-only

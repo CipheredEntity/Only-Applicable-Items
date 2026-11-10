@@ -14,7 +14,7 @@ public sealed class Plugin : BaseUnityPlugin
 {
     public const string Guid = "ciphe.gk2.onlyapplicableitems";
     public const string Name = "Only Applicable Items";
-    public const string Version = "0.6.0";
+    public const string Version = "0.7.0";
     internal static Plugin? Instance { get; private set; }
     internal ActionSettings Settings { get; private set; } = null!;
     private readonly List<ApplicableItemsSession> sessions = new List<ApplicableItemsSession>();
@@ -25,6 +25,7 @@ public sealed class Plugin : BaseUnityPlugin
     private BodyPartPickerContract? bodyParts;
     private EmbalmingPickerContract? embalming;
     private GraveDecorationPickerContract? graveDecorations;
+    private ZombieEquipmentPickerContract? zombieEquipment;
     internal AlchemyFeatures? Alchemy { get; private set; }
 
     private void Awake()
@@ -56,6 +57,21 @@ public sealed class Plugin : BaseUnityPlugin
             InitializeBodyParts();
             InitializeEmbalming();
             InitializeGraveDecorations();
+            InitializeZombieEquipment();
+        }
+    }
+
+    private void InitializeZombieEquipment()
+    {
+        try
+        {
+            zombieEquipment = new ZombieEquipmentPickerContract(() => Settings.ZombieEquipment.Value, contract!.ValidatePlainItem);
+            Logger.LogInfo("Zombie Equipment ready (Collars only). Enabled: " + Settings.ZombieEquipment.Value);
+        }
+        catch (Exception exception)
+        {
+            zombieEquipment = null;
+            WarnOnce("zombie-equipment-startup", "Zombie Equipment is unavailable; existing actions remain supported. " + exception);
         }
     }
 
@@ -137,7 +153,7 @@ public sealed class Plugin : BaseUnityPlugin
             // the constructor's original inventory sections must remain usable.
             policy = contract.GetPolicy(callback, predicate, Settings) ?? Alchemy?.GetPolicy(callback, predicate)
                 ?? bodyParts?.GetPolicy(callback, predicate) ?? embalming?.GetPolicy(callback, predicate)
-                ?? graveDecorations?.GetPolicy(callback, predicate);
+                ?? graveDecorations?.GetPolicy(callback, predicate) ?? zombieEquipment?.GetPolicy(callback, predicate);
             if (policy == null || !policy.IsEnabled)
                 return;
             session = new ApplicableItemsSession(this, policy, data, predicate);
