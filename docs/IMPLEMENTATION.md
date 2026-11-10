@@ -1,4 +1,4 @@
-# Garden picker implementation
+# Contextual picker implementation
 
 ## Verified game contract
 
@@ -47,7 +47,9 @@ the private item-property field's type:
    predicate on a garden window and a single instance callback. Its callback
    target is a slot closure, so comparing it to the predicate's target would
    incorrectly reject the native action. No compiler-generated names are used.
-   Unknown predicates, multicast delegates, and unsupported actions use vanilla.
+   Alchemy uses its exact UIAlchemyWindow.IsItemValidForMix predicate and preserves
+   the native slot closure. Unknown predicates, multicast delegates, and unsupported
+   actions use vanilla.
 2. Prefix on `InventoryWidget.OnRedraw`. It only handles the mod's
    `ApplicableInventoryWidgetData` subclass. Normal section data is untouched.
 
@@ -62,10 +64,11 @@ GardenPickerContract creates independent PickerPolicy<Item> objects:
 | --- | --- | --- | --- |
 | Seeds | IsSeedValid | IsSeedValid | Seeds |
 | Fertilizers | Item.IsFertilizer | IsItemValid | Fertilizers |
+| Alchemical Ingredients | IsItemValidForMix | IsItemValidForMix | Alchemical Ingredients |
 
 The session excludes empty stacks for both policies. Each policy rejects instance
 properties, contents, internal inventory capacity, bag status, or durability.
-Both actions consume by definition ID. Unknown variants cause the entire picker
+All three actions consume by definition ID. Unknown variants cause the entire picker
 to fall back rather than silently combine them, including when a visible
 fertilizer is currently disabled. Ordinary items group by their full definition
 ID, preserving definition-based quality differences.
@@ -115,11 +118,13 @@ per-frame or per-item informational messages are emitted.
 
 ## Configuration and future scope
 
-Config.Bind creates independent `[Actions] Seeds = true` and `Fertilizers = true`
-entries. The keys are the GUI labels; no configuration-manager dependency or
+Config.Bind creates independent `[Actions] Seeds = true`, `Fertilizers = true`,
+and `Alchemical Ingredients = true` entries. The keys are the GUI labels; no configuration-manager dependency or
 custom metadata type is required. Each policy reads only its own live setting.
 Disable takes effect on the next plugin frame for that action's open picker;
-enable takes effect when its next picker opens. Existing Seeds values are retained.
+enable takes effect when its next picker opens. Existing values are retained.
+The alchemy option also controls the laboratory counter correction described in
+[ALCHEMY.md](ALCHEMY.md); open laboratory labels respond to live toggle changes.
 
 Future actions should get their own settings and explicit delegate registrations,
 then a reviewed selection policy. Do not remove the action gates: UID-based
@@ -129,10 +134,11 @@ consumption and equipment transfers have different contracts.
 
 Successful compilation and the pure-logic checks do not validate Harmony runtime
 installation, Unity prefabs, pooled component behavior, or controller input.
-The user validated Seeds in-game before this extension. The new fertilizer path
-and regression testing of Seeds still require in-game checks. Unit checks cover
+The user validated Seeds and Fertilizers in-game before the alchemy extension.
+The new alchemy path and regression testing still require in-game checks. Unit checks cover
 all existing aggregation cases plus fertilizer inclusion/disabled resolution,
 availability-only refreshes, stale selection rejection, live independent settings,
-slot-closure recognition, and validation of disabled item variants.
+slot-closure recognition, validation of disabled item variants, alchemy predicate
+isolation, repeated ingredients, and temporary quantity override cleanup.
 The game and saves were not launched or modified during development. Follow the
 manual checklist in README.txt using the user's chosen in-game test setup.

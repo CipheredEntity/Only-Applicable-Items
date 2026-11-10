@@ -238,7 +238,7 @@ internal sealed class ApplicableItemsSession : IDisposable
                 return;
             }
             // Only the cell is rebound. The original callback receives a currently accessible
-            // real item; the original garden action owns application and consumption.
+            // real item; the original action owns selection, application, and consumption.
             cell.Draw(representative);
         }
         catch (Exception exception)

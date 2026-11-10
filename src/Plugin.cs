@@ -13,13 +13,15 @@ public sealed class Plugin : BaseUnityPlugin
 {
     public const string Guid = "ciphe.gk2.onlyapplicableitems";
     public const string Name = "Only Applicable Items";
-    public const string Version = "0.2.0";
+    public const string Version = "0.3.0";
     internal static Plugin? Instance { get; private set; }
     internal ActionSettings Settings { get; private set; } = null!;
     private readonly List<ApplicableItemsSession> sessions = new List<ApplicableItemsSession>();
     private readonly HashSet<string> warnings = new HashSet<string>(StringComparer.Ordinal);
     private Harmony? harmony;
+    private Harmony? alchemyHarmony;
     private GardenPickerContract? contract;
+    internal AlchemyFeatures? Alchemy { get; private set; }
 
     private void Awake()
     {
@@ -44,13 +46,39 @@ public sealed class Plugin : BaseUnityPlugin
             contract = null;
             WarnOnce("startup", "The game's picker contract is not supported; consolidation is inactive. " + exception);
         }
+        if (contract != null)
+            InitializeAlchemy();
+    }
+
+    private void InitializeAlchemy()
+    {
+        try
+        {
+            var alchemyContract = new AlchemyContract();
+            Alchemy = new AlchemyFeatures(this, alchemyContract, contract!.ValidatePlainItem);
+            // A separate owner lets alchemy initialization fail without removing garden patches.
+            alchemyHarmony = new Harmony(Guid + ".alchemy");
+            alchemyHarmony.Patch(alchemyContract.CountUpdate,
+                prefix: new HarmonyMethod(typeof(AlchemyPatches), nameof(AlchemyPatches.BeforeCountUpdate)),
+                finalizer: new HarmonyMethod(typeof(AlchemyPatches), nameof(AlchemyPatches.AfterCountUpdate)));
+            alchemyHarmony.Patch(alchemyContract.Hide,
+                postfix: new HarmonyMethod(typeof(AlchemyPatches), nameof(AlchemyPatches.AfterLaboratoryHidden)));
+            Logger.LogInfo("Alchemical Ingredients ready. Enabled: " + Settings.AlchemicalIngredients.Value);
+        }
+        catch (Exception exception)
+        {
+            Alchemy?.Dispose();
+            alchemyHarmony?.UnpatchSelf();
+            Alchemy = null;
+            WarnOnce("alchemy-startup", "Alchemical Ingredients is unavailable; Seeds and Fertilizers remain supported. " + exception);
+        }
     }
 
     internal void TryConsolidate(UIMultiInventoryWindowData data, Action<UIItemCell> callback, Func<Item, bool> predicate)
     {
         if (contract == null)
             return;
-        var policy = contract.GetPolicy(callback, predicate, Settings);
+        var policy = contract.GetPolicy(callback, predicate, Settings) ?? Alchemy?.GetPolicy(callback, predicate);
         if (policy == null || !policy.IsEnabled)
             return;
         ApplicableItemsSession? session = null;
@@ -81,6 +109,7 @@ public sealed class Plugin : BaseUnityPlugin
                 session.RestoreVanilla();
             }
         }
+        Alchemy?.Tick();
     }
 
     internal void Register(ApplicableItemsSession session) => sessions.Add(session);
@@ -96,6 +125,8 @@ public sealed class Plugin : BaseUnityPlugin
     {
         foreach (var session in sessions.ToArray())
             session.RestoreVanilla();
+        Alchemy?.Dispose();
+        alchemyHarmony?.UnpatchSelf();
         harmony?.UnpatchSelf();
         if (ReferenceEquals(Instance, this))
             Instance = null;

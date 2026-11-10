@@ -4,7 +4,7 @@ using OnlyApplicableItems.Core;
 
 namespace OnlyApplicableItems.Checks;
 
-internal static class Program
+internal static partial class Program
 {
     private static int Main()
     {
@@ -24,7 +24,16 @@ internal static class Program
             BlockedFertilizerCannotResolveAfterBedChanges,
             ActionSettingsRemainIndependent,
             FertilizerContextAcceptsSlotClosuresOnlyWithItsExactPredicate,
-            ValidatesUnavailableFertilizerInstances
+            ValidatesUnavailableFertilizerInstances,
+            AlchemyPolicyPreservesResearchAndSlotPredicates,
+            AlchemyAllowsRepeatedIngredientSelections,
+            AlchemyContextIsIndependentOfGardenPredicates,
+            LaboratoryTotalsAreSharedAcrossTwoAndThreeSlots,
+            LaboratoryScopeRestoresAfterNativeFailure,
+            LaboratoryCountingFailureLeavesAllCachesUntouched,
+            LaboratorySetterFailureRollsBackAllAppliedValues,
+            LaboratoryRestoreAttemptsEveryCell,
+            DisablingAlchemyRestoresNativeCounters
         };
         foreach (var check in checks)
         {
@@ -221,16 +230,22 @@ internal static class Program
     {
         bool seedsEnabled = true;
         bool fertilizersEnabled = true;
+        bool alchemyEnabled = true;
         var seeds = new PickerPolicy<Stack>("Seeds", () => seedsEnabled, _ => true, _ => true, _ => { });
         var fertilizers = new PickerPolicy<Stack>("Fertilizers", () => fertilizersEnabled, _ => true, _ => true, _ => { });
+        var alchemy = new PickerPolicy<Stack>("Alchemical Ingredients", () => alchemyEnabled, _ => true, _ => true, _ => { });
         foreach (bool seedsValue in new[] { false, true })
         {
             foreach (bool fertilizersValue in new[] { false, true })
             {
-                seedsEnabled = seedsValue;
-                fertilizersEnabled = fertilizersValue;
-                Assert(seeds.IsEnabled == seedsValue && fertilizers.IsEnabled == fertilizersValue,
-                    "Each action must read its own live setting, including during an open session.");
+                foreach (bool alchemyValue in new[] { false, true })
+                {
+                    seedsEnabled = seedsValue;
+                    fertilizersEnabled = fertilizersValue;
+                    alchemyEnabled = alchemyValue;
+                    Assert(seeds.IsEnabled == seedsValue && fertilizers.IsEnabled == fertilizersValue && alchemy.IsEnabled == alchemyValue,
+                        "Each action must read its own live setting in all eight combinations.");
+                }
             }
         }
     }

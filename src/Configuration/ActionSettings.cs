@@ -6,6 +6,7 @@ internal sealed class ActionSettings
 {
     public ConfigEntry<bool> Seeds { get; }
     public ConfigEntry<bool> Fertilizers { get; }
+    public ConfigEntry<bool> AlchemicalIngredients { get; }
 
     public ActionSettings(ConfigFile config)
     {
@@ -16,5 +17,9 @@ internal sealed class ActionSettings
             "Combine all owned fertilizers into one Fertilizers inventory in the garden fertilizer picker. " +
             "Already-applied fertilizers stay visible but disabled. " +
             "Disabling restores an open fertilizer picker on the next frame. Enabling takes effect the next time it opens.");
+        AlchemicalIngredients = config.Bind("Actions", "Alchemical Ingredients", true,
+            "Consolidate eligible alchemical ingredients and show total accessible stock in laboratory ingredient counters. " +
+            "Controls both improvements independently of Seeds and Fertilizers. Disabling restores the original picker and counters. " +
+            "Enabling refreshes an open laboratory; consolidation applies the next time its ingredient picker opens.");
     }
 }

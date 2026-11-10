@@ -47,14 +47,14 @@ internal sealed class GardenPickerContract
         return null;
     }
 
-    private void ValidatePlainItem(Item item)
+    internal void ValidatePlainItem(Item item)
     {
-        // Both garden actions select/remove by definition ID. Unknown instance data cannot
+        // The supported actions select/remove by definition ID. Unknown instance data cannot
         // safely be represented as independently selectable variants by this action.
         var instanceProperties = (Dictionary<Type, SerializedItemProperty>?)properties.GetValue(item);
         if (item.InventoryCount != 0 || item.InventorySize != 0 || item.IsBag || item.Definition.hasDurability ||
             (instanceProperties != null && instanceProperties.Count != 0))
-            throw new NotSupportedException("Garden item '" + item.id + "' has instance data; preserving the original picker.");
+            throw new NotSupportedException("Item '" + item.id + "' has instance data; preserving the original picker.");
     }
 
     private static MethodInfo RequireMethod(Type type, string name, Type result, params Type[] arguments)

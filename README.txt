@@ -1,4 +1,4 @@
-Only Applicable Items 0.2.0
+Only Applicable Items 0.3.0
 ===========================
 
 A BepInEx 5 plugin for Graveyard Keeper 2. Garden seed selection displays one
@@ -6,8 +6,14 @@ A BepInEx 5 plugin for Graveyard Keeper 2. Garden seed selection displays one
 player, bags, and accessible zone storage. Garden fertilizer selection displays
 one "Fertilizers" inventory containing all owned fertilizer types. Already-applied
 fertilizers remain visible with their combined quantities, grayed out and
-unselectable. Non-fertilizers are excluded. Both actions retain the game's own
-selection, application, quantities, and consumption. Other actions are unaffected.
+unselectable. Non-fertilizers are excluded.
+
+Alchemy ingredient selection displays one "Alchemical Ingredients" inventory
+containing eligible ingredients and combined quantities. Native research and
+rune restrictions still apply, and the same ingredient can occupy multiple slots.
+Laboratory ingredient counters show total accessible stock rather than just the
+originally selected stack. All actions retain the game's own selection, crafting
+calculations, and consumption. Unsupported actions are unaffected.
 
 Configuration
 -------------
@@ -17,14 +23,23 @@ After the plugin first loads, BepInEx creates:
   [Actions]
   Seeds = true
   Fertilizers = true
+  Alchemical Ingredients = true
 
-Both options are enabled by default and independent. Set either option to false
-to use the original interface for that action. Existing Seeds settings are kept
-when the new Fertilizers entry is added. No configuration-manager plugin is
-required. Compatible managers expose the entries as "Seeds" and "Fertilizers".
+All three options are enabled by default and independent. Set an option to false
+to use the original interface for that action. Existing Seeds and Fertilizers
+settings are kept when the new entry is added. No configuration-manager plugin
+is required. Compatible managers expose the entries using these same names.
 A live setting change disables an open picker for that action on the next frame;
 enabling applies to the next opening. For manual file edits, close the game,
 edit the file, and launch again.
+
+Alchemical Ingredients controls BOTH the picker and laboratory counter correction.
+Its label correction refreshes an open laboratory when toggled. Disabling restores
+the original stack-based counters, including the game's known visual bug. Enabling
+consolidation applies on the next picker opening. Counters also refresh within
+about half a second when accessible ingredient stock changes while the lab is open.
+Every duplicate ingredient row uses the same total stock; the game's existing
+denominator accounts for how many slots use it (e.g. 100/100 for two slots x 50).
 
 Build prerequisites and paths
 ----------------------------
@@ -62,8 +77,10 @@ From this repository in PowerShell:
 
 The checks use the installed .NET 10 SDK and exercise aggregation, source identity,
 overflow recovery, snapshot changes, action detection, independent settings,
-disabled fertilizer visibility, and click-time availability checks. They do not
-load or execute the game. Integration details are in docs/IMPLEMENTATION.md.
+disabled fertilizer visibility, alchemy eligibility/repeated selection, and
+temporary laboratory quantity overrides including failure rollback. They do not
+load or execute the game. Integration details are in docs/IMPLEMENTATION.md and
+docs/ALCHEMY.md.
 
 Build output:
   bin/Release/net472/OnlyApplicableItems.dll
@@ -91,7 +108,7 @@ No build step installs the DLL, launches the game, or accesses save files.
 
 Manual validation checklist
 ---------------------------
-1. Confirm BepInEx/LogOutput.log shows the plugin loaded with both actions enabled.
+1. Confirm BepInEx/LogOutput.log shows the plugin and alchemy integration loaded.
 2. Open garden seed selection with eligible stacks split across player inventory,
    a bag, and zone storage. Confirm a single Seeds display with the exact total
    (for example, 20 + 35 + 50 = 105) and no ineligible entries.
@@ -114,17 +131,34 @@ Manual validation checklist
 9. Select a usable fertilizer. Verify exactly the game's recipe cost is consumed,
    including when the cost is distributed across stacks. Closing alone must
    consume nothing; selecting a fertilizer applies immediately, unlike seeds.
-10. Check both toggles in all four combinations, including live changes. Toggling
+10. Check the garden toggles in all four combinations, including live changes. Toggling
     Seeds must not affect an open Fertilizers picker, or vice versa. Check repeated
     transitions between both pickers and stock/availability changes while open.
 11. Open organ, alchemy, and normal inventory screens immediately after both
-    consolidated pickers. They must keep their original behavior.
+    consolidated garden pickers. Organ selection and normal inventory management
+    must retain their original behavior; alchemy follows its own option.
+12. Open ingredient selection in small and larger laboratories. Confirm only
+    eligible ingredients, correct totals across player/bags/storage, and the
+    original research/rune restrictions when adding or replacing a slot.
+13. Select the same ingredient in two or three slots. With 100 units across two
+    stacks of 50, two matching slots and a batch of 50 should each show 100/100
+    without a false red warning. A requirement above 100 should still turn red.
+    Check the output counter remains the batch size, including after stock changes.
+14. Verify selection alone consumes nothing and actual crafting consumes exactly
+    the original requirements across real stacks. Check boosts and flask limits
+    retain their normal behavior. No recipe or consumption code is patched.
+15. Check all eight combinations of the three toggles. Disable/re-enable Alchemical
+    Ingredients with the lab open and verify native/corrected counters switch
+    without losing selections or resetting batch size. Check stock depletion and
+    replenishment, closing/reopening, scene changes, and unsupported pickers.
 
-The prototype falls back to vanilla for unexpected instance properties on garden items
+The prototype falls back to vanilla for unexpected instance properties on selectable items
 or an unsupported picker contract. These cases appear once per failure category
-in LogOutput.log. The garden actions consume by definition ID and cannot select
+in LogOutput.log. The supported actions consume by definition ID and cannot select
 a particular same-ID property variant; the mod does not invent consumption rules.
 
-The Seeds implementation was tested in-game before the Fertilizers extension.
-The extension and seed regression checks still need manual in-game validation.
-Do not treat a successful build or logic checks as proof of Unity UI integration.
+Seeds and Fertilizers were tested in-game before the alchemy extension. Alchemy
+and regression checks of all three actions still need manual in-game validation.
+An alchemy reflection/display failure disables that feature for the current plugin
+session and logs a warning; restart after resolving it. Garden features remain
+available. Do not treat a successful build or logic checks as proof of UI integration.
