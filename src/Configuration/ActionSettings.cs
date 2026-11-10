@@ -34,7 +34,7 @@ internal sealed class ActionSettings
             "Fluids blocked by the game's rules remain visible but disabled. " +
             "Disabling restores an open embalming picker on the next frame. Enabling takes effect the next time it opens.");
         GraveDecorations = config.Bind("Actions", "Grave Decorations", true,
-            "Combine grave decorations into Headstones or Grave Fences inventories, preserving the game's eligibility and crafting rules. " +
+            "Combine grave decorations into Tombstones or Fences inventories, preserving the game's eligibility and crafting rules. " +
             "Controls both categories independently of other actions. Disabling restores an open decoration picker on the next frame. " +
             "Enabling takes effect the next time it opens.");
     }

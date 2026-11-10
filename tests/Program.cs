@@ -259,7 +259,7 @@ internal static partial class Program
             new PickerPolicy<Stack>("Alchemical Ingredients", () => settings[2], _ => true, _ => true, _ => { }),
             new PickerPolicy<Stack>("Brains", () => settings[3], _ => true, _ => true, _ => { }),
             new PickerPolicy<Stack>("Embalming Fluids", () => settings[4], _ => true, _ => true, _ => { }),
-            new PickerPolicy<Stack>("Headstones", () => settings[5], _ => true, _ => true, _ => { })
+            new PickerPolicy<Stack>("Tombstones", () => settings[5], _ => true, _ => true, _ => { })
         };
         for (int combination = 0; combination < (1 << settings.Length); combination++)
         {

@@ -31,11 +31,11 @@ internal sealed class GraveDecorationPickerContract
         switch (owner.GraveElementType)
         {
             case GraveElementType.Top:
-                title = "Headstones";
+                title = "Tombstones";
                 group = GameConsts.Groups.TOMBSTONE_ITEM_GROUP;
                 break;
             case GraveElementType.Bot:
-                title = "Grave Fences";
+                title = "Fences";
                 group = GameConsts.Groups.FENCE_ITEM_GROUP;
                 break;
             default:

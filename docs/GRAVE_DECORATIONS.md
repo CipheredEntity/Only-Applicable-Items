@@ -1,7 +1,7 @@
 # Grave Decorations integration
 
-`[Actions] Grave Decorations = true` independently enables both "Headstones" and
-"Grave Fences". The setting is shared by the two categories and preserves existing
+`[Actions] Grave Decorations = true` independently enables both "Tombstones" and
+"Fences". The setting is shared by the two categories and preserves existing
 configuration values for all other features. Disabling restores an open decoration
 picker on the next plugin frame; enabling applies on its next opening.
 
@@ -75,7 +75,7 @@ metadata loading, without executing game code.
 Manual in-game checklist:
 
 1. Confirm the Grave Decorations startup log and default-enabled configuration.
-2. Open each empty slot; verify Headstones and Grave Fences, respectively, with
+2. Open each empty slot; verify Tombstones and Fences, respectively, with
    only the correct category and exact totals across player/bags/zone storage.
 3. Check full-ID variants, empty results, mouse/controller navigation, scrolling,
    tooltips, cancellation, depletion, and repeated openings.

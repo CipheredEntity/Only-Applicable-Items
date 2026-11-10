@@ -73,7 +73,7 @@ Action-specific contracts create independent PickerPolicy<Item> objects:
 | Alchemical Ingredients | Native type/research conditions via game survey APIs | IsItemValidForMix | Alchemical Ingredients |
 | Body Parts | Matching ItemType, including disabled entries | CanInsertOrgan or CanChangeOrgan | Body Parts / six category titles |
 | Embalming Fluids | ItemType.Embalm, including disabled entries | CanEmbalm | Embalming Fluids |
-| Grave Decorations | gravetop or gravebot group | IsGraveItem | Grave Decorations / Headstones or Grave Fences |
+| Grave Decorations | gravetop or gravebot group | IsGraveItem | Grave Decorations / Tombstones or Fences |
 
 The session excludes empty stacks for all policies. Each policy rejects instance
 properties, contents, internal inventory capacity, bag status, or durability.

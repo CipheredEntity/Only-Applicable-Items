@@ -30,7 +30,7 @@ quantities from the same accessible sources. Unusable fluids remain visible but
 disabled. The game retains its normal corpse/zombie rules, application effects,
 and immediate consumption of one real source item when a fluid is selected.
 
-Individual grave decoration selection displays "Headstones" or "Grave Fences",
+Individual grave decoration selection displays "Tombstones" or "Fences",
 with equivalent definitions and their quantities combined across accessible
 inventories. Native eligibility and craft selection remain unchanged. Occupied
 slots still require the normal removal operation before installing a replacement.
@@ -50,7 +50,7 @@ After the plugin first loads, BepInEx creates:
 
 All six options are enabled by default and independent. Body Parts controls all
 six body-part categories and both insertion and replacement. Grave Decorations
-controls both Headstones and Grave Fences. Set an option to false to use
+controls both Tombstones and Fences. Set an option to false to use
 the original interface for that action. Existing settings are kept when the new
 entry is added. No configuration-manager plugin
 is required. Compatible managers expose the entries using these same names.
@@ -202,7 +202,7 @@ Manual validation checklist
     one-item consumption, cancellation, special zombie-effect fluids, and live
     Embalming Fluids toggle changes. See docs/EMBALMING.md for native limitations
     and a detailed checklist.
-18. Open both empty grave-decoration slots. Confirm Headstones/Grave Fences titles,
+18. Open both empty grave-decoration slots. Confirm Tombstones/Fences titles,
     exact totals across player/bags/storage, separate variants, normal craft costs,
     cancellation, and live Grave Decorations changes. Remove and replace existing
     decorations through the original flow. See docs/GRAVE_DECORATIONS.md.

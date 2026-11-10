@@ -28,7 +28,7 @@ internal static partial class Program
         bool enabled = true;
         var contract = CreateGraveDecorationContract(() => enabled);
         var policies = new System.Collections.Generic.List<PickerPolicy<Item>>();
-        foreach (var entry in new[] { (GraveElementType.Top, "Headstones"), (GraveElementType.Bot, "Grave Fences") })
+        foreach (var entry in new[] { (GraveElementType.Top, "Tombstones"), (GraveElementType.Bot, "Fences") })
         {
             var owner = new UIGraveElementWidgetData(entry.Item1);
             var predicate = owner.Predicate;
