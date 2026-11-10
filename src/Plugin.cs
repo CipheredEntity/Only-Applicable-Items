@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using BepInEx;
 using HarmonyLib;
 using OnlyApplicableItems.Configuration;
+using OnlyApplicableItems.Core;
 using OnlyApplicableItems.Integration;
 using OnlyApplicableItems.UI;
 
@@ -13,7 +14,7 @@ public sealed class Plugin : BaseUnityPlugin
 {
     public const string Guid = "ciphe.gk2.onlyapplicableitems";
     public const string Name = "Only Applicable Items";
-    public const string Version = "0.3.1";
+    public const string Version = "0.4.0";
     internal static Plugin? Instance { get; private set; }
     internal ActionSettings Settings { get; private set; } = null!;
     private readonly List<ApplicableItemsSession> sessions = new List<ApplicableItemsSession>();
@@ -21,6 +22,7 @@ public sealed class Plugin : BaseUnityPlugin
     private Harmony? harmony;
     private Harmony? alchemyHarmony;
     private GardenPickerContract? contract;
+    private BodyPartPickerContract? bodyParts;
     internal AlchemyFeatures? Alchemy { get; private set; }
 
     private void Awake()
@@ -47,7 +49,24 @@ public sealed class Plugin : BaseUnityPlugin
             WarnOnce("startup", "The game's picker contract is not supported; consolidation is inactive. " + exception);
         }
         if (contract != null)
+        {
             InitializeAlchemy();
+            InitializeBodyParts();
+        }
+    }
+
+    private void InitializeBodyParts()
+    {
+        try
+        {
+            bodyParts = new BodyPartPickerContract(() => Settings.BodyParts.Value, contract!.ValidatePlainItem);
+            Logger.LogInfo("Body Parts ready. Enabled: " + Settings.BodyParts.Value);
+        }
+        catch (Exception exception)
+        {
+            bodyParts = null;
+            WarnOnce("body-parts-startup", "Body Parts is unavailable; existing actions remain supported. " + exception);
+        }
     }
 
     private void InitializeAlchemy()
@@ -78,19 +97,24 @@ public sealed class Plugin : BaseUnityPlugin
     {
         if (contract == null)
             return;
-        var policy = contract.GetPolicy(callback, predicate, Settings) ?? Alchemy?.GetPolicy(callback, predicate);
-        if (policy == null || !policy.IsEnabled)
-            return;
+        PickerPolicy<Item>? policy = null;
         ApplicableItemsSession? session = null;
         try
         {
+            // Discovery includes private-field reads for autopsy pickers. If it fails,
+            // the constructor's original inventory sections must remain usable.
+            policy = contract.GetPolicy(callback, predicate, Settings) ?? Alchemy?.GetPolicy(callback, predicate)
+                ?? bodyParts?.GetPolicy(callback, predicate);
+            if (policy == null || !policy.IsEnabled)
+                return;
             session = new ApplicableItemsSession(this, policy, data, predicate);
             session.Commit();
         }
         catch (Exception exception)
         {
             session?.Dispose();
-            WarnOnce("construction-" + policy.Title, "Leaving the original " + policy.Title +
+            var title = policy?.Title ?? "item";
+            WarnOnce("construction-" + title, "Leaving the original " + title +
                 " picker in place because consolidation was unsafe. " + exception);
         }
     }

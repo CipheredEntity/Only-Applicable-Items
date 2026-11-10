@@ -1,4 +1,4 @@
-Only Applicable Items 0.3.1
+Only Applicable Items 0.4.0
 ===========================
 
 A BepInEx 5 plugin for Graveyard Keeper 2. Garden seed selection displays one
@@ -17,6 +17,14 @@ Laboratory ingredient counters show total accessible stock rather than just the
 originally selected stack. All actions retain the game's own selection, crafting
 calculations, and consumption. Unsupported actions are unaffected.
 
+Autopsy body-part insertion and zombie replacement display one category inventory:
+"Brains", "Hearts", "Guts", "Skulls", "Bones", or "Skins". Equivalent full item
+definitions have combined quantities; different qualities and other definition
+variants remain separate. Matching parts blocked by the native rules stay visible
+but disabled, with the original failure tooltips. Items remain in their real
+inventories; confirming the normal operation consumes one real source part.
+Ordinary corpses still require extraction before inserting into an occupied slot.
+
 Configuration
 -------------
 After the plugin first loads, BepInEx creates:
@@ -26,10 +34,12 @@ After the plugin first loads, BepInEx creates:
   Seeds = true
   Fertilizers = true
   Alchemical Ingredients = true
+  Body Parts = true
 
-All three options are enabled by default and independent. Set an option to false
-to use the original interface for that action. Existing Seeds and Fertilizers
-settings are kept when the new entry is added. No configuration-manager plugin
+All four options are enabled by default and independent. Body Parts controls all
+six categories and both insertion and replacement. Set an option to false to use
+the original interface for that action. Existing settings are kept when the new
+entry is added. No configuration-manager plugin
 is required. Compatible managers expose the entries using these same names.
 A live setting change disables an open picker for that action on the next frame;
 enabling applies to the next opening. For manual file edits, close the game,
@@ -42,6 +52,11 @@ consolidation applies on the next picker opening. Counters also refresh within
 about half a second when accessible ingredient stock changes while the lab is open.
 Every duplicate ingredient row uses the same total stock; the game's existing
 denominator accounts for how many slots use it (e.g. 100/100 for two slots x 50).
+
+Unexpected per-instance properties, durability, or contents cause a picker to
+fall back to the original interface rather than combining potentially distinct
+items. Body-part operations retain the game's original results and failure rules;
+the mod does not change how the game recreates an inserted part by definition.
 
 Build prerequisites and paths
 ----------------------------
@@ -80,9 +95,11 @@ From this repository in PowerShell:
 The checks use the installed .NET 10 SDK and exercise aggregation, source identity,
 overflow recovery, snapshot changes, action detection, independent settings,
 disabled fertilizer visibility, alchemy eligibility/repeated selection, and
-temporary laboratory quantity overrides including failure rollback. They do not
-load or execute the game. Integration details are in docs/IMPLEMENTATION.md and
-docs/ALCHEMY.md.
+temporary laboratory quantity overrides including failure rollback. Body-part
+checks run the production action contract with test-only stand-ins, covering
+both action pairs, all six titles, disabled entries, variant safety, live settings,
+and real source resolution. They do not load or execute the game. Integration
+details are in docs/IMPLEMENTATION.md, docs/ALCHEMY.md, and docs/BODY_PARTS.md.
 
 Build output:
   bin/Release/net472/OnlyApplicableItems.dll
@@ -152,18 +169,24 @@ Manual validation checklist
 14. Verify selection alone consumes nothing and actual crafting consumes exactly
     the original requirements across real stacks. Check boosts and flask limits
     retain their normal behavior. No recipe or consumption code is patched.
-15. Check all eight combinations of the three toggles. Disable/re-enable Alchemical
+15. Check all sixteen combinations of the four toggles. Disable/re-enable Alchemical
     Ingredients with the lab open and verify native/corrected counters switch
     without losing selections or resetting batch size. Check stock depletion and
     replenishment, closing/reopening, scene changes, and unsupported pickers.
+16. For all six body-part categories, check corpse insertion and zombie replacement,
+    combined quantities across player/bags/storage, distinct variants, blocked
+    entries and failure tooltips, confirmation consuming exactly one real part,
+    cancellation, and the independent Body Parts toggle. Check disabling while
+    its picker is open. The detailed checklist is in docs/BODY_PARTS.md.
 
-The prototype falls back to vanilla for unexpected instance properties on selectable items
+The mod falls back to vanilla for unexpected instance properties on included items
 or an unsupported picker contract. These cases appear once per failure category
-in LogOutput.log. The supported actions consume by definition ID and cannot select
-a particular same-ID property variant; the mod does not invent consumption rules.
+in LogOutput.log. Garden and alchemy actions consume by definition ID. Autopsy
+removes one real source item by UID, then recreates its result by definition ID;
+the mod does not invent instance comparisons or consumption rules.
 
-Seeds and Fertilizers were tested in-game before the alchemy extension. Alchemy
-and regression checks of all three actions still need manual in-game validation.
+Seeds, Fertilizers, and Alchemical Ingredients were tested in-game before the Body
+Parts extension. Body Parts and regression checks require manual in-game validation.
 An alchemy reflection/display failure disables that feature for the current plugin
 session and logs a warning; restart after resolving it. Garden features remain
 available. Do not treat a successful build or logic checks as proof of UI integration.

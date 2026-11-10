@@ -106,7 +106,7 @@ The checks execute production core policy, snapshot, and quantity-scope code wit
 plain test objects. They exercise repeated IDs, selection without reservations,
 predicate isolation, visible-but-disabled rune overflow/underflow entries,
 research/type hiding and native survey exceptions, availability-only refreshes,
-stale-click rejection, all eight setting combinations, corrected totals/colors under
+stale-click rejection, independent setting combinations, corrected totals/colors under
 a simulated native renderer, disabled-mode restoration, alias deduplication,
 counting/setter rollback, exception cleanup, and cleanup after one restore fails.
 They do not execute game assemblies or prove Harmony/Unity rendering behavior.

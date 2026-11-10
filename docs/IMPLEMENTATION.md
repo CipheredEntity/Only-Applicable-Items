@@ -48,7 +48,9 @@ the private item-property field's type:
    target is a slot closure, so comparing it to the predicate's target would
    incorrectly reject the native action. No compiler-generated names are used.
    Alchemy uses its exact UIAlchemyWindow.IsItemValidForMix predicate and preserves
-   the native slot closure. Unknown predicates, multicast delegates, and unsupported
+   the native slot closure. BodyPartPickerContract requires exact insertion or
+   replacement callback/predicate pairs on one UIAutopsyWindowData instance and
+   reads its validated selectedItemType field. Unknown predicates, multicast delegates, and unsupported
    actions use vanilla.
 2. Prefix on `InventoryWidget.OnRedraw`. It only handles the mod's
    `ApplicableInventoryWidgetData` subclass. Normal section data is untouched.
@@ -58,17 +60,20 @@ list of references to real representative stacks. Only that new list is filled;
 no inventory-add, merge, split, Count/UID assignment, or save operation is used
 to build the display. Quantities are checked integer sums, without stack caps.
 
-GardenPickerContract creates independent PickerPolicy<Item> objects:
+Action-specific contracts create independent PickerPolicy<Item> objects:
 
 | Action | Included in display | Native selectability | Live setting / title |
 | --- | --- | --- | --- |
 | Seeds | IsSeedValid | IsSeedValid | Seeds |
 | Fertilizers | Item.IsFertilizer | IsItemValid | Fertilizers |
 | Alchemical Ingredients | Native type/research conditions via game survey APIs | IsItemValidForMix | Alchemical Ingredients |
+| Body Parts | Matching ItemType, including disabled entries | CanInsertOrgan or CanChangeOrgan | Body Parts / six category titles |
 
-The session excludes empty stacks for both policies. Each policy rejects instance
+The session excludes empty stacks for all policies. Each policy rejects instance
 properties, contents, internal inventory capacity, bag status, or durability.
-All three actions consume by definition ID. Unknown variants cause the entire picker
+Garden/alchemy actions consume by definition ID; autopsy captures a real item's
+UID and removes one unit on craft confirmation, then recreates the result by ID.
+Unknown instance variants cause the entire picker
 to fall back rather than silently combine them, including when a visible
 fertilizer is currently disabled. Ordinary items group by their full definition
 ID, preserving definition-based quality differences.
@@ -83,7 +88,9 @@ Fresh snapshots only resolve selectable entries. This is essential for fertilize
 visibility alone must never authorize application, especially before cell.Draw
 can reset interaction state. Game callback exceptions are not caught and retried.
 The plugin never consumes items or changes bed perks. Native slot replacement,
-planting, application, mastery checks, and recipe quantities stay with the game.
+planting, application, mastery checks, recipe quantities, and autopsy operations
+stay with the game. See [BODY_PARTS.md](BODY_PARTS.md) for confirmation timing,
+variant safeguards, and the distinction between corpse insertion and zombie replacement.
 
 ## Refresh and lifetime
 
@@ -119,26 +126,33 @@ per-frame or per-item informational messages are emitted.
 ## Configuration and future scope
 
 Config.Bind creates independent `[Actions] Seeds = true`, `Fertilizers = true`,
-and `Alchemical Ingredients = true` entries. The keys are the GUI labels; no configuration-manager dependency or
+`Alchemical Ingredients = true`, and `Body Parts = true` entries. The keys are the GUI labels; no configuration-manager dependency or
 custom metadata type is required. Each policy reads only its own live setting.
 Disable takes effect on the next plugin frame for that action's open picker;
 enable takes effect when its next picker opens. Existing values are retained.
 The alchemy option also controls the laboratory counter correction described in
 [ALCHEMY.md](ALCHEMY.md); open laboratory labels respond to live toggle changes.
 
+Body Parts controls all six category titles and both autopsy picker paths through
+one live setting. Its separate initialization failure leaves other actions active.
 Future actions should get their own settings and explicit delegate registrations,
-then a reviewed selection policy. Do not remove the action gates: UID-based
-consumption and equipment transfers have different contracts.
+then a reviewed selection policy. Keep the action gates: each action's consumption
+and equipment transfers have different contracts.
 
 ## Remaining validation
 
 Successful compilation and the pure-logic checks do not validate Harmony runtime
 installation, Unity prefabs, pooled component behavior, or controller input.
-The user validated Seeds and Fertilizers in-game before the alchemy extension.
-The new alchemy path and regression testing still require in-game checks. Unit checks cover
+The user validated Seeds, Fertilizers, and Alchemical Ingredients in-game before
+the Body Parts extension. Body Parts and regression testing require in-game checks.
+Automated checks cover
 all existing aggregation cases plus fertilizer inclusion/disabled resolution,
 availability-only refreshes, stale selection rejection, live independent settings,
 slot-closure recognition, validation of disabled item variants, alchemy predicate
-isolation, repeated ingredients, and temporary quantity override cleanup.
+isolation, repeated ingredients, temporary quantity override cleanup, and the
+production body-part contract using test-only game stand-ins. The latter exercise
+both action pairs, all six categories, disabled entries, instance safety, real
+source resolution, and the shared live setting. Settings checks cover all sixteen
+combinations of the four independent options.
 The game and saves were not launched or modified during development. Follow the
 manual checklist in README.txt using the user's chosen in-game test setup.

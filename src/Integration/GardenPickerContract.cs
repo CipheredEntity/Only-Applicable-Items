@@ -49,8 +49,8 @@ internal sealed class GardenPickerContract
 
     internal void ValidatePlainItem(Item item)
     {
-        // The supported actions select/remove by definition ID. Unknown instance data cannot
-        // safely be represented as independently selectable variants by this action.
+        // Grouping uses the full definition ID. Reject unknown instance data even for
+        // UID-consuming autopsy actions, whose results recreate the part by definition.
         var instanceProperties = (Dictionary<Type, SerializedItemProperty>?)properties.GetValue(item);
         if (item.InventoryCount != 0 || item.InventorySize != 0 || item.IsBag || item.Definition.hasDurability ||
             (instanceProperties != null && instanceProperties.Count != 0))

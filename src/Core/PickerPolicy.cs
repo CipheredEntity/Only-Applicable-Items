@@ -3,8 +3,8 @@ using System.Collections.Generic;
 
 namespace OnlyApplicableItems.Core;
 
-// Visibility and selectability are deliberately independent: applied fertilizers
-// remain visible, while the original game predicate still controls interaction.
+// Visibility and selectability are deliberately independent: an action's relevant
+// items can remain visible while the native predicate disables interaction.
 internal sealed class PickerPolicy<T> where T : class
 {
     public string Title { get; }

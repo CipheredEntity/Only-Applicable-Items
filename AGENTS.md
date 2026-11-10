@@ -24,6 +24,8 @@ Prioritize the current game's official modding documentation over older third-pa
 
 - Keep support for individual gameplay actions isolated and independently configurable.
 
+- Keep virtual inventory display names centralized and independent of internal inventory identifiers and gameplay logic.
+
 - Leave unsupported item-selection interfaces unchanged.
 
 - Reuse the game's existing item eligibility and consumption mechanisms wherever possible.

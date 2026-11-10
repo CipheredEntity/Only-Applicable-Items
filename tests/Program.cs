@@ -37,7 +37,15 @@ internal static partial class Program
             LaboratoryCountingFailureLeavesAllCachesUntouched,
             LaboratorySetterFailureRollsBackAllAppliedValues,
             LaboratoryRestoreAttemptsEveryCell,
-            DisablingAlchemyRestoresNativeCounters
+            DisablingAlchemyRestoresNativeCounters,
+            BodyPartsRecognizeBothActionsAndAllSixTitles,
+            BodyPartsRejectUnrelatedAndMismatchedDelegates,
+            BodyPartsRejectUnsupportedCategories,
+            BodyPartsAggregateOnlyTheirCategoryAndRetainVariants,
+            BodyPartsKeepBlockedItemsVisibleAndRevalidateSelection,
+            BodyPartsRejectInstanceDataIncludingDisabledParts,
+            BodyPartsResolveCurrentRealSourcesForUidConsumption,
+            BodyPartsShareOneIndependentLiveToggle
         };
         foreach (var check in checks)
         {
@@ -235,20 +243,27 @@ internal static partial class Program
         bool seedsEnabled = true;
         bool fertilizersEnabled = true;
         bool alchemyEnabled = true;
+        bool bodyPartsEnabled = true;
         var seeds = new PickerPolicy<Stack>("Seeds", () => seedsEnabled, _ => true, _ => true, _ => { });
         var fertilizers = new PickerPolicy<Stack>("Fertilizers", () => fertilizersEnabled, _ => true, _ => true, _ => { });
         var alchemy = new PickerPolicy<Stack>("Alchemical Ingredients", () => alchemyEnabled, _ => true, _ => true, _ => { });
+        var bodyParts = new PickerPolicy<Stack>("Brains", () => bodyPartsEnabled, _ => true, _ => true, _ => { });
         foreach (bool seedsValue in new[] { false, true })
         {
             foreach (bool fertilizersValue in new[] { false, true })
             {
                 foreach (bool alchemyValue in new[] { false, true })
                 {
-                    seedsEnabled = seedsValue;
-                    fertilizersEnabled = fertilizersValue;
-                    alchemyEnabled = alchemyValue;
-                    Assert(seeds.IsEnabled == seedsValue && fertilizers.IsEnabled == fertilizersValue && alchemy.IsEnabled == alchemyValue,
-                        "Each action must read its own live setting in all eight combinations.");
+                    foreach (bool bodyPartsValue in new[] { false, true })
+                    {
+                        seedsEnabled = seedsValue;
+                        fertilizersEnabled = fertilizersValue;
+                        alchemyEnabled = alchemyValue;
+                        bodyPartsEnabled = bodyPartsValue;
+                        Assert(seeds.IsEnabled == seedsValue && fertilizers.IsEnabled == fertilizersValue &&
+                            alchemy.IsEnabled == alchemyValue && bodyParts.IsEnabled == bodyPartsValue,
+                            "Each action must read its own live setting in all sixteen combinations.");
+                    }
                 }
             }
         }

@@ -13,5 +13,6 @@
     <Compile Include="..\src\Core\PickerPolicy.cs" Link="Core\PickerPolicy.cs" />
     <Compile Include="..\src\Core\QuantityDisplayScope.cs" Link="Core\QuantityDisplayScope.cs" />
     <Compile Include="..\src\Core\AlchemyVisibility.cs" Link="Core\AlchemyVisibility.cs" />
+    <Compile Include="..\src\Integration\BodyPartPickerContract.cs" Link="Integration\BodyPartPickerContract.cs" />
   </ItemGroup>
 </Project>
