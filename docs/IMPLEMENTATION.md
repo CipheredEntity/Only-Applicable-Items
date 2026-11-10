@@ -52,6 +52,8 @@ the private item-property field's type:
    replacement callback/predicate pairs on one UIAutopsyWindowData instance and
    reads its validated selectedItemType field. EmbalmingPickerContract requires
    TryEmbalm/CanEmbalm on the same UIEmbalmWindowData instance.
+   GraveDecorationPickerContract requires OnGraveItemSelected/IsGraveItem on one
+   UIGraveElementWidgetData and reads its public GraveElementType property.
    Unknown predicates, multicast delegates, and unsupported
    actions use vanilla.
 2. Prefix on `InventoryWidget.OnRedraw`. It only handles the mod's
@@ -71,6 +73,7 @@ Action-specific contracts create independent PickerPolicy<Item> objects:
 | Alchemical Ingredients | Native type/research conditions via game survey APIs | IsItemValidForMix | Alchemical Ingredients |
 | Body Parts | Matching ItemType, including disabled entries | CanInsertOrgan or CanChangeOrgan | Body Parts / six category titles |
 | Embalming Fluids | ItemType.Embalm, including disabled entries | CanEmbalm | Embalming Fluids |
+| Grave Decorations | gravetop or gravebot group | IsGraveItem | Grave Decorations / Headstones or Grave Fences |
 
 The session excludes empty stacks for all policies. Each policy rejects instance
 properties, contents, internal inventory capacity, bag status, or durability.
@@ -78,6 +81,8 @@ Garden/alchemy actions consume by definition ID; autopsy captures a real item's
 UID and removes one unit on craft confirmation, then recreates the result by ID.
 Embalming consumes one real item by UID immediately on selection and leaves craft
 effects/definition-based pocket insertion to the native callback and completion.
+Grave decorations choose a native craft by full definition ID; the craft system
+removes recipe quantities through its own multi-inventory, not the clicked UID.
 Unknown instance variants cause the entire picker
 to fall back rather than silently combine them, including when a visible
 fertilizer is currently disabled. Ordinary items group by their full definition
@@ -98,6 +103,8 @@ stay with the game. See [BODY_PARTS.md](BODY_PARTS.md) for confirmation timing,
 variant safeguards, and the distinction between corpse insertion and zombie replacement.
 See [EMBALMING.md](EMBALMING.md) for fluid rules, special zombie effects, and native
 full-pocket/craft-start behavior, all left unchanged.
+See [GRAVE_DECORATIONS.md](GRAVE_DECORATIONS.md) for ID-based craft selection,
+native category-only eligibility, and the unchanged removal/replacement flow.
 
 ## Refresh and lifetime
 
@@ -133,7 +140,8 @@ per-frame or per-item informational messages are emitted.
 ## Configuration and future scope
 
 Config.Bind creates independent `[Actions] Seeds = true`, `Fertilizers = true`,
-`Alchemical Ingredients = true`, `Body Parts = true`, and `Embalming Fluids = true`
+`Alchemical Ingredients = true`, `Body Parts = true`, `Embalming Fluids = true`,
+and `Grave Decorations = true`
 entries. The keys are the GUI labels; no configuration-manager dependency or
 custom metadata type is required. Each policy reads only its own live setting.
 Disable takes effect on the next plugin frame for that action's open picker;
@@ -144,6 +152,7 @@ The alchemy option also controls the laboratory counter correction described in
 Body Parts controls all six category titles and both autopsy picker paths through
 one live setting. Its separate initialization failure leaves other actions active.
 Embalming Fluids also has an independent contract initialization and live setting.
+Grave Decorations has the same isolation, with one live setting for both titles.
 Future actions should get their own settings and explicit delegate registrations,
 then a reviewed selection policy. Keep the action gates: each action's consumption
 and equipment transfers have different contracts.
@@ -152,8 +161,9 @@ and equipment transfers have different contracts.
 
 Successful compilation and the pure-logic checks do not validate Harmony runtime
 installation, Unity prefabs, pooled component behavior, or controller input.
-The user validated Seeds, Fertilizers, and Alchemical Ingredients in-game before
-the Body Parts extension. Body Parts and regression testing require in-game checks.
+The user validated Seeds, Fertilizers, Alchemical Ingredients, Body Parts, and
+Embalming Fluids in-game before the Grave Decorations extension. Grave Decorations
+and regression testing require in-game checks.
 Automated checks cover
 all existing aggregation cases plus fertilizer inclusion/disabled resolution,
 availability-only refreshes, stale selection rejection, live independent settings,
@@ -164,7 +174,9 @@ both action pairs, all six categories, disabled entries, instance safety, real
 source resolution, and the shared live setting. The production embalming contract
 is checked with test-only game stand-ins for action isolation, disabled visibility,
 variant safety, live native eligibility, real sources, and the independent setting.
-Embalming still requires in-game validation. Settings checks cover all 32
-combinations of the five independent options.
+The production grave-decoration contract is checked with test-only game stand-ins
+for both groups/titles, action ownership, instance/variant safety, native disabled
+states, real sources, and its shared setting. Settings checks cover all 64
+combinations of the six independent options.
 The game and saves were not launched or modified during development. Follow the
 manual checklist in README.txt using the user's chosen in-game test setup.

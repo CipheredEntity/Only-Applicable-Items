@@ -9,6 +9,7 @@ public sealed class ItemDef
 {
     public ItemType type;
     public bool isOrganMistake;
+    public System.Collections.Generic.List<string> itemGroupIds = new System.Collections.Generic.List<string>();
 }
 
 public sealed class Item

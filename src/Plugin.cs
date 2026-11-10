@@ -14,7 +14,7 @@ public sealed class Plugin : BaseUnityPlugin
 {
     public const string Guid = "ciphe.gk2.onlyapplicableitems";
     public const string Name = "Only Applicable Items";
-    public const string Version = "0.5.0";
+    public const string Version = "0.6.0";
     internal static Plugin? Instance { get; private set; }
     internal ActionSettings Settings { get; private set; } = null!;
     private readonly List<ApplicableItemsSession> sessions = new List<ApplicableItemsSession>();
@@ -24,6 +24,7 @@ public sealed class Plugin : BaseUnityPlugin
     private GardenPickerContract? contract;
     private BodyPartPickerContract? bodyParts;
     private EmbalmingPickerContract? embalming;
+    private GraveDecorationPickerContract? graveDecorations;
     internal AlchemyFeatures? Alchemy { get; private set; }
 
     private void Awake()
@@ -54,6 +55,21 @@ public sealed class Plugin : BaseUnityPlugin
             InitializeAlchemy();
             InitializeBodyParts();
             InitializeEmbalming();
+            InitializeGraveDecorations();
+        }
+    }
+
+    private void InitializeGraveDecorations()
+    {
+        try
+        {
+            graveDecorations = new GraveDecorationPickerContract(() => Settings.GraveDecorations.Value, contract!.ValidatePlainItem);
+            Logger.LogInfo("Grave Decorations ready. Enabled: " + Settings.GraveDecorations.Value);
+        }
+        catch (Exception exception)
+        {
+            graveDecorations = null;
+            WarnOnce("grave-decorations-startup", "Grave Decorations is unavailable; existing actions remain supported. " + exception);
         }
     }
 
@@ -120,7 +136,8 @@ public sealed class Plugin : BaseUnityPlugin
             // Discovery includes private-field reads for autopsy pickers. If it fails,
             // the constructor's original inventory sections must remain usable.
             policy = contract.GetPolicy(callback, predicate, Settings) ?? Alchemy?.GetPolicy(callback, predicate)
-                ?? bodyParts?.GetPolicy(callback, predicate) ?? embalming?.GetPolicy(callback, predicate);
+                ?? bodyParts?.GetPolicy(callback, predicate) ?? embalming?.GetPolicy(callback, predicate)
+                ?? graveDecorations?.GetPolicy(callback, predicate);
             if (policy == null || !policy.IsEnabled)
                 return;
             session = new ApplicableItemsSession(this, policy, data, predicate);

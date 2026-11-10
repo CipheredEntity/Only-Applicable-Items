@@ -9,6 +9,7 @@ internal sealed class ActionSettings
     public ConfigEntry<bool> AlchemicalIngredients { get; }
     public ConfigEntry<bool> BodyParts { get; }
     public ConfigEntry<bool> EmbalmingFluids { get; }
+    public ConfigEntry<bool> GraveDecorations { get; }
 
     public ActionSettings(ConfigFile config)
     {
@@ -32,5 +33,9 @@ internal sealed class ActionSettings
             "Combine owned embalming fluids into one Embalming Fluids inventory. " +
             "Fluids blocked by the game's rules remain visible but disabled. " +
             "Disabling restores an open embalming picker on the next frame. Enabling takes effect the next time it opens.");
+        GraveDecorations = config.Bind("Actions", "Grave Decorations", true,
+            "Combine grave decorations into Headstones or Grave Fences inventories, preserving the game's eligibility and crafting rules. " +
+            "Controls both categories independently of other actions. Disabling restores an open decoration picker on the next frame. " +
+            "Enabling takes effect the next time it opens.");
     }
 }

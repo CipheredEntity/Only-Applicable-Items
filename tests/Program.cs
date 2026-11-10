@@ -50,7 +50,13 @@ internal static partial class Program
             EmbalmingConsolidatesFluidsIncludingBlockedVariants,
             EmbalmingAvailabilityChangesRevalidateWithoutStockChanges,
             EmbalmingRejectsInstanceDataIncludingDisabledFluids,
-            EmbalmingResolvesRealSurvivingSourceAndLiveToggle
+            EmbalmingResolvesRealSurvivingSourceAndLiveToggle,
+            GraveDecorationsRecognizeBothTitlesAndSharedToggle,
+            GraveDecorationsRejectUnrelatedContextsAndCategories,
+            GraveDecorationsAggregateOnlyTheirGroupAndKeepVariants,
+            GraveDecorationsPreserveNativeAvailabilityAndRefresh,
+            GraveDecorationsRejectInstanceDataIncludingDisabledItems,
+            GraveDecorationsResolveRealSourcesWithoutChangingDefinitions
         };
         foreach (var check in checks)
         {
@@ -245,38 +251,24 @@ internal static partial class Program
 
     private static void ActionSettingsRemainIndependent()
     {
-        bool seedsEnabled = true;
-        bool fertilizersEnabled = true;
-        bool alchemyEnabled = true;
-        bool bodyPartsEnabled = true;
-        bool embalmingEnabled = true;
-        var seeds = new PickerPolicy<Stack>("Seeds", () => seedsEnabled, _ => true, _ => true, _ => { });
-        var fertilizers = new PickerPolicy<Stack>("Fertilizers", () => fertilizersEnabled, _ => true, _ => true, _ => { });
-        var alchemy = new PickerPolicy<Stack>("Alchemical Ingredients", () => alchemyEnabled, _ => true, _ => true, _ => { });
-        var bodyParts = new PickerPolicy<Stack>("Brains", () => bodyPartsEnabled, _ => true, _ => true, _ => { });
-        var embalming = new PickerPolicy<Stack>("Embalming Fluids", () => embalmingEnabled, _ => true, _ => true, _ => { });
-        foreach (bool seedsValue in new[] { false, true })
+        var settings = new bool[6];
+        var policies = new[]
         {
-            foreach (bool fertilizersValue in new[] { false, true })
+            new PickerPolicy<Stack>("Seeds", () => settings[0], _ => true, _ => true, _ => { }),
+            new PickerPolicy<Stack>("Fertilizers", () => settings[1], _ => true, _ => true, _ => { }),
+            new PickerPolicy<Stack>("Alchemical Ingredients", () => settings[2], _ => true, _ => true, _ => { }),
+            new PickerPolicy<Stack>("Brains", () => settings[3], _ => true, _ => true, _ => { }),
+            new PickerPolicy<Stack>("Embalming Fluids", () => settings[4], _ => true, _ => true, _ => { }),
+            new PickerPolicy<Stack>("Headstones", () => settings[5], _ => true, _ => true, _ => { })
+        };
+        for (int combination = 0; combination < (1 << settings.Length); combination++)
+        {
+            for (int i = 0; i < settings.Length; i++)
+                settings[i] = (combination & (1 << i)) != 0;
+            for (int i = 0; i < policies.Length; i++)
             {
-                foreach (bool alchemyValue in new[] { false, true })
-                {
-                    foreach (bool bodyPartsValue in new[] { false, true })
-                    {
-                        foreach (bool embalmingValue in new[] { false, true })
-                        {
-                            seedsEnabled = seedsValue;
-                            fertilizersEnabled = fertilizersValue;
-                            alchemyEnabled = alchemyValue;
-                            bodyPartsEnabled = bodyPartsValue;
-                            embalmingEnabled = embalmingValue;
-                            Assert(seeds.IsEnabled == seedsValue && fertilizers.IsEnabled == fertilizersValue &&
-                                alchemy.IsEnabled == alchemyValue && bodyParts.IsEnabled == bodyPartsValue &&
-                                embalming.IsEnabled == embalmingValue,
-                                "Each action must read its own live setting in all thirty-two combinations.");
-                        }
-                    }
-                }
+                Assert(policies[i].IsEnabled == ((combination & (1 << i)) != 0),
+                    "Each action must read its own live setting in all sixty-four combinations.");
             }
         }
     }

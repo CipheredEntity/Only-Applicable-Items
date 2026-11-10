@@ -1,4 +1,4 @@
-Only Applicable Items 0.5.0
+Only Applicable Items 0.6.0
 ===========================
 
 A BepInEx 5 plugin for Graveyard Keeper 2. Garden seed selection displays one
@@ -30,6 +30,11 @@ quantities from the same accessible sources. Unusable fluids remain visible but
 disabled. The game retains its normal corpse/zombie rules, application effects,
 and immediate consumption of one real source item when a fluid is selected.
 
+Individual grave decoration selection displays "Headstones" or "Grave Fences",
+with equivalent definitions and their quantities combined across accessible
+inventories. Native eligibility and craft selection remain unchanged. Occupied
+slots still require the normal removal operation before installing a replacement.
+
 Configuration
 -------------
 After the plugin first loads, BepInEx creates:
@@ -41,9 +46,11 @@ After the plugin first loads, BepInEx creates:
   Alchemical Ingredients = true
   Body Parts = true
   Embalming Fluids = true
+  Grave Decorations = true
 
-All five options are enabled by default and independent. Body Parts controls all
-six categories and both insertion and replacement. Set an option to false to use
+All six options are enabled by default and independent. Body Parts controls all
+six body-part categories and both insertion and replacement. Grave Decorations
+controls both Headstones and Grave Fences. Set an option to false to use
 the original interface for that action. Existing settings are kept when the new
 entry is added. No configuration-manager plugin
 is required. Compatible managers expose the entries using these same names.
@@ -108,6 +115,9 @@ and real source resolution. They do not load or execute the game. Integration
 details are in docs/IMPLEMENTATION.md, docs/ALCHEMY.md, docs/BODY_PARTS.md, and
 docs/EMBALMING.md. Embalming checks exercise the production contract with test-only
 game stand-ins and the shared snapshot logic; no game assemblies are executed.
+Grave decoration checks cover both titles/groups, the shared live toggle, exact
+action isolation, variant/instance safety, disabled visibility, and real sources.
+See docs/GRAVE_DECORATIONS.md for integration details and in-game validation.
 
 Build output:
   bin/Release/net472/OnlyApplicableItems.dll
@@ -177,7 +187,8 @@ Manual validation checklist
 14. Verify selection alone consumes nothing and actual crafting consumes exactly
     the original requirements across real stacks. Check boosts and flask limits
     retain their normal behavior. No recipe or consumption code is patched.
-15. Check all 32 combinations of the five toggles. Disable/re-enable Alchemical
+15. Check the six independent toggles (automated checks cover all 64 combinations).
+    Disable/re-enable Alchemical
     Ingredients with the lab open and verify native/corrected counters switch
     without losing selections or resetting batch size. Check stock depletion and
     replenishment, closing/reopening, scene changes, and unsupported pickers.
@@ -191,6 +202,10 @@ Manual validation checklist
     one-item consumption, cancellation, special zombie-effect fluids, and live
     Embalming Fluids toggle changes. See docs/EMBALMING.md for native limitations
     and a detailed checklist.
+18. Open both empty grave-decoration slots. Confirm Headstones/Grave Fences titles,
+    exact totals across player/bags/storage, separate variants, normal craft costs,
+    cancellation, and live Grave Decorations changes. Remove and replace existing
+    decorations through the original flow. See docs/GRAVE_DECORATIONS.md.
 
 The mod falls back to vanilla for unexpected instance properties on included items
 or an unsupported picker contract. These cases appear once per failure category
@@ -199,9 +214,9 @@ removes one real source item by UID, then recreates its result by definition ID;
 embalming also consumes by UID and uses definition-based results. The mod does not
 invent instance comparisons or consumption rules.
 
-Seeds, Fertilizers, and Alchemical Ingredients were tested in-game before the Body
-Parts extension. Body Parts and regression checks require manual in-game validation.
-Embalming Fluids also requires in-game validation; automated checks do not prove
+Seeds, Fertilizers, Alchemical Ingredients, Body Parts, and Embalming Fluids were
+tested in-game before the Grave Decorations extension. Grave Decorations and
+regression checks require manual in-game validation; automated checks do not prove
 Unity rendering, native craft effects, or Harmony runtime behavior.
 An alchemy reflection/display failure disables that feature for the current plugin
 session and logs a warning; restart after resolving it. Garden features remain
