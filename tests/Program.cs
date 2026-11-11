@@ -75,7 +75,15 @@ internal static partial class Program
             EquipmentEquippedComparisonUsesFullIdAndCorrectSlot,
             EquipmentEquippedChangesRefreshAndRejectStaleSelections,
             EquipmentMatchingEquippedIdsPreserveSafetyAndNativeRules,
-            VirtualInventoryViewUsesPolicySelectability
+            VirtualInventoryViewUsesPolicySelectability,
+            PickerIdentitiesPreserveAllDefaultTitles,
+            ResurrectionRequiresOpeningScopeAndMatchingNativeOwners,
+            ResurrectionOpeningFinalizerRestoresContextAfterExceptionsAndNesting,
+            ResurrectionAggregatesCollarsIncludingUnsuitableVariants,
+            ResurrectionRevalidatesNativeEligibilityAndVirtualDisabledCells,
+            ResurrectionRejectsUnexpectedInstanceDataEvenWhenDisabled,
+            ResurrectionPassesARealSurvivingSourceForDelayedNativeConsumption,
+            ResurrectionConfigurationDefaultsAndLiveToggleRemainIndependent
         };
         foreach (var check in checks)
         {
@@ -199,7 +207,7 @@ internal static partial class Program
         var appliedInBag = new Stack("fertilizer_applied", 35, fertilizer: true);
         var usable = new Stack("fertilizer_usable", 50, fertilizer: true);
         var irrelevant = new Stack("stone", 99);
-        var policy = new PickerPolicy<Stack>("Fertilizers", () => true,
+        var policy = new PickerPolicy<Stack>(PickerId.Fertilizers, () => true,
             item => item.IsFertilizer, item => item.IsFertilizer && item.Id != applied.Id, _ => { });
         var snapshot = PickerSnapshot<Stack>.Build(new[]
         {
@@ -222,7 +230,7 @@ internal static partial class Program
         var valid = new Stack("seed_valid", 10);
         var invalid = new Stack("seed_invalid", 20);
         Func<Stack, bool> nativeSeedPredicate = item => item.Id == valid.Id;
-        var policy = new PickerPolicy<Stack>("Seeds", () => true,
+        var policy = new PickerPolicy<Stack>(PickerId.Seeds, () => true,
             nativeSeedPredicate, nativeSeedPredicate, _ => { });
         var snapshot = PickerSnapshot<Stack>.Build(new[] { Source(owner, valid), Source(owner, invalid) }, policy);
         Assert(snapshot.Groups.Count == 1 && snapshot.Groups[0].Key == valid.Id,
@@ -236,7 +244,7 @@ internal static partial class Program
         var fertilizer = new Stack("fertilizer", 10, fertilizer: true);
         var sources = new[] { Source(new object(), fertilizer) };
         bool applied = true;
-        var policy = new PickerPolicy<Stack>("Fertilizers", () => true,
+        var policy = new PickerPolicy<Stack>(PickerId.Fertilizers, () => true,
             item => item.IsFertilizer, _ => !applied, _ => { });
         var disabled = PickerSnapshot<Stack>.Build(sources, policy);
         var unchanged = PickerSnapshot<Stack>.Build(sources, policy);
@@ -257,7 +265,7 @@ internal static partial class Program
         var fertilizer = new Stack("fertilizer", 10, fertilizer: true);
         var sources = new[] { Source(new object(), fertilizer) };
         bool canApply = true;
-        var policy = new PickerPolicy<Stack>("Fertilizers", () => true,
+        var policy = new PickerPolicy<Stack>(PickerId.Fertilizers, () => true,
             item => item.IsFertilizer, _ => canApply, _ => { });
         var displayed = PickerSnapshot<Stack>.Build(sources, policy);
         Assert(displayed.TryResolveSelectable(fertilizer.Id, out _), "The displayed snapshot starts selectable.");
@@ -270,16 +278,17 @@ internal static partial class Program
 
     private static void ActionSettingsRemainIndependent()
     {
-        var settings = new bool[7];
+        var settings = new bool[8];
         var policies = new[]
         {
-            new PickerPolicy<Stack>("Seeds", () => settings[0], _ => true, _ => true, _ => { }),
-            new PickerPolicy<Stack>("Fertilizers", () => settings[1], _ => true, _ => true, _ => { }),
-            new PickerPolicy<Stack>("Alchemical Ingredients", () => settings[2], _ => true, _ => true, _ => { }),
-            new PickerPolicy<Stack>("Brains", () => settings[3], _ => true, _ => true, _ => { }),
-            new PickerPolicy<Stack>("Embalming Fluids", () => settings[4], _ => true, _ => true, _ => { }),
-            new PickerPolicy<Stack>("Tombstones", () => settings[5], _ => true, _ => true, _ => { }),
-            new PickerPolicy<Stack>("Collars", () => settings[6], _ => true, _ => true, _ => { })
+            new PickerPolicy<Stack>(PickerId.Seeds, () => settings[0], _ => true, _ => true, _ => { }),
+            new PickerPolicy<Stack>(PickerId.Fertilizers, () => settings[1], _ => true, _ => true, _ => { }),
+            new PickerPolicy<Stack>(PickerId.AlchemicalIngredients, () => settings[2], _ => true, _ => true, _ => { }),
+            new PickerPolicy<Stack>(PickerId.Brains, () => settings[3], _ => true, _ => true, _ => { }),
+            new PickerPolicy<Stack>(PickerId.EmbalmingFluids, () => settings[4], _ => true, _ => true, _ => { }),
+            new PickerPolicy<Stack>(PickerId.Tombstones, () => settings[5], _ => true, _ => true, _ => { }),
+            new PickerPolicy<Stack>(PickerId.ZombieCollars, () => settings[6], _ => true, _ => true, _ => { }),
+            new PickerPolicy<Stack>(PickerId.ResurrectionCollars, () => settings[7], _ => true, _ => true, _ => { })
         };
         for (int combination = 0; combination < (1 << settings.Length); combination++)
         {
@@ -319,7 +328,7 @@ internal static partial class Program
     private static void ValidatesUnavailableFertilizerInstances()
     {
         var invalidFertilizer = new Stack("fertilizer", 10, fertilizer: true);
-        var policy = new PickerPolicy<Stack>("Fertilizers", () => true,
+        var policy = new PickerPolicy<Stack>(PickerId.Fertilizers, () => true,
             item => item.IsFertilizer, _ => false,
             _ => throw new NotSupportedException("Unsupported instance properties"));
         bool rejected = false;

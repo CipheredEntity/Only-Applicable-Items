@@ -11,6 +11,7 @@ internal sealed class ActionSettings
     public ConfigEntry<bool> EmbalmingFluids { get; }
     public ConfigEntry<bool> GraveDecorations { get; }
     public ConfigEntry<bool> ZombieEquipment { get; }
+    public ConfigEntry<bool> ResurrectionCollars { get; }
 
     public ActionSettings(ConfigFile config)
     {
@@ -43,5 +44,10 @@ internal sealed class ActionSettings
             "Armor, Weapons, and Tools matching the currently equipped item stay visible but disabled. " +
             "Items rejected by the native rules remain visible but disabled. Unusual item data or non-single-item equipment restores the original picker. " +
             "Disabling restores an open equipment picker on the next frame. Enabling takes effect the next time it opens.");
+        ResurrectionCollars = config.Bind("Actions", "Resurrection Collars", true,
+            "Combine collars into one Collars inventory at the resurrection table, including accessible zone storage. " +
+            "Collars rejected by the native skull requirements remain visible but disabled. " +
+            "Independent of Zombie Equipment. Disabling restores an open resurrection collar picker on the next frame; " +
+            "enabling applies the next time it opens. Selection and later one-unit consumption remain native.");
     }
 }

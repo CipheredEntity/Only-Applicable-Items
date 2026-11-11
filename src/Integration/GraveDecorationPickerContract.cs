@@ -26,16 +26,16 @@ internal sealed class GraveDecorationPickerContract
             !DelegateContext.Matches(callback, predicate, selected, eligible))
             return null;
 
-        string title;
+        PickerId id;
         string group;
         switch (owner.GraveElementType)
         {
             case GraveElementType.Top:
-                title = "Tombstones";
+                id = PickerId.Tombstones;
                 group = GameConsts.Groups.TOMBSTONE_ITEM_GROUP;
                 break;
             case GraveElementType.Bot:
-                title = "Fences";
+                id = PickerId.Fences;
                 group = GameConsts.Groups.FENCE_ITEM_GROUP;
                 break;
             default:
@@ -44,7 +44,7 @@ internal sealed class GraveDecorationPickerContract
 
         // Visibility follows the category; native selectability stays separate.
         // Do not add recipe/unlock/quality checks that the original picker lacks.
-        return new PickerPolicy<Item>(title, enabled,
+        return new PickerPolicy<Item>(id, enabled,
             item => item != null && !item.IsEmpty && item.Definition.itemGroupIds.Contains(group),
             predicate, validateItem);
     }

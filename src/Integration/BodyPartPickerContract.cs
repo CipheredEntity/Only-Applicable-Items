@@ -37,27 +37,27 @@ internal sealed class BodyPartPickerContract
 
         if (!(selectedType.GetValue(predicate.Target) is ItemType category))
             throw new InvalidOperationException("The autopsy picker's selected category is unavailable.");
-        var title = GetTitle(category);
-        if (title == null)
+        var id = GetId(category);
+        if (id == null)
             return null;
 
         // Snapshot the clicked category for visibility/title, but keep the live native
         // predicate for collar limits, surgical mistakes, and click-time validation.
-        return new PickerPolicy<Item>(title, enabled,
+        return new PickerPolicy<Item>(id.Value, enabled,
             item => item != null && !item.IsEmpty && item.Definition.type == category,
             predicate, validateItem);
     }
 
-    private static string? GetTitle(ItemType category)
+    private static PickerId? GetId(ItemType category)
     {
         switch (category)
         {
-            case ItemType.Brain: return "Brains";
-            case ItemType.Heart: return "Hearts";
-            case ItemType.Guts: return "Guts";
-            case ItemType.Skull: return "Skulls";
-            case ItemType.Bones: return "Bones";
-            case ItemType.Skin: return "Skins";
+            case ItemType.Brain: return PickerId.Brains;
+            case ItemType.Heart: return PickerId.Hearts;
+            case ItemType.Guts: return PickerId.Guts;
+            case ItemType.Skull: return PickerId.Skulls;
+            case ItemType.Bones: return PickerId.Bones;
+            case ItemType.Skin: return PickerId.Skins;
             default: return null;
         }
     }

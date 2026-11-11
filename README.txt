@@ -1,4 +1,4 @@
-Only Applicable Items 0.8.1
+Only Applicable Items 0.9.0
 ===========================
 
 A BepInEx 5 plugin for Graveyard Keeper 2. Garden seed selection displays one
@@ -45,6 +45,13 @@ Armor, Weapons, and Tools with the same full definition ID as the item currently
 equipped in that slot stay visible with their total quantity but disabled. Empty
 slots and different definitions retain the native selection rules.
 
+Resurrection-table collar selection also displays "Collars", combining equivalent
+collars from the player, bags, and the zone storage normally accessible there.
+All owned accessible collars remain visible; collars outside the body's native
+skull limits are grayed out and unselectable. Selection retains one real source
+item for the game's later one-unit consumption when resurrection is prepared.
+This feature has its own Resurrection Collars setting, independent of upgrades.
+
 Configuration
 -------------
 After the plugin first loads, BepInEx creates:
@@ -58,11 +65,15 @@ After the plugin first loads, BepInEx creates:
   Embalming Fluids = true
   Grave Decorations = true
   Zombie Equipment = true
+  Resurrection Collars = true
 
-All seven options are enabled by default and independent. Body Parts controls all
+All eight options are enabled by default and independent. Body Parts controls all
 six body-part categories and both insertion and replacement. Grave Decorations
 controls both Tombstones and Fences. Zombie Equipment controls Collars, Armor,
-Weapons, and Tools together. Set an option to false to use
+Weapons, and Tools together; Resurrection Collars controls only resurrection-table
+collar selection. Both collar inventories default to "Collars", with distinct
+internal identities ready for future naming settings. Names are not configurable
+in this version. Set an option to false to use
 the original interface for that action. Existing settings are kept when the new
 entry is added. No configuration-manager plugin
 is required. Compatible managers expose the entries using these same names.
@@ -133,6 +144,10 @@ See docs/GRAVE_DECORATIONS.md for integration details and in-game validation.
 Equipment checks exercise the production contract for all four categories, native
 disabled entries, single-item safety, source resolution, and the shared setting.
 See docs/ZOMBIE_EQUIPMENT.md for scope and a manual checklist.
+Resurrection checks exercise the production scope/contract and exception cleanup,
+disabled visibility, source references, default titles/identities, and the actual
+settings declarations using in-memory game/configuration stand-ins. See
+docs/RESURRECTION_COLLARS.md for integration details and native limitations.
 
 Build output:
   bin/Release/net472/OnlyApplicableItems.dll
@@ -233,6 +248,12 @@ Manual validation checklist
     Confirm the currently equipped full definition stays visible but disabled in
     Armor/Weapons/Tools, while other variants remain selectable. Check empty slots,
     equipment changes, and that Collars retains its normal upgrade rules.
+21. At a resurrection table, check Collars totals across player/bags/zone storage,
+    separate collar definitions, unsuitable collars visible but disabled, selection
+    consuming nothing, preparation consuming one real source unit, cancellation,
+    and repeated opening. Toggle Resurrection Collars and Zombie Equipment
+    independently, including while each picker is open. Both titles stay Collars.
+    See docs/RESURRECTION_COLLARS.md for the delayed-selection limitation.
 
 The mod falls back to vanilla for unexpected instance properties on included items
 or an unsupported picker contract. These cases appear once per failure category
@@ -248,6 +269,8 @@ Unity rendering, native craft effects, or Harmony runtime behavior.
 Collars was tested in-game before the Armor/Weapons/Tools extension. The new paths
 and regression checks require in-game validation; automated checks do not execute
 native transfers, equipment assignment, or collar arithmetic.
+Resurrection Collars requires in-game validation of Harmony scoping, Unity rendering,
+and delayed native consumption; the automated checks do not execute those systems.
 An alchemy reflection/display failure disables that feature for the current plugin
 session and logs a warning; restart after resolving it. Garden features remain
 available. Do not treat a successful build or logic checks as proof of UI integration.

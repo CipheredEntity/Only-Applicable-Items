@@ -257,7 +257,7 @@ internal sealed class ApplicableItemsSession : IDisposable
         if (IsDisposed || fallbackRequested)
             return;
         fallbackRequested = true;
-        plugin.WarnOnce("session-" + Policy.Title + "-" + operation,
+        plugin.WarnOnce("session-" + Policy.Id + "-" + operation,
             "Could not safely continue " + operation + "; restoring the original " + Policy.Title + " picker. " + exception);
     }
 
@@ -287,7 +287,7 @@ internal sealed class ApplicableItemsSession : IDisposable
         }
         catch (Exception exception)
         {
-            plugin.WarnOnce("restore-" + Policy.Title, "Could not restore the original picker; closing it safely. " + exception);
+            plugin.WarnOnce("restore-" + Policy.Id, "Could not restore the original picker; closing it safely. " + exception);
             var window = widget.GetComponentInParent<UIMultiInventoryWindow>();
             if (window != null)
                 window.Close();

@@ -39,10 +39,10 @@ internal sealed class GardenPickerContract
         if (predicate == null)
             return null;
         if (DelegateContext.Matches(callback, predicate, selected, eligible))
-            return new PickerPolicy<Item>("Seeds", () => settings.Seeds.Value, predicate, predicate, ValidatePlainItem);
+            return new PickerPolicy<Item>(PickerId.Seeds, () => settings.Seeds.Value, predicate, predicate, ValidatePlainItem);
         if (fertilizerEligible != null && predicate.Target is UIGardenBedWindow &&
             DelegateContext.MatchesPredicate(callback, predicate, fertilizerEligible))
-            return new PickerPolicy<Item>("Fertilizers", () => settings.Fertilizers.Value,
+            return new PickerPolicy<Item>(PickerId.Fertilizers, () => settings.Fertilizers.Value,
                 item => item.IsFertilizer, predicate, ValidatePlainItem);
         return null;
     }

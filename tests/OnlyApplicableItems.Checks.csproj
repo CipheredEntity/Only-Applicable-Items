@@ -11,12 +11,16 @@
     <Compile Include="..\src\Core\StackAggregation.cs" Link="Core\StackAggregation.cs" />
     <Compile Include="..\src\Core\DelegateContext.cs" Link="Core\DelegateContext.cs" />
     <Compile Include="..\src\Core\PickerPolicy.cs" Link="Core\PickerPolicy.cs" />
+    <Compile Include="..\src\Core\PickerIdentity.cs" Link="Core\PickerIdentity.cs" />
     <Compile Include="..\src\Core\QuantityDisplayScope.cs" Link="Core\QuantityDisplayScope.cs" />
     <Compile Include="..\src\Core\AlchemyVisibility.cs" Link="Core\AlchemyVisibility.cs" />
+    <Compile Include="..\src\Configuration\ActionSettings.cs" Link="Configuration\ActionSettings.cs" />
     <Compile Include="..\src\Integration\BodyPartPickerContract.cs" Link="Integration\BodyPartPickerContract.cs" />
     <Compile Include="..\src\Integration\EmbalmingPickerContract.cs" Link="Integration\EmbalmingPickerContract.cs" />
     <Compile Include="..\src\Integration\GraveDecorationPickerContract.cs" Link="Integration\GraveDecorationPickerContract.cs" />
     <Compile Include="..\src\Integration\ZombieEquipmentPickerContract.cs" Link="Integration\ZombieEquipmentPickerContract.cs" />
+    <Compile Include="..\src\Integration\ResurrectionCollarPickerContract.cs" Link="Integration\ResurrectionCollarPickerContract.cs" />
+    <Compile Include="..\src\Integration\ResurrectionCollarPatches.cs" Link="Integration\ResurrectionCollarPatches.cs" />
     <Compile Include="..\src\UI\ApplicableInventoryWidgetData.cs" Link="UI\ApplicableInventoryWidgetData.cs" />
   </ItemGroup>
 </Project>

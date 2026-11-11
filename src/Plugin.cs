@@ -14,18 +14,20 @@ public sealed class Plugin : BaseUnityPlugin
 {
     public const string Guid = "ciphe.gk2.onlyapplicableitems";
     public const string Name = "Only Applicable Items";
-    public const string Version = "0.8.1";
+    public const string Version = "0.9.0";
     internal static Plugin? Instance { get; private set; }
     internal ActionSettings Settings { get; private set; } = null!;
     private readonly List<ApplicableItemsSession> sessions = new List<ApplicableItemsSession>();
     private readonly HashSet<string> warnings = new HashSet<string>(StringComparer.Ordinal);
     private Harmony? harmony;
     private Harmony? alchemyHarmony;
+    private Harmony? resurrectionHarmony;
     private GardenPickerContract? contract;
     private BodyPartPickerContract? bodyParts;
     private EmbalmingPickerContract? embalming;
     private GraveDecorationPickerContract? graveDecorations;
     private ZombieEquipmentPickerContract? zombieEquipment;
+    internal ResurrectionCollarPickerContract? ResurrectionCollars { get; private set; }
     internal AlchemyFeatures? Alchemy { get; private set; }
 
     private void Awake()
@@ -58,6 +60,27 @@ public sealed class Plugin : BaseUnityPlugin
             InitializeEmbalming();
             InitializeGraveDecorations();
             InitializeZombieEquipment();
+            InitializeResurrectionCollars();
+        }
+    }
+
+    private void InitializeResurrectionCollars()
+    {
+        try
+        {
+            ResurrectionCollars = new ResurrectionCollarPickerContract(
+                () => Settings.ResurrectionCollars.Value, contract!.ValidatePlainItem);
+            resurrectionHarmony = new Harmony(Guid + ".resurrection-collars");
+            resurrectionHarmony.Patch(ResurrectionCollars.OpenPicker,
+                prefix: new HarmonyMethod(typeof(ResurrectionCollarPatches), nameof(ResurrectionCollarPatches.BeforeOpening)),
+                finalizer: new HarmonyMethod(typeof(ResurrectionCollarPatches), nameof(ResurrectionCollarPatches.AfterOpening)));
+            Logger.LogInfo("Resurrection Collars ready. Enabled: " + Settings.ResurrectionCollars.Value);
+        }
+        catch (Exception exception)
+        {
+            resurrectionHarmony?.UnpatchSelf();
+            ResurrectionCollars = null;
+            WarnOnce("resurrection-collars-startup", "Resurrection Collars is unavailable; existing actions remain supported. " + exception);
         }
     }
 
@@ -156,7 +179,8 @@ public sealed class Plugin : BaseUnityPlugin
             // the constructor's original inventory sections must remain usable.
             policy = contract.GetPolicy(callback, predicate, Settings) ?? Alchemy?.GetPolicy(callback, predicate)
                 ?? bodyParts?.GetPolicy(callback, predicate) ?? embalming?.GetPolicy(callback, predicate)
-                ?? graveDecorations?.GetPolicy(callback, predicate) ?? zombieEquipment?.GetPolicy(callback, predicate);
+                ?? graveDecorations?.GetPolicy(callback, predicate) ?? zombieEquipment?.GetPolicy(callback, predicate)
+                ?? ResurrectionCollars?.GetPolicy(callback, predicate);
             if (policy == null || !policy.IsEnabled)
                 return;
             session = new ApplicableItemsSession(this, policy, data, predicate);
@@ -166,7 +190,7 @@ public sealed class Plugin : BaseUnityPlugin
         {
             session?.Dispose();
             var title = policy?.Title ?? "item";
-            WarnOnce("construction-" + title, "Leaving the original " + title +
+            WarnOnce("construction-" + (policy?.Id.ToString() ?? "item"), "Leaving the original " + title +
                 " picker in place because consolidation was unsafe. " + exception);
         }
     }
@@ -203,6 +227,8 @@ public sealed class Plugin : BaseUnityPlugin
             session.RestoreVanilla();
         Alchemy?.Dispose();
         alchemyHarmony?.UnpatchSelf();
+        resurrectionHarmony?.UnpatchSelf();
+        ResurrectionCollars = null;
         harmony?.UnpatchSelf();
         if (ReferenceEquals(Instance, this))
             Instance = null;

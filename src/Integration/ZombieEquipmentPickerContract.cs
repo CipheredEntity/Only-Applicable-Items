@@ -49,7 +49,7 @@ internal sealed class ZombieEquipmentPickerContract
         // check and plain-item validator, without applying the new single-item rule.
         if (callback.Method == selected && predicate.Method == eligible &&
             predicate.Target is ZombieWgoData zombie && ReferenceEquals(owner.ZombieWgoData, zombie))
-            return new PickerPolicy<Item>("Collars", enabled,
+            return new PickerPolicy<Item>(PickerId.ZombieCollars, enabled,
                 item => item != null && !item.IsEmpty && item.Definition.type == ItemType.Collar,
                 predicate, validateItem);
 
@@ -57,24 +57,24 @@ internal sealed class ZombieEquipmentPickerContract
             (callback.Method != insertSelected && callback.Method != replaceSelected))
             return null;
 
-        string title;
+        PickerId id;
         Func<Item, bool> category;
         Func<Item?> equipped;
         if (predicate.Method == armorEligible)
         {
-            title = "Armor";
+            id = PickerId.ZombieArmor;
             category = item => item.Definition.type == ItemType.BodyArmor;
             equipped = () => owner.ZombieWgoData?.Armor;
         }
         else if (predicate.Method == weaponEligible)
         {
-            title = "Weapons";
+            id = PickerId.ZombieWeapons;
             category = item => item.Definition.isWeapon && !item.Definition.isTool && item.Definition.type != ItemType.Sword;
             equipped = () => owner.ZombieWgoData?.Weapon;
         }
         else if (predicate.Method == toolEligible)
         {
-            title = "Tools";
+            id = PickerId.ZombieTools;
             category = item => item.Definition.isTool;
             equipped = () => owner.ZombieWgoData?.Hand;
         }
@@ -92,7 +92,7 @@ internal sealed class ZombieEquipmentPickerContract
             var current = equipped();
             return current == null || current.IsEmpty || !string.Equals(item.id, current.id, StringComparison.Ordinal);
         }
-        return new PickerPolicy<Item>(title, enabled,
+        return new PickerPolicy<Item>(id, enabled,
             item => item != null && !item.IsEmpty && category(item), CanSelect, ValidateEquipment);
     }
 

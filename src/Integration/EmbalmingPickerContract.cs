@@ -27,7 +27,7 @@ internal sealed class EmbalmingPickerContract
 
         // All fluids are visible. Keep the native predicate for body capacity,
         // collar limits, and the different rules for consumed zombie-effect fluids.
-        return new PickerPolicy<Item>("Embalming Fluids", enabled,
+        return new PickerPolicy<Item>(PickerId.EmbalmingFluids, enabled,
             item => item != null && !item.IsEmpty && item.Definition.type == ItemType.Embalm,
             predicate, validateItem);
     }

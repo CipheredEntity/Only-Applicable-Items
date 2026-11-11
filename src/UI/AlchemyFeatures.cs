@@ -31,7 +31,7 @@ internal sealed class AlchemyFeatures : IDisposable
             return null;
         // Research/type controls visibility. The unchanged native predicate still disables
         // ingredients blocked by any rune limit and revalidates them before selection.
-        return new PickerPolicy<Item>("Alchemical Ingredients", () => IsEnabled,
+        return new PickerPolicy<Item>(PickerId.AlchemicalIngredients, () => IsEnabled,
             contract.CanDisplayIngredient, predicate, validateItem);
     }
 

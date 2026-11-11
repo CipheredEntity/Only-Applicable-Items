@@ -7,6 +7,7 @@ namespace OnlyApplicableItems.Core;
 // items can remain visible while the native predicate disables interaction.
 internal sealed class PickerPolicy<T> where T : class
 {
+    public PickerId Id { get; }
     public string Title { get; }
     public bool IsEnabled => enabled();
     public Func<T, bool> IncludeInDisplay { get; }
@@ -14,10 +15,11 @@ internal sealed class PickerPolicy<T> where T : class
     public Action<T> ValidateItem { get; }
     private readonly Func<bool> enabled;
 
-    public PickerPolicy(string title, Func<bool> enabled, Func<T, bool> includeInDisplay,
+    public PickerPolicy(PickerId id, Func<bool> enabled, Func<T, bool> includeInDisplay,
         Func<T, bool> canSelect, Action<T> validateItem)
     {
-        Title = title;
+        Id = id;
+        Title = PickerTitles.GetDefault(id);
         this.enabled = enabled;
         IncludeInDisplay = includeInDisplay;
         CanSelect = canSelect;

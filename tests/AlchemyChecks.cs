@@ -18,7 +18,7 @@ internal static partial class Program
         laboratory.OtherRunes = 2;
         Func<AlchemyIngredient, bool> nativePredicate = laboratory.IsValid;
         var visibility = CreateAlchemyVisibility(laboratory);
-        var policy = new PickerPolicy<AlchemyIngredient>("Alchemical Ingredients", () => true,
+        var policy = new PickerPolicy<AlchemyIngredient>(PickerId.AlchemicalIngredients, () => true,
             visibility.CanDisplay, nativePredicate, _ => { });
         var sources = new[] { AlchemySource(researched), AlchemySource(unknown), AlchemySource(excessiveRunes), AlchemySource(excessiveInStorage) };
         var initial = PickerSnapshot<AlchemyIngredient>.Build(sources, policy);
@@ -39,7 +39,7 @@ internal static partial class Program
     {
         var a = new AlchemyIngredient("ingredient", 50, 1);
         var b = new AlchemyIngredient("ingredient", 50, 1);
-        var policy = new PickerPolicy<AlchemyIngredient>("Alchemical Ingredients", () => true, _ => true, _ => true, _ => { });
+        var policy = new PickerPolicy<AlchemyIngredient>(PickerId.AlchemicalIngredients, () => true, _ => true, _ => true, _ => { });
         var snapshot = PickerSnapshot<AlchemyIngredient>.Build(new[] { AlchemySource(a), AlchemySource(b) }, policy);
         Assert(snapshot.Groups.Count == 1 && snapshot.Groups[0].Total == 100, "Combine real stacks without stack-size caps.");
         Assert(snapshot.TryResolveSelectable(a.Id, out var first) && ReferenceEquals(first, a), "Resolve the first slot to a real item.");
@@ -171,7 +171,7 @@ internal static partial class Program
     {
         var cell = new LabCell("ingredient", 50);
         bool enabled = true;
-        var policy = new PickerPolicy<LabCell>("Alchemical Ingredients", () => enabled, _ => true, _ => true, _ => { });
+        var policy = new PickerPolicy<LabCell>(PickerId.AlchemicalIngredients, () => enabled, _ => true, _ => true, _ => { });
         using (policy.IsEnabled ? QuantityDisplayScope<LabCell>.Apply(new[] { cell }, value => value.Id,
             _ => 100, value => value.Owned, (value, count) => value.Owned = count) : null)
             cell.DrawRequirement(100);

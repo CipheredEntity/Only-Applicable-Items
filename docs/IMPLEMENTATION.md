@@ -38,7 +38,7 @@ No architecture-breaking changes were found in this update.
 
 ## Integration and isolation
 
-Two explicit Harmony patches are installed after checking method signatures and
+Two shared Harmony patches are installed after checking method signatures and
 the private item-property field's type:
 
 1. Postfix on the exact `UIMultiInventoryWindowData` constructor. Both original
@@ -66,6 +66,13 @@ the private item-property field's type:
 2. Prefix on `InventoryWidget.OnRedraw`. It only handles the mod's
    `ApplicableInventoryWidgetData` subclass. Normal section data is untouched.
 
+Resurrection collars additionally use an isolated prefix/finalizer on
+`UIResurrectionWindowData.OnCollarPressed`. The opening scope identifies its
+inline callback/predicate without compiler-generated names; both must belong to
+that exact resurrection-data instance. The finalizer restores nested contexts
+on success or exception and returns the original exception. It does not patch
+eligibility, selection, or consumption. See RESURRECTION_COLLARS.md.
+
 The original real MultiInventory is retained. The new display holder has its own
 list of references to real representative stacks. Only that new list is filled;
 no inventory-add, merge, split, Count/UID assignment, or save operation is used
@@ -82,6 +89,14 @@ Action-specific contracts create independent PickerPolicy<Item> objects:
 | Embalming Fluids | ItemType.Embalm, including disabled entries | CanEmbalm | Embalming Fluids |
 | Grave Decorations | gravetop or gravebot group | IsGraveItem | Grave Decorations / Tombstones or Fences |
 | Zombie Equipment | Native slot category, including disabled entries | CanUpgradeCollarTo, IsArmor, IsWeapon, IsTool | Zombie Equipment / Collars, Armor, Weapons, Tools |
+| Resurrection Collars | ItemType.Collar, including disabled entries | Original skull-range predicate | Resurrection Collars / Collars |
+
+Every policy has a stable PickerId independent of its displayed Title. Default
+titles are centralized in Core/PickerIdentity.cs. ZombieCollars and
+ResurrectionCollars both default to Collars, but use separate settings, contracts,
+and diagnostic keys. Other policies retain their existing default labels. No
+display-name configuration has been added; enum names, not numeric positions or
+titles, identify pickers in diagnostic keys.
 
 The session excludes empty stacks for all policies. Each policy rejects instance
 properties, contents, internal inventory capacity, bag status, or durability.

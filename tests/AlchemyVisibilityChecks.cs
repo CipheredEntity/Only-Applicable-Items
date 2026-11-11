@@ -56,7 +56,7 @@ internal static partial class Program
         foreach (var item in items)
             laboratory.Researched.Add(item.Id);
         var visibility = CreateAlchemyVisibility(laboratory);
-        var policy = new PickerPolicy<AlchemyIngredient>("Alchemical Ingredients", () => true,
+        var policy = new PickerPolicy<AlchemyIngredient>(PickerId.AlchemicalIngredients, () => true,
             visibility.CanDisplay, laboratory.IsValid, _ => { });
         var snapshot = PickerSnapshot<AlchemyIngredient>.Build(Array.ConvertAll(items, AlchemySource), policy);
         Assert(snapshot.Groups.Count == 4, "Research visibility must not impose upper or lower rune bounds.");
@@ -70,7 +70,7 @@ internal static partial class Program
         var item = new AlchemyIngredient("ingredient", 100, 4);
         laboratory.Researched.Add(item.Id);
         var visibility = CreateAlchemyVisibility(laboratory);
-        var policy = new PickerPolicy<AlchemyIngredient>("Alchemical Ingredients", () => true,
+        var policy = new PickerPolicy<AlchemyIngredient>(PickerId.AlchemicalIngredients, () => true,
             visibility.CanDisplay, laboratory.IsValid, _ => { });
         var sources = new[] { AlchemySource(item) };
         laboratory.OtherRunes = 2;
