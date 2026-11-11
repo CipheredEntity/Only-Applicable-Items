@@ -14,7 +14,7 @@ public sealed class Plugin : BaseUnityPlugin
 {
     public const string Guid = "ciphe.gk2.onlyapplicableitems";
     public const string Name = "Only Applicable Items";
-    public const string Version = "0.8.0";
+    public const string Version = "0.8.1";
     internal static Plugin? Instance { get; private set; }
     internal ActionSettings Settings { get; private set; } = null!;
     private readonly List<ApplicableItemsSession> sessions = new List<ApplicableItemsSession>();
@@ -67,7 +67,7 @@ public sealed class Plugin : BaseUnityPlugin
         {
             zombieEquipment = new ZombieEquipmentPickerContract(() => Settings.ZombieEquipment.Value, contract!.ValidatePlainItem);
             if (!zombieEquipment.SupportsEquipment)
-                WarnOnce("equipment-contract", "Armor, Weapons, and Tools methods were not found; Collars remain supported.");
+                WarnOnce("equipment-contract", "Armor, Weapons, and Tools methods or equipped-slot getters were not found; Collars remain supported.");
             Logger.LogInfo("Zombie Equipment ready. Enabled: " + Settings.ZombieEquipment.Value +
                 "; Armor/Weapons/Tools supported: " + zombieEquipment.SupportsEquipment);
         }

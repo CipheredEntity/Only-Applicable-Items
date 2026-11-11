@@ -36,8 +36,8 @@ internal static partial class Program
             {
                 var predicate = EquipmentPredicate(owner, title);
                 var policy = contract.GetPolicy(callback, predicate);
-                Assert(policy != null && policy.Title == title && policy.IsEnabled && ReferenceEquals(policy.CanSelect, predicate),
-                    "All three titles must retain their exact native predicate for both actions.");
+                Assert(policy != null && policy.Title == title && policy.IsEnabled && policy.CanSelect(EquipmentItem(title)),
+                    "All three titles must allow native-valid equipment for empty slots in both action contexts.");
                 Assert(!policy!.IncludeInDisplay(null!) && policy.IncludeInDisplay(EquipmentItem(title)),
                     "Visibility must handle empty slots and include the native category.");
                 var depleted = EquipmentItem(title);

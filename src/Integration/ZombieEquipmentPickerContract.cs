@@ -15,10 +15,11 @@ internal sealed class ZombieEquipmentPickerContract
     private readonly MethodInfo? armorEligible;
     private readonly MethodInfo? weaponEligible;
     private readonly MethodInfo? toolEligible;
+    private readonly bool equippedItemsAvailable;
     private readonly Func<bool> enabled;
     private readonly Action<Item> validateItem;
     public bool SupportsEquipment => insertSelected != null && replaceSelected != null &&
-        armorEligible != null && weaponEligible != null && toolEligible != null;
+        armorEligible != null && weaponEligible != null && toolEligible != null && equippedItemsAvailable;
 
     public ZombieEquipmentPickerContract(Func<bool> enabled, Action<Item> validateItem)
     {
@@ -33,6 +34,9 @@ internal sealed class ZombieEquipmentPickerContract
         armorEligible = FindMethod(typeof(ZombieEquipmentInventoryWidgetData), "IsArmor", typeof(bool), typeof(Item));
         weaponEligible = FindMethod(typeof(ZombieEquipmentInventoryWidgetData), "IsWeapon", typeof(bool), typeof(Item));
         toolEligible = FindMethod(typeof(ZombieEquipmentInventoryWidgetData), "IsTool", typeof(bool), typeof(Item));
+        equippedItemsAvailable = FindMethod(typeof(ZombieWgoData), "get_Armor", typeof(Item)) != null &&
+            FindMethod(typeof(ZombieWgoData), "get_Weapon", typeof(Item)) != null &&
+            FindMethod(typeof(ZombieWgoData), "get_Hand", typeof(Item)) != null;
     }
 
     public PickerPolicy<Item>? GetPolicy(Action<UIItemCell>? callback, Func<Item, bool>? predicate)
@@ -55,30 +59,41 @@ internal sealed class ZombieEquipmentPickerContract
 
         string title;
         Func<Item, bool> category;
+        Func<Item?> equipped;
         if (predicate.Method == armorEligible)
         {
             title = "Armor";
             category = item => item.Definition.type == ItemType.BodyArmor;
+            equipped = () => owner.ZombieWgoData?.Armor;
         }
         else if (predicate.Method == weaponEligible)
         {
             title = "Weapons";
             category = item => item.Definition.isWeapon && !item.Definition.isTool && item.Definition.type != ItemType.Sword;
+            equipped = () => owner.ZombieWgoData?.Weapon;
         }
         else if (predicate.Method == toolEligible)
         {
             title = "Tools";
             category = item => item.Definition.isTool;
+            equipped = () => owner.ZombieWgoData?.Hand;
         }
         else
         {
             return null;
         }
 
-        // Category membership controls visibility; the unchanged native predicate
-        // controls disabled state and fresh click-time authorization.
+        // Keep identical full IDs visible, but prevent a redundant replacement.
+        // Read the current slot each time so refreshes and click-time validation agree.
+        bool CanSelect(Item item)
+        {
+            if (item == null || item.IsEmpty || !predicate(item))
+                return false;
+            var current = equipped();
+            return current == null || current.IsEmpty || !string.Equals(item.id, current.id, StringComparison.Ordinal);
+        }
         return new PickerPolicy<Item>(title, enabled,
-            item => item != null && !item.IsEmpty && category(item), predicate, ValidateEquipment);
+            item => item != null && !item.IsEmpty && category(item), CanSelect, ValidateEquipment);
     }
 
     private void ValidateEquipment(Item item)

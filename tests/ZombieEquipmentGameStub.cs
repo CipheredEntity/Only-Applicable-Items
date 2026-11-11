@@ -5,6 +5,9 @@ using System;
 public sealed class ZombieWgoData
 {
     public Func<Item, bool> UpgradeRule = _ => true;
+    public Item? Armor { get; set; }
+    public Item? Weapon { get; set; }
+    public Item? Hand { get; set; }
     public Func<Item, bool> UpgradePredicate => CanUpgradeCollarTo;
     public bool CanUpgradeCollarTo(Item item) => item != null && !item.IsEmpty &&
         item.Definition.type == ItemType.Collar && UpgradeRule(item);

@@ -40,6 +40,7 @@ internal sealed class ActionSettings
             "Enabling takes effect the next time it opens.");
         ZombieEquipment = config.Bind("Actions", "Zombie Equipment", true,
             "Consolidate Collars, Armor, Weapons, and Tools in zombie equipment selection. " +
+            "Armor, Weapons, and Tools matching the currently equipped item stay visible but disabled. " +
             "Items rejected by the native rules remain visible but disabled. Unusual item data or non-single-item equipment restores the original picker. " +
             "Disabling restores an open equipment picker on the next frame. Enabling takes effect the next time it opens.");
     }

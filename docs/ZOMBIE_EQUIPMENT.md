@@ -25,15 +25,27 @@ is not added; the action retains its original inventory list for real transfers.
 | Title | Display membership | Native selectability |
 | --- | --- | --- |
 | Collars | ItemType.Collar | CanUpgradeCollarTo |
-| Armor | ItemType.BodyArmor | IsArmor |
-| Weapons | isWeapon, not isTool, type not Sword | IsWeapon |
-| Tools | isTool | IsTool |
+| Armor | ItemType.BodyArmor | IsArmor and different equipped full ID |
+| Weapons | isWeapon, not isTool, type not Sword | IsWeapon and different equipped full ID |
+| Tools | isTool | IsTool and different equipped full ID |
 
 Empty/depleted entries are excluded. Matching-category items rejected by the native
 predicate remain visible but disabled, and click-time eligibility is re-evaluated.
-Collars retain their higher-capacity/skull-range requirements. The other native
-filters currently impose only category rules; no new research, quality, or weapon
-restrictions are introduced. Normal tooltips remain native.
+Collars retain their higher-capacity/skull-range requirements. Native Armor/Weapons/
+Tools category rules and normal tooltips remain unchanged.
+
+Armor/Weapons/Tools additionally disable candidates whose full definition ID equals
+the item currently equipped in that slot. Comparisons are ordinal and use the full
+ID, preserving variants. Live ZombieWgoData.Armor/Weapon/Hand getters are read on
+each eligibility evaluation, including refresh and click-time validation. Matching
+items remain visible and aggregated. Empty slots do not add a restriction. Collars
+keeps its unchanged native upgrade predicate, and disabling Zombie Equipment restores
+the original picker behavior.
+
+ApplicableInventoryWidgetData passes Policy.CanSelect to the native widget for
+gray-out and input blocking. This is the same predicate captured by snapshots and
+rechecked before callback dispatch. Other action policies still use their original
+native predicates.
 
 ## Safe aggregation and source identity
 
@@ -82,9 +94,14 @@ disabled visibility, availability-only changes, source depletion, variant separa
 quantity/instance-data fallback, and one shared live toggle. All 128 combinations
 of seven settings are checked. Native transfers, skull arithmetic, Unity, and
 Harmony are not executed.
+Additional checks cover same-ID disabled groups and totals, full-ID/slot isolation,
+live equipped-item changes, stale selection rejection, safety/native-rule preservation,
+and the production virtual-view constructor using the full policy for UI availability.
 The collar methods/getter and all five insertion/replacement/filter signatures
 were also verified against the reference Assembly-CSharp.dll using the installed
 SDK's metadata-only reader, without executing game code.
+The Armor/Weapon/Hand getters used by the duplicate-equipment restriction are also
+validated in the reference assembly.
 
 Collars was tested in-game before this extension. Manual validation remains:
 
@@ -96,6 +113,9 @@ Collars was tested in-game before this extension. Manual validation remains:
    full-ID variants, and transfer of exactly one real piece. Cancellation must not
    change inventories or equipped GUIDs.
 4. Confirm native swords/tools exclusions in Weapons.
+   For each category, confirm owned copies of the equipped full definition stay
+   visible but disabled for mouse/controller selection; other variants and empty
+   slots remain selectable when native rules allow them.
 5. Replace and unequip items; check returned equipment, limited inventory space,
    work/talent/combat updates, and native notifications.
 6. Regression-test Collars, including disabled upgrades, one-unit consumption,

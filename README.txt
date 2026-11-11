@@ -1,4 +1,4 @@
-Only Applicable Items 0.8.0
+Only Applicable Items 0.8.1
 ===========================
 
 A BepInEx 5 plugin for Graveyard Keeper 2. Garden seed selection displays one
@@ -41,6 +41,9 @@ remains excluded, matching the game's normal access. Matching items rejected by
 native rules stay visible but disabled. Equipment selection passes one real
 single-item source to the game's insertion/replacement callback; combined totals
 are display-only. Collar upgrades retain their existing one-unit behavior.
+Armor, Weapons, and Tools with the same full definition ID as the item currently
+equipped in that slot stay visible with their total quantity but disabled. Empty
+slots and different definitions retain the native selection rules.
 
 Configuration
 -------------
@@ -227,6 +230,9 @@ Manual validation checklist
     in separate slots/bags, definition variants, real one-item transfers, cancellation,
     unequipping, and inventory-space handling. Confirm the shared toggle controls
     all four categories and unexpected counts/properties fall back to vanilla.
+    Confirm the currently equipped full definition stays visible but disabled in
+    Armor/Weapons/Tools, while other variants remain selectable. Check empty slots,
+    equipment changes, and that Collars retains its normal upgrade rules.
 
 The mod falls back to vanilla for unexpected instance properties on included items
 or an unsupported picker contract. These cases appear once per failure category

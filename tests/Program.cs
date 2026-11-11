@@ -70,7 +70,12 @@ internal static partial class Program
             EquipmentRejectsUnexpectedStacksAndInstanceData,
             EquipmentAvailabilityChangesRefreshAndRejectStaleSelections,
             EquipmentResolvesRealSingletonsForNativeCallbacks,
-            AllEquipmentCategoriesShareTheExistingToggle
+            AllEquipmentCategoriesShareTheExistingToggle,
+            EquipmentMatchingEquippedIdsStayVisibleAndDisabled,
+            EquipmentEquippedComparisonUsesFullIdAndCorrectSlot,
+            EquipmentEquippedChangesRefreshAndRejectStaleSelections,
+            EquipmentMatchingEquippedIdsPreserveSafetyAndNativeRules,
+            VirtualInventoryViewUsesPolicySelectability
         };
         foreach (var check in checks)
         {

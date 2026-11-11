@@ -59,6 +59,8 @@ the private item-property field's type:
    to be the predicate's exact target (these two delegates have different owners).
    Armor/Weapons/Tools require InsertItem or ReplaceItem paired with the exact
    IsArmor/IsWeapon/IsTool predicate on the same equipment-data instance.
+   These three policies also reject the currently equipped full ID, read live from
+   the zombie's Armor/Weapon/Hand getter, without hiding the aggregate entry.
    Unknown predicates, multicast delegates, and unsupported
    actions use vanilla.
 2. Prefix on `InventoryWidget.OnRedraw`. It only handles the mod's
@@ -100,9 +102,12 @@ to fall back rather than silently combine them, including when a visible
 fertilizer is currently disabled. Ordinary items group by their full definition
 ID, preserving definition-based quality differences.
 
-The original CustomItemsAvailableCondition is retained on the virtual widget
-data, so InventoryWidget.Redraw and UIItemCell implement disabled appearance and
+The policy's CanSelect is passed as the virtual widget's CustomItemsAvailableCondition,
+so InventoryWidget.Redraw and UIItemCell implement disabled appearance and
 input blocking. The quantity decorator changes counters only, not widget state.
+For most actions this is the original native predicate. Armor/Weapons/Tools combine
+it with the same-equipped-full-ID restriction; snapshots, UI, and fresh selection
+validation therefore agree. Disabling the action restores the native predicate.
 
 The click wrapper rebuilds and revalidates sources, rebinds the cell to a real
 current representative, and invokes the original click/audio callback once.

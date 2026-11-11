@@ -17,5 +17,6 @@
     <Compile Include="..\src\Integration\EmbalmingPickerContract.cs" Link="Integration\EmbalmingPickerContract.cs" />
     <Compile Include="..\src\Integration\GraveDecorationPickerContract.cs" Link="Integration\GraveDecorationPickerContract.cs" />
     <Compile Include="..\src\Integration\ZombieEquipmentPickerContract.cs" Link="Integration\ZombieEquipmentPickerContract.cs" />
+    <Compile Include="..\src\UI\ApplicableInventoryWidgetData.cs" Link="UI\ApplicableInventoryWidgetData.cs" />
   </ItemGroup>
 </Project>

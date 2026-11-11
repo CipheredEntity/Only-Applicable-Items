@@ -13,7 +13,7 @@ internal sealed class ApplicableInventoryWidgetData : InventoryWidgetData
         PickerSnapshot<Item> snapshot, InventoryWidgetDataBase original)
         : base(display, new InventoryHeaderWidgetData(display, customHeaderId: session.Policy.Title) { DrawHeader = false },
             original.OnItemCellOver, original.OnItemCellOut, session.Select, null, null,
-            original.CustomItemsAvailableCondition)
+            session.Policy.CanSelect)
     {
         Session = session;
         Snapshot = snapshot;
