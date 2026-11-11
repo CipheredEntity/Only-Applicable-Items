@@ -54,9 +54,11 @@ the private item-property field's type:
    TryEmbalm/CanEmbalm on the same UIEmbalmWindowData instance.
    GraveDecorationPickerContract requires OnGraveItemSelected/IsGraveItem on one
    UIGraveElementWidgetData and reads its public GraveElementType property.
-   ZombieEquipmentPickerContract currently registers only UpgradeCollar with
+   ZombieEquipmentPickerContract registers UpgradeCollar with
    ZombieWgoData.CanUpgradeCollarTo, requiring the equipment owner's ZombieWgoData
    to be the predicate's exact target (these two delegates have different owners).
+   Armor/Weapons/Tools require InsertItem or ReplaceItem paired with the exact
+   IsArmor/IsWeapon/IsTool predicate on the same equipment-data instance.
    Unknown predicates, multicast delegates, and unsupported
    actions use vanilla.
 2. Prefix on `InventoryWidget.OnRedraw`. It only handles the mod's
@@ -77,10 +79,12 @@ Action-specific contracts create independent PickerPolicy<Item> objects:
 | Body Parts | Matching ItemType, including disabled entries | CanInsertOrgan or CanChangeOrgan | Body Parts / six category titles |
 | Embalming Fluids | ItemType.Embalm, including disabled entries | CanEmbalm | Embalming Fluids |
 | Grave Decorations | gravetop or gravebot group | IsGraveItem | Grave Decorations / Tombstones or Fences |
-| Zombie Equipment (Collars only) | ItemType.Collar, including disabled upgrades | CanUpgradeCollarTo | Zombie Equipment / Collars |
+| Zombie Equipment | Native slot category, including disabled entries | CanUpgradeCollarTo, IsArmor, IsWeapon, IsTool | Zombie Equipment / Collars, Armor, Weapons, Tools |
 
 The session excludes empty stacks for all policies. Each policy rejects instance
 properties, contents, internal inventory capacity, bag status, or durability.
+Armor/Weapons/Tools also require a declared stack limit of one and actual source
+Count of one; this stricter policy never applies to Collars or earlier actions.
 Garden/alchemy actions consume by definition ID; autopsy captures a real item's
 UID and removes one unit on craft confirmation, then recreates the result by ID.
 Embalming consumes one real item by UID immediately on selection and leaves craft
@@ -89,6 +93,8 @@ Grave decorations choose a native craft by full definition ID; the craft system
 removes recipe quantities through its own multi-inventory, not the clicked UID.
 Collar upgrades remove one source unit by UID through their original inventory
 list, recreate the new collar by definition, and remove the old collar natively.
+Other equipment callbacks receive a real singleton, retain native UID assignment,
+and perform insertion/replacement/old-item returns without mod transfer logic.
 Unknown instance variants cause the entire picker
 to fall back rather than silently combine them, including when a visible
 fertilizer is currently disabled. Ordinary items group by their full definition
@@ -112,7 +118,7 @@ full-pocket/craft-start behavior, all left unchanged.
 See [GRAVE_DECORATIONS.md](GRAVE_DECORATIONS.md) for ID-based craft selection,
 native category-only eligibility, and the unchanged removal/replacement flow.
 See [ZOMBIE_EQUIPMENT.md](ZOMBIE_EQUIPMENT.md) for collar owner matching, player/bag
-access without zone storage, native upgrade rules, and deferred equipment support.
+access without zone storage, native upgrade/transfer rules, and singleton safety.
 
 ## Refresh and lifetime
 
@@ -161,8 +167,8 @@ Body Parts controls all six category titles and both autopsy picker paths throug
 one live setting. Its separate initialization failure leaves other actions active.
 Embalming Fluids also has an independent contract initialization and live setting.
 Grave Decorations has the same isolation, with one live setting for both titles.
-Zombie Equipment currently controls Collars only; other equipment remains vanilla.
-Its contract initialization failure cannot disable earlier action contracts.
+Zombie Equipment controls all four categories. Missing optional insertion/replacement
+methods leave Collars supported; initialization failure cannot disable earlier actions.
 Future actions should get their own settings and explicit delegate registrations,
 then a reviewed selection policy. Keep the action gates: each action's consumption
 and equipment transfers have different contracts.
@@ -189,7 +195,10 @@ for both groups/titles, action ownership, instance/variant safety, native disabl
 states, real sources, and its shared setting. The production collar contract is
 checked with test-only stand-ins for linked delegate owners, unsupported equipment
 isolation, disabled visibility, variants, instance safety, and real sources.
-Collars still needs in-game validation. Settings checks cover all 128
+The user validated Collars in-game before the Armor/Weapons/Tools extension.
+New checks cover all insertion/replacement contexts, native exclusions, singleton
+safety, source identity, availability changes, and the shared equipment setting.
+The new equipment paths require in-game validation. Settings checks cover all 128
 combinations of the seven independent options.
 The game and saves were not launched or modified during development. Follow the
 manual checklist in README.txt using the user's chosen in-game test setup.

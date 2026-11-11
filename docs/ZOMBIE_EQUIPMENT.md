@@ -1,84 +1,106 @@
-# Zombie Equipment: Collars
+# Zombie Equipment
 
-`[Actions] Zombie Equipment = true` currently consolidates only the collar upgrade
-picker into "Collars". The shared setting is reserved for incremental equipment
-support. Armor, weapon, and tool insertion/replacement/removal are not intercepted.
-Disabling restores an open collar picker on the next plugin frame; enabling takes
-effect on its next opening. Existing action settings are retained and independent.
+The existing [Actions] Zombie Equipment = true setting controls "Collars", "Armor",
+"Weapons", and "Tools" together. Its saved value is retained. Disabling restores
+an open equipment picker on the next plugin frame; enabling applies on its next
+opening. Other actions remain independently configurable.
 
-## Native scope and action recognition
+## Native scope and action matching
 
-ZombieEquipmentInventoryWidgetData.OnCollarCellPressed opens the shared picker
-with UpgradeCollar and zombie.CanUpgradeCollarTo. Unlike the earlier direct action
-pairs, the callback owner is equipment data and the predicate owner is the zombie.
-ZombieEquipmentPickerContract validates both signatures and the ZombieWgoData
-getter, requires single exact-method delegates, and verifies reference identity
-between the equipment owner's zombie and the predicate target. Unknown wrappers,
-multicast delegates, mismatched zombies, and every other equipment action retain
-vanilla. Initialization failure is isolated from existing features. No new Harmony
-patches are needed.
+Collars retain UpgradeCollar / ZombieWgoData.CanUpgradeCollarTo and the existing
+linked-zombie identity check: their delegates belong to different objects.
+Armor, weapons, and tools use InsertItem for empty slots or ReplaceItem for
+occupied slots, with IsArmor, IsWeapon, or IsTool. Both delegates must be the exact
+native methods bound to the same equipment-data instance. Unknown wrappers,
+multicast delegates, crossed owners/action pairs, and unrelated predicates retain
+vanilla. Missing optional insertion/replacement methods leave Collars supported
+and log a warning. No new Harmony or equipment-removal patches are installed.
 
-The native picker uses addCurrentPlayerWorldZone:false: only player inventory and
-its directly held bags are projected. The mod uses the original MultiInventory
-without expanding access or replacing the one retained by the action.
+All four native pickers use addCurrentPlayerWorldZone:false: only player inventory
+and directly held bags are projected from the original MultiInventory. Zone storage
+is not added; the action retains its original inventory list for real transfers.
 
-## Visibility, safety, and selection
+## Visibility and eligibility
 
-Every nonempty ItemType.Collar in that access list is displayed. The unchanged
-CanUpgradeCollarTo predicate disables equal/lower red-skull-capacity collars and
-upgrades whose ranges cannot accommodate the zombie's current skull totals. The
-game's existing requirement for a current collar remains untouched. No new reason
-tooltip is added; normal item tooltips and disabled input behavior are retained.
+| Title | Display membership | Native selectability |
+| --- | --- | --- |
+| Collars | ItemType.Collar | CanUpgradeCollarTo |
+| Armor | ItemType.BodyArmor | IsArmor |
+| Weapons | isWeapon, not isTool, type not Sword | IsWeapon |
+| Tools | isTool | IsTool |
 
-The shared session groups plain collars by full definition ID, deduplicates source
-aliases, and decorates cell totals without stack caps or changing real quantities.
-Different definitions stay distinct. ValidatePlainItem still rejects included
-collars with instance properties, durability, bag status, contents, or capacity;
-the whole picker falls back safely, including for disabled unusual collars.
-Unrelated equipment is excluded before validation.
+Empty/depleted entries are excluded. Matching-category items rejected by the native
+predicate remain visible but disabled, and click-time eligibility is re-evaluated.
+Collars retain their higher-capacity/skull-range requirements. The other native
+filters currently impose only category rules; no new research, quality, or weapon
+restrictions are introduced. Normal tooltips remain native.
 
-Selection rebuilds the snapshot and native eligibility, then rebinds the cell to
-a currently accessible real representative. Only the original callback runs the
-upgrade. UpgradeCollar rechecks eligibility, creates a definition-only new collar
-in the zombie inventory, updates equippedCollar to its GUID, removes one old
-collar, removes one source unit by UID, triggers native inventory notifications,
-and closes the picker. Old collars are not returned. The mod does not consume,
-reserve, transfer, change failure handling, or create an empty-slot collar action.
+## Safe aggregation and source identity
 
-## Deferred armor, weapons, and tools
+Read-only inspection of GameBalance.itemDefs in the installed resources.assets
+found 10 armor, 13 zombie-weapon, and 39 tool definitions matching the native filters.
+Every matching definition had stackCount=1, hasDurability=false, durDecreaseOnUse=0,
+no internal inventory capacity, and no bag flag. Counts include NPC/test definitions
+and do not establish obtainability. Full definition IDs preserve quality, damage,
+and talent differences.
 
-The user reports that current equipment has no apparent durability, normally
-occupies single-item slots, and identical definitions seem interchangeable. These
-are useful gameplay observations, not universal item invariants. Before adding
-those categories, verify relevant balance definitions (hasDurability/stackCount),
-saved-instance properties, and native insert/replace/unequip behavior. Item still
-supports per-instance properties and conditionally initializes durability. No
-validator is relaxed and no new equipment aggregation policy is introduced here.
+These observations are not universal invariants: Item.Count is writable and the
+game supports serialized properties and conditional durability. ValidatePlainItem
+still rejects properties, durability, bags, contents, or capacity. Armor/Weapons/Tools
+additionally require both Definition.stackCount==1 and actual Count==1. Any included
+unexpected item, even if disabled, causes the entire picker to fall back. Unrelated
+categories are excluded before validation. Collars keep their existing validator
+and one-unit behavior, including source quantities greater than one.
+
+The session deduplicates aliases and decorates totals without moving items or
+changing source Count/UID/properties. Five separate identical axes show one entry
+with 5, but selection passes one actual axe with Count=1, not a synthetic aggregate.
+
+## Original operations remain with the game
+
+Selection rebuilds sources and native eligibility, rebinds to a current real item,
+and invokes the original callback/audio wrapper once. UpgradeCollar still creates
+a new collar by definition, assigns its GUID, removes one old collar without return,
+and removes one source unit by UID.
+
+InsertItem keeps the original transfer, equipped-GUID assignment, and source-UID
+removal. ReplaceItem keeps its definition/count-based recreation of incoming and
+outgoing items, return of the old item through the original access list, slot
+assignment, and TryUpdateZombie notifications. No transfer order, property-reset
+behavior, inventory-full recovery, or callback exception handling is changed.
+
+Secondary-action unequipping stays unpatched. Its native return destination may
+include zone storage, unlike the incoming picker. No empty-collar action, equipment
+reservation, or mod consumption is introduced.
 
 ## Validation
 
-Automated checks compile the production contract with test-only game stand-ins,
-plus production snapshot/aggregation code. They cover exact linked owners,
-different/null zombies, wrappers/multicast contexts, rejection of other equipment
-and existing actions, blocked variants, availability-only changes, instance safety,
-surviving source identity, and live settings. All 128 combinations of seven action
-toggles are checked. Native skull arithmetic and actual upgrades are not simulated.
-UpgradeCollar, CanUpgradeCollarTo, the ZombieWgoData getter, and ItemType.Collar
-were also verified in the reference assembly using the installed SDK's metadata-
-only reader, without executing game code.
+Checks execute the production contract and aggregation/snapshot/delegate code with
+test-only game stand-ins. They cover existing collar behavior, all three new titles
+for insertion/replacement, exact owners and methods, native category exclusions,
+disabled visibility, availability-only changes, source depletion, variant separation,
+quantity/instance-data fallback, and one shared live toggle. All 128 combinations
+of seven settings are checked. Native transfers, skull arithmetic, Unity, and
+Harmony are not executed.
+The collar methods/getter and all five insertion/replacement/filter signatures
+were also verified against the reference Assembly-CSharp.dll using the installed
+SDK's metadata-only reader, without executing game code.
 
-Manual in-game checklist:
+Collars was tested in-game before this extension. Manual validation remains:
 
-1. Confirm Zombie Equipment startup reports Collars only and the option defaults
-   to true. Existing action settings should keep their values.
-2. Open a zombie's collar picker. Check one Collars inventory, correct totals from
-   player/bags, excluded zone storage, separate definitions, empty results, normal
-   tooltips, scrolling, controller navigation, cancellation, and repeated openings.
-3. Verify equal/lower-capacity and skull-incompatible collars remain visible but
-   disabled. Valid upgrades must obey the game's exact collar borders.
-4. Upgrade and verify exactly one source unit is removed, the new collar is
-   equipped, the old collar is removed without return, and native refresh occurs.
-5. Disable while open to check vanilla restoration. Re-enable for the next opening;
-   test different zombies, representative depletion, and added/removed bags.
-6. Confirm armor, weapon, tool, and unequip interactions remain native. Regression-
-   test all previously supported actions and their independent settings.
+1. Confirm the startup log reports equipment support and the existing setting is kept.
+2. Open insertion and replacement pickers for each new category. Check titles,
+   player/bag totals, excluded zone storage, scrolling, empty results, tooltips,
+   mouse/controller navigation, cancellation, and repeated openings.
+3. Put identical pieces in separate slots/bags; confirm combined quantities, separate
+   full-ID variants, and transfer of exactly one real piece. Cancellation must not
+   change inventories or equipped GUIDs.
+4. Confirm native swords/tools exclusions in Weapons.
+5. Replace and unequip items; check returned equipment, limited inventory space,
+   work/talent/combat updates, and native notifications.
+6. Regression-test Collars, including disabled upgrades, one-unit consumption,
+   old-collar removal, and correct zombie ownership.
+7. Disable with each picker open and verify vanilla restoration. Re-enable for the
+   next opening and verify other feature toggles stay independent.
+8. If a safe test setup supplies unusual counts/properties/stack limits, verify
+   fallback without mutation. Regression-test all previous actions.

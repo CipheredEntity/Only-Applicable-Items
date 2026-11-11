@@ -9,7 +9,7 @@ internal static partial class Program
     private static ZombieEquipmentPickerContract CreateZombieEquipmentContract(Func<bool>? enabled = null)
         => new ZombieEquipmentPickerContract(enabled ?? (() => true), item =>
         {
-            if (item.HasInstanceData)
+            if (item.HasInstanceData || item.Definition.hasDurability)
                 throw new NotSupportedException("Unsupported instance properties");
         });
 
@@ -39,7 +39,7 @@ internal static partial class Program
             "Incomplete contexts retain vanilla.");
     }
 
-    private static void CollarsLeaveOtherEquipmentAndActionsUnsupported()
+    private static void CollarsRejectUnregisteredEquipmentContextsAndOtherActions()
     {
         var contract = CreateZombieEquipmentContract();
         var zombie = new ZombieWgoData();
@@ -48,7 +48,7 @@ internal static partial class Program
             contract.GetPolicy(owner.ReplaceCallback, owner.EquipmentPredicate) == null &&
             contract.GetPolicy(owner.InsertCallback, zombie.UpgradePredicate) == null &&
             contract.GetPolicy(owner.ReplaceCallback, zombie.UpgradePredicate) == null,
-            "Generic equipment insertion/replacement must stay unsupported, even with a collar predicate.");
+            "Unregistered equipment predicates and crossed collar/equipment contexts must retain vanilla.");
         var embalming = new UIEmbalmWindowData();
         var grave = new UIGraveElementWidgetData(GraveElementType.Top);
         var autopsy = new UIAutopsyWindowData(ItemType.Skull);

@@ -39,8 +39,8 @@ internal sealed class ActionSettings
             "Controls both categories independently of other actions. Disabling restores an open decoration picker on the next frame. " +
             "Enabling takes effect the next time it opens.");
         ZombieEquipment = config.Bind("Actions", "Zombie Equipment", true,
-            "Consolidate zombie equipment selection. Currently supports Collars only; armor, weapons, and tools remain unchanged. " +
-            "Owned collars rejected by the game's upgrade rules stay visible but disabled. " +
-            "Disabling restores an open collar picker on the next frame. Enabling takes effect the next time it opens.");
+            "Consolidate Collars, Armor, Weapons, and Tools in zombie equipment selection. " +
+            "Items rejected by the native rules remain visible but disabled. Unusual item data or non-single-item equipment restores the original picker. " +
+            "Disabling restores an open equipment picker on the next frame. Enabling takes effect the next time it opens.");
     }
 }

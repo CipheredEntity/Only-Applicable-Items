@@ -3,12 +3,16 @@ using System;
 // Test-only stand-ins for the signatures inspected by the production autopsy contract.
 // These are compiled only into the checks executable. No Unity/game assembly is run,
 // and the configurable predicates do not claim to simulate actual collar calculations.
-public enum ItemType { None, Brain, Heart, Guts, Skull, Bones, Skin, Flesh, Embalm, Collar }
+public enum ItemType { None, Brain, Heart, Guts, Skull, Bones, Skin, Flesh, Embalm, Collar, BodyArmor, Sword }
 
 public sealed class ItemDef
 {
     public ItemType type;
     public bool isOrganMistake;
+    public int stackCount = 1;
+    public bool hasDurability;
+    public bool isTool;
+    public bool isWeapon;
     public System.Collections.Generic.List<string> itemGroupIds = new System.Collections.Generic.List<string>();
 }
 

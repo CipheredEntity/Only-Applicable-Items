@@ -58,11 +58,19 @@ internal static partial class Program
             GraveDecorationsRejectInstanceDataIncludingDisabledItems,
             GraveDecorationsResolveRealSourcesWithoutChangingDefinitions,
             CollarsRequireTheExactUpgradePairAndLinkedZombie,
-            CollarsLeaveOtherEquipmentAndActionsUnsupported,
+            CollarsRejectUnregisteredEquipmentContextsAndOtherActions,
             CollarsConsolidateAllOwnedVariantsWithoutMutatingSources,
             CollarsKeepRejectedUpgradesVisibleAndRevalidateAvailability,
             CollarsRejectInstanceDataEvenForBlockedUpgrades,
-            CollarsResolveRealSourcesAndReadTheZombieEquipmentToggle
+            CollarsResolveRealSourcesAndReadTheZombieEquipmentToggle,
+            EquipmentRecognizesBothActionsAndAllThreeTitles,
+            EquipmentRequiresExactSameOwnerDelegates,
+            EquipmentPreservesNativeCategoryExclusions,
+            EquipmentAggregatesSingletonsWithoutChangingSources,
+            EquipmentRejectsUnexpectedStacksAndInstanceData,
+            EquipmentAvailabilityChangesRefreshAndRejectStaleSelections,
+            EquipmentResolvesRealSingletonsForNativeCallbacks,
+            AllEquipmentCategoriesShareTheExistingToggle
         };
         foreach (var check in checks)
         {

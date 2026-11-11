@@ -4,14 +4,21 @@ using OnlyApplicableItems.Core;
 
 namespace OnlyApplicableItems.Integration;
 
-// Only collar upgrades are registered. Other equipment operations have different
-// transfer/instance contracts and must remain unchanged until reviewed separately.
+// Collar upgrades consume one unit; other equipment callbacks use the real source
+// count, so only plain single-item equipment is safe to aggregate by definition ID.
 internal sealed class ZombieEquipmentPickerContract
 {
     private readonly MethodInfo selected;
     private readonly MethodInfo eligible;
+    private readonly MethodInfo? insertSelected;
+    private readonly MethodInfo? replaceSelected;
+    private readonly MethodInfo? armorEligible;
+    private readonly MethodInfo? weaponEligible;
+    private readonly MethodInfo? toolEligible;
     private readonly Func<bool> enabled;
     private readonly Action<Item> validateItem;
+    public bool SupportsEquipment => insertSelected != null && replaceSelected != null &&
+        armorEligible != null && weaponEligible != null && toolEligible != null;
 
     public ZombieEquipmentPickerContract(Func<bool> enabled, Action<Item> validateItem)
     {
@@ -20,30 +27,76 @@ internal sealed class ZombieEquipmentPickerContract
         selected = RequireMethod(typeof(ZombieEquipmentInventoryWidgetData), "UpgradeCollar", typeof(void), typeof(UIItemCell));
         eligible = RequireMethod(typeof(ZombieWgoData), "CanUpgradeCollarTo", typeof(bool), typeof(Item));
         RequireMethod(typeof(ZombieEquipmentInventoryWidgetData), "get_ZombieWgoData", typeof(ZombieWgoData));
+        // A changed insertion/replacement contract must not disable working Collars.
+        insertSelected = FindMethod(typeof(ZombieEquipmentInventoryWidgetData), "InsertItem", typeof(void), typeof(UIItemCell));
+        replaceSelected = FindMethod(typeof(ZombieEquipmentInventoryWidgetData), "ReplaceItem", typeof(void), typeof(UIItemCell));
+        armorEligible = FindMethod(typeof(ZombieEquipmentInventoryWidgetData), "IsArmor", typeof(bool), typeof(Item));
+        weaponEligible = FindMethod(typeof(ZombieEquipmentInventoryWidgetData), "IsWeapon", typeof(bool), typeof(Item));
+        toolEligible = FindMethod(typeof(ZombieEquipmentInventoryWidgetData), "IsTool", typeof(bool), typeof(Item));
     }
 
     public PickerPolicy<Item>? GetPolicy(Action<UIItemCell>? callback, Func<Item, bool>? predicate)
     {
-        // Unlike the other direct action pairs, these delegates belong to different
-        // objects. Verify the equipment owner references the predicate's exact zombie.
         if (!(callback?.Target is ZombieEquipmentInventoryWidgetData owner) ||
-            !(predicate?.Target is ZombieWgoData zombie) ||
-            callback.GetInvocationList().Length != 1 || predicate.GetInvocationList().Length != 1 ||
-            callback.Method != selected || predicate.Method != eligible ||
-            !ReferenceEquals(owner.ZombieWgoData, zombie))
+            predicate == null || callback.GetInvocationList().Length != 1 || predicate.GetInvocationList().Length != 1)
             return null;
 
-        return new PickerPolicy<Item>("Collars", enabled,
-            item => item != null && !item.IsEmpty && item.Definition.type == ItemType.Collar,
-            predicate, validateItem);
+        // Collar delegates belong to different objects. Keep the existing linked-zombie
+        // check and plain-item validator, without applying the new single-item rule.
+        if (callback.Method == selected && predicate.Method == eligible &&
+            predicate.Target is ZombieWgoData zombie && ReferenceEquals(owner.ZombieWgoData, zombie))
+            return new PickerPolicy<Item>("Collars", enabled,
+                item => item != null && !item.IsEmpty && item.Definition.type == ItemType.Collar,
+                predicate, validateItem);
+
+        if (!SupportsEquipment || !ReferenceEquals(callback.Target, predicate.Target) ||
+            (callback.Method != insertSelected && callback.Method != replaceSelected))
+            return null;
+
+        string title;
+        Func<Item, bool> category;
+        if (predicate.Method == armorEligible)
+        {
+            title = "Armor";
+            category = item => item.Definition.type == ItemType.BodyArmor;
+        }
+        else if (predicate.Method == weaponEligible)
+        {
+            title = "Weapons";
+            category = item => item.Definition.isWeapon && !item.Definition.isTool && item.Definition.type != ItemType.Sword;
+        }
+        else if (predicate.Method == toolEligible)
+        {
+            title = "Tools";
+            category = item => item.Definition.isTool;
+        }
+        else
+        {
+            return null;
+        }
+
+        // Category membership controls visibility; the unchanged native predicate
+        // controls disabled state and fresh click-time authorization.
+        return new PickerPolicy<Item>(title, enabled,
+            item => item != null && !item.IsEmpty && category(item), predicate, ValidateEquipment);
+    }
+
+    private void ValidateEquipment(Item item)
+    {
+        validateItem(item);
+        if (item.Definition.stackCount != 1 || item.Count != 1)
+            throw new NotSupportedException("Equipment '" + item.id + "' is not a single-item source; preserving the original picker.");
     }
 
     private static MethodInfo RequireMethod(Type type, string name, Type result, params Type[] arguments)
     {
+        return FindMethod(type, name, result, arguments) ?? throw new MissingMethodException(type.FullName, name);
+    }
+
+    private static MethodInfo? FindMethod(Type type, string name, Type result, params Type[] arguments)
+    {
         var method = type.GetMethod(name,
             BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, arguments, null);
-        if (method == null || method.ReturnType != result || method.IsStatic)
-            throw new MissingMethodException(type.FullName, name);
-        return method;
+        return method != null && method.ReturnType == result && !method.IsStatic ? method : null;
     }
 }
