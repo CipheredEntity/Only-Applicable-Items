@@ -12,6 +12,7 @@ internal sealed class ActionSettings
     public ConfigEntry<bool> GraveDecorations { get; }
     public ConfigEntry<bool> ZombieEquipment { get; }
     public ConfigEntry<bool> ResurrectionCollars { get; }
+    public ConfigEntry<bool> Sermons { get; }
 
     public ActionSettings(ConfigFile config)
     {
@@ -50,5 +51,9 @@ internal sealed class ActionSettings
             "Also hide the selected resurrection collar slot's stack counter; disabling restores its native display. " +
             "Independent of Zombie Equipment. Disabling restores an open resurrection collar picker on the next frame; " +
             "enabling applies the next time it opens. Selection and later one-unit consumption remain native.");
+        Sermons = config.Bind("Actions", "Sermons", true,
+            "Combine native-eligible sermons into one Sermons inventory at the prayer stand. " +
+            "Preserves full item definitions and quality variants. Attendance, success chance, execution, and rewards remain native. " +
+            "Disabling restores an open sermon picker on the next frame; enabling applies the next time it opens.");
     }
 }

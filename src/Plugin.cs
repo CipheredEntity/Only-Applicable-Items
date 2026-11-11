@@ -14,7 +14,7 @@ public sealed class Plugin : BaseUnityPlugin
 {
     public const string Guid = "ciphe.gk2.onlyapplicableitems";
     public const string Name = "Only Applicable Items";
-    public const string Version = "0.9.1";
+    public const string Version = "0.10.0";
     internal static Plugin? Instance { get; private set; }
     internal ActionSettings Settings { get; private set; } = null!;
     private readonly List<ApplicableItemsSession> sessions = new List<ApplicableItemsSession>();
@@ -28,6 +28,7 @@ public sealed class Plugin : BaseUnityPlugin
     private EmbalmingPickerContract? embalming;
     private GraveDecorationPickerContract? graveDecorations;
     private ZombieEquipmentPickerContract? zombieEquipment;
+    private SermonPickerContract? sermons;
     internal ResurrectionCollarPickerContract? ResurrectionCollars { get; private set; }
     internal ResurrectionCollarDisplay? ResurrectionCollarSlot { get; private set; }
     internal AlchemyFeatures? Alchemy { get; private set; }
@@ -64,6 +65,21 @@ public sealed class Plugin : BaseUnityPlugin
             InitializeZombieEquipment();
             InitializeResurrectionCollars();
             InitializeResurrectionCollarDisplay();
+            InitializeSermons();
+        }
+    }
+
+    private void InitializeSermons()
+    {
+        try
+        {
+            sermons = new SermonPickerContract(() => Settings.Sermons.Value, contract!.ValidatePlainItem);
+            Logger.LogInfo("Sermons ready. Enabled: " + Settings.Sermons.Value);
+        }
+        catch (Exception exception)
+        {
+            sermons = null;
+            WarnOnce("sermons-startup", "Sermons is unavailable; existing actions remain supported. " + exception);
         }
     }
 
@@ -205,7 +221,7 @@ public sealed class Plugin : BaseUnityPlugin
             policy = contract.GetPolicy(callback, predicate, Settings) ?? Alchemy?.GetPolicy(callback, predicate)
                 ?? bodyParts?.GetPolicy(callback, predicate) ?? embalming?.GetPolicy(callback, predicate)
                 ?? graveDecorations?.GetPolicy(callback, predicate) ?? zombieEquipment?.GetPolicy(callback, predicate)
-                ?? ResurrectionCollars?.GetPolicy(callback, predicate);
+                ?? ResurrectionCollars?.GetPolicy(callback, predicate) ?? sermons?.GetPolicy(callback, predicate);
             if (policy == null || !policy.IsEnabled)
                 return;
             session = new ApplicableItemsSession(this, policy, data, predicate);

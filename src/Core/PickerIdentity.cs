@@ -22,7 +22,8 @@ internal enum PickerId
     ZombieArmor,
     ZombieWeapons,
     ZombieTools,
-    ResurrectionCollars
+    ResurrectionCollars,
+    Sermons
 }
 
 internal static class PickerTitles
@@ -48,6 +49,7 @@ internal static class PickerTitles
             case PickerId.ZombieArmor: return "Armor";
             case PickerId.ZombieWeapons: return "Weapons";
             case PickerId.ZombieTools: return "Tools";
+            case PickerId.Sermons: return "Sermons";
             default: throw new ArgumentOutOfRangeException(nameof(id));
         }
     }

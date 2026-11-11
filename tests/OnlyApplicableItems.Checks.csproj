@@ -20,6 +20,7 @@
     <Compile Include="..\src\Integration\GraveDecorationPickerContract.cs" Link="Integration\GraveDecorationPickerContract.cs" />
     <Compile Include="..\src\Integration\ZombieEquipmentPickerContract.cs" Link="Integration\ZombieEquipmentPickerContract.cs" />
     <Compile Include="..\src\Integration\ResurrectionCollarPickerContract.cs" Link="Integration\ResurrectionCollarPickerContract.cs" />
+    <Compile Include="..\src\Integration\SermonPickerContract.cs" Link="Integration\SermonPickerContract.cs" />
     <Compile Include="..\src\Integration\ResurrectionCollarPatches.cs" Link="Integration\ResurrectionCollarPatches.cs" />
     <Compile Include="..\src\Integration\ResurrectionCollarDisplayPatches.cs" Link="Integration\ResurrectionCollarDisplayPatches.cs" />
     <Compile Include="..\src\UI\ResurrectionCollarDisplay.cs" Link="UI\ResurrectionCollarDisplay.cs" />

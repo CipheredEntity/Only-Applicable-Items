@@ -1,5 +1,5 @@
-Only Applicable Items 0.9.1
-===========================
+Only Applicable Items 0.10.0
+============================
 
 A BepInEx 5 plugin for Graveyard Keeper 2. Garden seed selection displays one
 "Seeds" inventory containing eligible seeds and combined quantities from the
@@ -56,6 +56,13 @@ so the slot represents the single collar required. Inventory quantities and the
 real selected item remain unchanged. Toggling refreshes an open selected slot;
 disabling restores its original native counter.
 
+Prayer-stand sermon selection displays one "Sermons" inventory with combined
+quantities from the player, bags, and normally accessible zone storage. The
+game's CanUsePray rule identifies valid sermon items. Different full definitions
+and quality variants stay separate. Attendance requirements, success chance,
+execution, and rewards remain unchanged; insufficient attendance still blocks
+starting the sermon in the prayer interface, not choosing it in the picker.
+
 Configuration
 -------------
 After the plugin first loads, BepInEx creates:
@@ -70,8 +77,9 @@ After the plugin first loads, BepInEx creates:
   Grave Decorations = true
   Zombie Equipment = true
   Resurrection Collars = true
+  Sermons = true
 
-All eight options are enabled by default and independent. Body Parts controls all
+All nine options are enabled by default and independent. Body Parts controls all
 six body-part categories and both insertion and replacement. Grave Decorations
 controls both Tombstones and Fences. Zombie Equipment controls Collars, Armor,
 Weapons, and Tools together; Resurrection Collars controls only resurrection-table
@@ -152,6 +160,9 @@ Resurrection checks exercise the production scope/contract and exception cleanup
 disabled visibility, source references, default titles/identities, and the actual
 settings declarations using in-memory game/configuration stand-ins. See
 docs/RESURRECTION_COLLARS.md for integration details and native limitations.
+Sermon checks exercise the production action contract, exact native predicate
+forwarding, source/variant aggregation, safety fallback, and independent settings.
+See docs/SERMONS.md for integration details and an in-game checklist.
 
 Build output:
   bin/Release/net472/OnlyApplicableItems.dll
@@ -261,6 +272,11 @@ Manual validation checklist
     quantity, while inventories retain full counts. Disable Resurrection Collars
     while the table is open to restore the native selected-slot quantity; re-enable
     to hide it again. Verify preparation still consumes exactly one collar.
+22. At the prayer stand, check Sermons totals across player/bags/zone storage,
+    separate types and qualities, hidden unrelated items, and unchanged sermon
+    selection and prayer controls. Test insufficient attendance, low success
+    chance, cancellation, source changes, and the independent live Sermons toggle.
+    Compare execution costs and rewards with vanilla. See docs/SERMONS.md.
     See docs/RESURRECTION_COLLARS.md for the delayed-selection limitation.
 
 The mod falls back to vanilla for unexpected instance properties on included items
@@ -279,6 +295,8 @@ and regression checks require in-game validation; automated checks do not execut
 native transfers, equipment assignment, or collar arithmetic.
 Resurrection Collars requires in-game validation of Harmony scoping, Unity rendering,
 and delayed native consumption; the automated checks do not execute those systems.
+Sermons also requires in-game validation of picker rendering and native sermon
+execution; its automated checks do not run the game or serialized prayer scripts.
 An alchemy reflection/display failure disables that feature for the current plugin
 session and logs a warning; restart after resolving it. Garden features remain
 available. Do not treat a successful build or logic checks as proof of UI integration.

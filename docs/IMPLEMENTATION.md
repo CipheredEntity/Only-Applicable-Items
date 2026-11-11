@@ -61,6 +61,9 @@ the private item-property field's type:
    IsArmor/IsWeapon/IsTool predicate on the same equipment-data instance.
    These three policies also reject the currently equipped full ID, read live from
    the zombie's Armor/Weapon/Hand getter, without hiding the aggregate entry.
+   SermonPickerContract requires the exact UIPrayWindowData.CanUsePray predicate
+   with a native callback declared on and bound to that same prayer-data instance.
+   Both visibility and selection use CanUsePray without naming its inline callback.
    Unknown predicates, multicast delegates, and unsupported
    actions use vanilla.
 2. Prefix on `InventoryWidget.OnRedraw`. It only handles the mod's
@@ -96,6 +99,7 @@ Action-specific contracts create independent PickerPolicy<Item> objects:
 | Grave Decorations | gravetop or gravebot group | IsGraveItem | Grave Decorations / Tombstones or Fences |
 | Zombie Equipment | Native slot category, including disabled entries | CanUpgradeCollarTo, IsArmor, IsWeapon, IsTool | Zombie Equipment / Collars, Armor, Weapons, Tools |
 | Resurrection Collars | ItemType.Collar, including disabled entries | Original skull-range predicate | Resurrection Collars / Collars |
+| Sermons | CanUsePray | CanUsePray | Sermons |
 
 Every policy has a stable PickerId independent of its displayed Title. Default
 titles are centralized in Core/PickerIdentity.cs. ZombieCollars and
@@ -103,6 +107,11 @@ ResurrectionCollars both default to Collars, but use separate settings, contract
 and diagnostic keys. Other policies retain their existing default labels. No
 display-name configuration has been added; enum names, not numeric positions or
 titles, identify pickers in diagnostic keys.
+
+Sermons adds no new Harmony patches. Its original callback retains a SermonDef,
+not a stack or UID, and creates one CraftElementSermon with empty item requirements.
+Attendance, success chance, execution, and rewards stay in the original prayer
+systems. See SERMONS.md for native scope and validation details.
 
 The session excludes empty stacks for all policies. Each policy rejects instance
 properties, contents, internal inventory capacity, bag status, or durability.

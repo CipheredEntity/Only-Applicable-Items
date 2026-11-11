@@ -3,7 +3,7 @@ using System;
 // Test-only stand-ins for the signatures inspected by the production autopsy contract.
 // These are compiled only into the checks executable. No Unity/game assembly is run,
 // and the configurable predicates do not claim to simulate actual collar calculations.
-public enum ItemType { None, Brain, Heart, Guts, Skull, Bones, Skin, Flesh, Embalm, Collar, BodyArmor, Sword }
+public enum ItemType { None, Brain, Heart, Guts, Skull, Bones, Skin, Flesh, Embalm, Collar, BodyArmor, Sword, Preach }
 
 public sealed class ItemDef
 {

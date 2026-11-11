@@ -89,7 +89,14 @@ internal static partial class Program
             ResurrectionSlotLeavesEmptyAndUnrelatedItemsUntouched,
             ResurrectionSlotFailureRestoresCacheAndLeavesPickerAvailable,
             ResurrectionSlotStopsTrackingHiddenWindowsAndDoesNotRetryNativeFailures,
-            ResurrectionSlotPostfixesUseOnlyTheDedicatedFeature
+            ResurrectionSlotPostfixesUseOnlyTheDedicatedFeature,
+            SermonsRequireExactNativePredicateAndMatchingCallbackOwner,
+            SermonsRejectOtherActionsAndUnknownDelegateWrappers,
+            SermonsAggregateEligibleDefinitionsAndQualityVariantsWithoutMutation,
+            SermonsRevalidateNativeEligibilityAndSourceChanges,
+            SermonsRetainTheExistingItemSafetyValidator,
+            SermonsResolveARealSourceForTheOriginalDefinitionCallback,
+            SermonsDefaultOnAndUseAnIndependentLiveSetting
         };
         foreach (var check in checks)
         {
@@ -284,7 +291,7 @@ internal static partial class Program
 
     private static void ActionSettingsRemainIndependent()
     {
-        var settings = new bool[8];
+        var settings = new bool[9];
         var policies = new[]
         {
             new PickerPolicy<Stack>(PickerId.Seeds, () => settings[0], _ => true, _ => true, _ => { }),
@@ -294,7 +301,8 @@ internal static partial class Program
             new PickerPolicy<Stack>(PickerId.EmbalmingFluids, () => settings[4], _ => true, _ => true, _ => { }),
             new PickerPolicy<Stack>(PickerId.Tombstones, () => settings[5], _ => true, _ => true, _ => { }),
             new PickerPolicy<Stack>(PickerId.ZombieCollars, () => settings[6], _ => true, _ => true, _ => { }),
-            new PickerPolicy<Stack>(PickerId.ResurrectionCollars, () => settings[7], _ => true, _ => true, _ => { })
+            new PickerPolicy<Stack>(PickerId.ResurrectionCollars, () => settings[7], _ => true, _ => true, _ => { }),
+            new PickerPolicy<Stack>(PickerId.Sermons, () => settings[8], _ => true, _ => true, _ => { })
         };
         for (int combination = 0; combination < (1 << settings.Length); combination++)
         {
@@ -303,7 +311,7 @@ internal static partial class Program
             for (int i = 0; i < policies.Length; i++)
             {
                 Assert(policies[i].IsEnabled == ((combination & (1 << i)) != 0),
-                    "Each action must read its own live setting in all 128 combinations.");
+                    "Each action must read its own live setting in every combination.");
             }
         }
     }
