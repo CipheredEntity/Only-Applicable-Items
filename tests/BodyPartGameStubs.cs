@@ -20,6 +20,7 @@ public sealed class Item
 {
     public readonly string id;
     public readonly ItemDef Definition;
+    public Guid UniqueId { get; } = Guid.NewGuid();
     public int Count;
     public bool HasInstanceData;
     public bool IsEmpty => Count <= 0;
@@ -32,7 +33,29 @@ public sealed class Item
     }
 }
 
-public sealed class UIItemCell { public Item? DisplayingItem; }
+public sealed class UIItemCell
+{
+    public Item? DisplayingItem;
+    public int Value { get; set; }
+    public Action<UIItemCell>? OnItemCellPress;
+    public int RenderedCount { get; private set; }
+    public bool CounterVisible { get; private set; }
+    public bool ThrowOnNextCountUpdate;
+    public int CountUpdates { get; private set; }
+
+    // Minimal stand-in for the verified normal-collar counter branch, not Unity.
+    public void UpdateCountLabel(int multiplier = 1, bool forceDraw = false)
+    {
+        CountUpdates++;
+        RenderedCount = Value * multiplier;
+        CounterVisible = RenderedCount > 1 || forceDraw;
+        if (ThrowOnNextCountUpdate)
+        {
+            ThrowOnNextCountUpdate = false;
+            throw new InvalidOperationException("Count-label renderer failed");
+        }
+    }
+}
 
 public sealed class UIAutopsyWindowData
 {

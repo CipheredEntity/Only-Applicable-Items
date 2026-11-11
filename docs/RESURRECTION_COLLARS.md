@@ -37,6 +37,32 @@ Disabling restores an open picker on the next plugin frame; enabling applies on
 the next opening. Neither setting alters a selection already retained by the
 resurrection window.
 
+## Selected-slot quantity correction
+
+The same Resurrection Collars setting also controls the selected collar slot's
+counter. Vanilla UIResurrectionWindow.RedrawLite calls collarCell.Draw(data.Collar),
+which copies the real stack Count into UIItemCell.Value. UpdateCountLabel then
+shows that quantity, even though preparation only consumes one unit.
+
+A separate display-only Harmony owner installs postfixes on RedrawLite and Hide.
+After the native draw, ResurrectionCollarDisplay identifies only the window's
+private collarCell. For a nonempty collar it temporarily renders with Value=1
+through the normal UpdateCountLabel method, which hides single-item counters,
+then restores the original cached Value in a finally block. It never writes to
+the item or replaces its reference. UpdateCountLabelAsRegularItem is deliberately
+avoided because it forces counters visible, even for one item. Collars (ItemType
+45) are outside CanItemBeEquipped's ranges, so the native normal-item branch applies.
+
+The feature tracks open resurrection windows to redraw the selected slot when the
+setting changes. Disabled draws are untouched; disabling restores a fresh native
+stack counter, and enabling hides it again. Unchanged settings do not cause
+recurring redraws. Hidden windows are forgotten; shutdown restores visible native
+slots before unpatching. Display initialization/runtime failure leaves inventory
+consolidation available and attempts native restoration; a failed native redraw
+is not retried. No global item-cell draw patch is installed. Inventory counters,
+zombie-equipment slots, callbacks, tooltips, selected UID/Count, and consumption
+remain outside the correction's scope.
+
 ## Delayed consumption and native limitations
 
 The game reserves nothing when a collar is selected. PrepareResurrection later
@@ -61,6 +87,10 @@ owner/action isolation, nested/exception cleanup, visible disabled entries,
 equivalent totals and variants, source retention, settings independence, and
 distinct collar IDs with unchanged titles. They do not execute native skull
 arithmetic, Harmony interception, Unity rendering, or resurrection consumption.
+Selected-slot checks run the production display feature and postfixes against
+small redraw/counter stand-ins. They check exact cache restoration, unchanged
+item/reference/UID/Count/callbacks, other-cell isolation, live settings and shutdown,
+empty/unrelated slots, and recovery from display or native-redraw failures.
 
 Manual checks:
 
@@ -75,3 +105,8 @@ Manual checks:
 5. Toggle Resurrection Collars and Zombie Equipment independently. Check live
    disabling, identical default titles, zone-access differences, and regression
    behavior for all existing actions, mouse input, controllers, and empty lists.
+6. Select stacks of one, ten, and more across repeated selections. With Resurrection
+   Collars enabled, the selected slot must show an icon without a quantity; the
+   inventory picker must retain combined totals. Toggle off while the table is open
+   to restore the native quantity and back on to hide it. Check cancellation and
+   preparation still preserve native behavior and consume only one collar.

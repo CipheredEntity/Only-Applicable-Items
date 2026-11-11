@@ -83,7 +83,13 @@ internal static partial class Program
             ResurrectionRevalidatesNativeEligibilityAndVirtualDisabledCells,
             ResurrectionRejectsUnexpectedInstanceDataEvenWhenDisabled,
             ResurrectionPassesARealSurvivingSourceForDelayedNativeConsumption,
-            ResurrectionConfigurationDefaultsAndLiveToggleRemainIndependent
+            ResurrectionConfigurationDefaultsAndLiveToggleRemainIndependent,
+            ResurrectionSlotHidesOnlyItsCounterAndRestoresEveryCachedValue,
+            ResurrectionSlotToggleRestoresNativeRenderingWithoutChangingSelection,
+            ResurrectionSlotLeavesEmptyAndUnrelatedItemsUntouched,
+            ResurrectionSlotFailureRestoresCacheAndLeavesPickerAvailable,
+            ResurrectionSlotStopsTrackingHiddenWindowsAndDoesNotRetryNativeFailures,
+            ResurrectionSlotPostfixesUseOnlyTheDedicatedFeature
         };
         foreach (var check in checks)
         {

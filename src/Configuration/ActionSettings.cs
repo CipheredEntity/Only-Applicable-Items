@@ -47,6 +47,7 @@ internal sealed class ActionSettings
         ResurrectionCollars = config.Bind("Actions", "Resurrection Collars", true,
             "Combine collars into one Collars inventory at the resurrection table, including accessible zone storage. " +
             "Collars rejected by the native skull requirements remain visible but disabled. " +
+            "Also hide the selected resurrection collar slot's stack counter; disabling restores its native display. " +
             "Independent of Zombie Equipment. Disabling restores an open resurrection collar picker on the next frame; " +
             "enabling applies the next time it opens. Selection and later one-unit consumption remain native.");
     }

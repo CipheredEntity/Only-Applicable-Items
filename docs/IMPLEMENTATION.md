@@ -73,6 +73,12 @@ that exact resurrection-data instance. The finalizer restores nested contexts
 on success or exception and returns the original exception. It does not patch
 eligibility, selection, or consumption. See RESURRECTION_COLLARS.md.
 
+The selected resurrection collar slot also has an isolated display owner with
+postfixes on UIResurrectionWindow.RedrawLite/Hide. It temporarily renders only
+that slot with UIItemCell.Value=1, restores the original cached Value immediately,
+and refreshes on the same Resurrection Collars toggle. It never changes stored
+Count or the selected reference/UID, and installs no global UIItemCell patch.
+
 The original real MultiInventory is retained. The new display holder has its own
 list of references to real representative stacks. Only that new list is filled;
 no inventory-add, merge, split, Count/UID assignment, or save operation is used

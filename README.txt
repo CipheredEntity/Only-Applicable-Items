@@ -1,4 +1,4 @@
-Only Applicable Items 0.9.0
+Only Applicable Items 0.9.1
 ===========================
 
 A BepInEx 5 plugin for Graveyard Keeper 2. Garden seed selection displays one
@@ -51,6 +51,10 @@ All owned accessible collars remain visible; collars outside the body's native
 skull limits are grayed out and unselectable. Selection retains one real source
 item for the game's later one-unit consumption when resurrection is prepared.
 This feature has its own Resurrection Collars setting, independent of upgrades.
+The same setting hides the selected resurrection collar slot's stack counter,
+so the slot represents the single collar required. Inventory quantities and the
+real selected item remain unchanged. Toggling refreshes an open selected slot;
+disabling restores its original native counter.
 
 Configuration
 -------------
@@ -253,6 +257,10 @@ Manual validation checklist
     consuming nothing, preparation consuming one real source unit, cancellation,
     and repeated opening. Toggle Resurrection Collars and Zombie Equipment
     independently, including while each picker is open. Both titles stay Collars.
+    Select a stack of ten: the selected slot should show its icon without a
+    quantity, while inventories retain full counts. Disable Resurrection Collars
+    while the table is open to restore the native selected-slot quantity; re-enable
+    to hide it again. Verify preparation still consumes exactly one collar.
     See docs/RESURRECTION_COLLARS.md for the delayed-selection limitation.
 
 The mod falls back to vanilla for unexpected instance properties on included items

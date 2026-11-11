@@ -20,5 +20,6 @@ namespace OnlyApplicableItems
     {
         public static Plugin? Instance { get; set; }
         public ResurrectionCollarPickerContract? ResurrectionCollars { get; set; }
+        public UI.ResurrectionCollarDisplay? ResurrectionCollarSlot { get; set; }
     }
 }

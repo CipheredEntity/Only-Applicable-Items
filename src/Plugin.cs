@@ -14,7 +14,7 @@ public sealed class Plugin : BaseUnityPlugin
 {
     public const string Guid = "ciphe.gk2.onlyapplicableitems";
     public const string Name = "Only Applicable Items";
-    public const string Version = "0.9.0";
+    public const string Version = "0.9.1";
     internal static Plugin? Instance { get; private set; }
     internal ActionSettings Settings { get; private set; } = null!;
     private readonly List<ApplicableItemsSession> sessions = new List<ApplicableItemsSession>();
@@ -22,12 +22,14 @@ public sealed class Plugin : BaseUnityPlugin
     private Harmony? harmony;
     private Harmony? alchemyHarmony;
     private Harmony? resurrectionHarmony;
+    private Harmony? resurrectionDisplayHarmony;
     private GardenPickerContract? contract;
     private BodyPartPickerContract? bodyParts;
     private EmbalmingPickerContract? embalming;
     private GraveDecorationPickerContract? graveDecorations;
     private ZombieEquipmentPickerContract? zombieEquipment;
     internal ResurrectionCollarPickerContract? ResurrectionCollars { get; private set; }
+    internal ResurrectionCollarDisplay? ResurrectionCollarSlot { get; private set; }
     internal AlchemyFeatures? Alchemy { get; private set; }
 
     private void Awake()
@@ -61,6 +63,7 @@ public sealed class Plugin : BaseUnityPlugin
             InitializeGraveDecorations();
             InitializeZombieEquipment();
             InitializeResurrectionCollars();
+            InitializeResurrectionCollarDisplay();
         }
     }
 
@@ -81,6 +84,28 @@ public sealed class Plugin : BaseUnityPlugin
             resurrectionHarmony?.UnpatchSelf();
             ResurrectionCollars = null;
             WarnOnce("resurrection-collars-startup", "Resurrection Collars is unavailable; existing actions remain supported. " + exception);
+        }
+    }
+
+    private void InitializeResurrectionCollarDisplay()
+    {
+        try
+        {
+            ResurrectionCollarSlot = new ResurrectionCollarDisplay(() => Settings.ResurrectionCollars.Value,
+                (operation, exception) => WarnOnce("resurrection-collar-display-" + operation,
+                    "Resurrection collar slot correction failed while " + operation + ". " + exception));
+            resurrectionDisplayHarmony = new Harmony(Guid + ".resurrection-collar-display");
+            resurrectionDisplayHarmony.Patch(ResurrectionCollarSlot.Redraw,
+                postfix: new HarmonyMethod(typeof(ResurrectionCollarDisplayPatches), nameof(ResurrectionCollarDisplayPatches.AfterRedraw)));
+            resurrectionDisplayHarmony.Patch(ResurrectionCollarSlot.Hide,
+                postfix: new HarmonyMethod(typeof(ResurrectionCollarDisplayPatches), nameof(ResurrectionCollarDisplayPatches.AfterHidden)));
+        }
+        catch (Exception exception)
+        {
+            ResurrectionCollarSlot?.Dispose();
+            resurrectionDisplayHarmony?.UnpatchSelf();
+            ResurrectionCollarSlot = null;
+            WarnOnce("resurrection-collar-display-startup", "The selected collar counter remains native; picker features remain available. " + exception);
         }
     }
 
@@ -210,6 +235,7 @@ public sealed class Plugin : BaseUnityPlugin
             }
         }
         Alchemy?.Tick();
+        ResurrectionCollarSlot?.Tick();
     }
 
     internal void Register(ApplicableItemsSession session) => sessions.Add(session);
@@ -226,6 +252,9 @@ public sealed class Plugin : BaseUnityPlugin
         foreach (var session in sessions.ToArray())
             session.RestoreVanilla();
         Alchemy?.Dispose();
+        ResurrectionCollarSlot?.Dispose();
+        resurrectionDisplayHarmony?.UnpatchSelf();
+        ResurrectionCollarSlot = null;
         alchemyHarmony?.UnpatchSelf();
         resurrectionHarmony?.UnpatchSelf();
         ResurrectionCollars = null;
