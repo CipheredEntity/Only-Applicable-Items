@@ -8,7 +8,9 @@ namespace OnlyApplicableItems.UI;
 internal sealed class ApplicableItemsSession : IDisposable
 {
     private readonly Plugin plugin;
-    public PickerPolicy<Item> Policy { get; }
+    private readonly PickerPolicy<Item>[] policies;
+    public PickerPolicy<Item> Policy => policies[0];
+    private bool IsEnabled => Array.TrueForAll(policies, policy => policy.IsEnabled);
     private readonly MultiInventory realInventories;
     private readonly MultiInventoryWidgetData container;
     private readonly InventoryWidgetDataBase[] originalSections;
@@ -16,7 +18,7 @@ internal sealed class ApplicableItemsSession : IDisposable
     private readonly Func<Item, bool> eligible;
     private readonly string originalHeader;
     private readonly HashSet<Inventory> subscriptions = new HashSet<Inventory>(ReferenceComparer<Inventory>.Instance);
-    private ApplicableInventoryWidgetData? current;
+    private ApplicableInventoryWidgetData[]? current;
     private MultiInventoryWidget? owner;
     private UIMultiInventoryWindow? window;
     private bool committed;
@@ -28,9 +30,17 @@ internal sealed class ApplicableItemsSession : IDisposable
 
     public ApplicableItemsSession(Plugin plugin, PickerPolicy<Item> policy, UIMultiInventoryWindowData data,
         Func<Item, bool> eligible)
+        : this(plugin, new[] { policy }, data, eligible)
+    {
+    }
+
+    public ApplicableItemsSession(Plugin plugin, IReadOnlyList<PickerPolicy<Item>> policies, UIMultiInventoryWindowData data,
+        Func<Item, bool> eligible)
     {
         this.plugin = plugin;
-        Policy = policy;
+        if (policies.Count == 0)
+            throw new ArgumentException("A picker needs at least one section.", nameof(policies));
+        this.policies = new List<PickerPolicy<Item>>(policies).ToArray();
         this.eligible = eligible;
         realInventories = data.MultiInventory;
         container = data.MultiInventoryWidgetData;
@@ -55,16 +65,16 @@ internal sealed class ApplicableItemsSession : IDisposable
     public void Commit()
     {
         // Build completely before replacing anything. Failure here leaves vanilla data intact.
-        var view = CreateView(BuildSnapshot());
-        current = view;
+        var views = CreateViews(BuildSnapshots());
+        current = views;
         container.inventoriesData.Clear();
-        container.inventoriesData.Add(view);
-        container.HeaderLocaleId = Policy.Title;
+        container.inventoriesData.AddRange(views);
+        container.HeaderLocaleId = policies.Length == 1 ? Policy.Title : originalHeader;
         container.onWidgetHide += Dispose;
         committed = true;
     }
 
-    private PickerSnapshot<Item> BuildSnapshot()
+    private PickerSnapshot<Item>[] BuildSnapshots()
     {
         var sources = new List<StackSource<Item>>();
         var containers = new HashSet<Item>(ReferenceComparer<Item>.Instance);
@@ -79,7 +89,7 @@ internal sealed class ApplicableItemsSession : IDisposable
                 if (item != null && item.IsBag)
                     Collect(item);
         }
-        return PickerSnapshot<Item>.Build(sources, Policy);
+        return PickerSnapshot<Item>.BuildAll(sources, policies);
 
         void Collect(Item sourceContainer)
         {
@@ -94,23 +104,29 @@ internal sealed class ApplicableItemsSession : IDisposable
         }
     }
 
-    private ApplicableInventoryWidgetData CreateView(PickerSnapshot<Item> snapshot)
+    private ApplicableInventoryWidgetData[] CreateViews(PickerSnapshot<Item>[] snapshots)
     {
-        var groups = snapshot.Groups;
-        var display = new Inventory("inventory", groups.Count);
-        foreach (var group in groups)
-            display.Data.Inventory.Add(group.Representative);
-        // Only the new holder/list is populated. Stored items and their Count/UID/properties
-        // are never copied, split, merged, or assigned to while constructing the view.
-        return new ApplicableInventoryWidgetData(this, display, snapshot, template)
+        var views = new ApplicableInventoryWidgetData[policies.Length];
+        for (int i = 0; i < policies.Length; i++)
         {
-            OnWidgetPressed = current?.OnWidgetPressed
-        };
+            var groups = snapshots[i].Groups;
+            var display = new Inventory("inventory", groups.Count);
+            foreach (var group in groups)
+                display.Data.Inventory.Add(group.Representative);
+            // Only new holders/lists are populated. Real Count/UID/ownership is untouched.
+            views[i] = new ApplicableInventoryWidgetData(this, display, snapshots[i], template,
+                policies[i], i, policies.Length > 1)
+            {
+                OnWidgetPressed = current == null ? null : current[i].OnWidgetPressed
+            };
+        }
+        return views;
     }
 
     public void Decorate(InventoryWidget widget, ApplicableInventoryWidgetData view)
     {
-        if (IsDisposed || !ReferenceEquals(current, view))
+        if (IsDisposed || current == null || view.SectionIndex < 0 || view.SectionIndex >= current.Length ||
+            !ReferenceEquals(current[view.SectionIndex], view))
             return;
         if (!active)
         {
@@ -173,7 +189,7 @@ internal sealed class ApplicableItemsSession : IDisposable
             Dispose();
             return;
         }
-        if (fallbackRequested || !Policy.IsEnabled)
+        if (fallbackRequested || !IsEnabled)
         {
             RestoreVanilla();
             return;
@@ -185,9 +201,12 @@ internal sealed class ApplicableItemsSession : IDisposable
         nextPoll = Time.unscaledTime + 0.5f;
         try
         {
-            var snapshot = BuildSnapshot();
-            if (current == null || !current.Snapshot.SameAs(snapshot))
-                Refresh(snapshot);
+            var snapshots = BuildSnapshots();
+            bool changed = current == null;
+            for (int i = 0; current != null && i < snapshots.Length; i++)
+                changed |= !current[i].Snapshot.SameAs(snapshots[i]);
+            if (changed)
+                Refresh(snapshots);
         }
         catch (Exception exception)
         {
@@ -196,13 +215,21 @@ internal sealed class ApplicableItemsSession : IDisposable
         }
     }
 
-    private void Refresh(PickerSnapshot<Item> snapshot)
+    private void Refresh(PickerSnapshot<Item>[] snapshots)
     {
-        if (container.inventoriesData.Count != 1 || !ReferenceEquals(container.inventoriesData[0], current))
+        if (current == null || container.inventoriesData.Count != current.Length)
             throw new InvalidOperationException("The picker sections were replaced by another system.");
-        var replacement = CreateView(snapshot);
-        current = replacement;
-        container.inventoriesData[0] = replacement;
+        for (int i = 0; i < current.Length; i++)
+            if (!ReferenceEquals(container.inventoriesData[i], current[i]))
+                throw new InvalidOperationException("The picker sections were replaced by another system.");
+        var replacements = CreateViews(snapshots);
+        var selected = container.SelectedWidgetData;
+        int selectedIndex = selected == null ? -1 : container.inventoriesData.IndexOf(selected);
+        current = replacements;
+        for (int i = 0; i < replacements.Length; i++)
+            container.inventoriesData[i] = replacements[i];
+        if (selectedIndex >= 0)
+            container.SelectedWidgetData = replacements[selectedIndex];
         // Redraw the existing child widget. Calling window.Redraw/child.Draw would run
         // MultiInventoryWidget.SetData again and create duplicate section widgets.
         var redraw = container.OnItemsAvailabilityChanged
@@ -210,11 +237,13 @@ internal sealed class ApplicableItemsSession : IDisposable
         redraw();
     }
 
-    public void Select(UIItemCell cell)
+    public void Select(UIItemCell cell) => Select(0, cell);
+
+    public void Select(int sectionIndex, UIItemCell cell)
     {
-        if (IsDisposed || current == null)
+        if (IsDisposed || current == null || sectionIndex < 0 || sectionIndex >= current.Length)
             return;
-        if (!Policy.IsEnabled || fallbackRequested)
+        if (!IsEnabled || fallbackRequested)
         {
             RestoreVanilla();
             return;
@@ -224,15 +253,15 @@ internal sealed class ApplicableItemsSession : IDisposable
         try
         {
             string? key = null;
-            foreach (var group in current.Groups)
+            foreach (var group in current[sectionIndex].Groups)
                 if (ReferenceEquals(group.Representative, cell.DisplayingItem))
                     key = group.Key;
             if (key == null)
                 throw new InvalidOperationException("The clicked cell has no source group.");
-            var fresh = BuildSnapshot();
+            var fresh = BuildSnapshots();
             // A visible item may be disabled. Resolve only against freshly evaluated
             // selectability before Draw can restore a cell's default interaction state.
-            if (!fresh.TryResolveSelectable(key, out representative) || representative == null)
+            if (!fresh[sectionIndex].TryResolveSelectable(key, out representative) || representative == null)
             {
                 Refresh(fresh);
                 return;
@@ -249,7 +278,7 @@ internal sealed class ApplicableItemsSession : IDisposable
         }
 
         // Deliberately outside the recovery catch: do not retry a game action after it starts.
-        template.OnItemCellPress(cell);
+        template.OnItemCellPress!(cell);
     }
 
     public void RequestFallback(string operation, Exception exception)
@@ -282,6 +311,7 @@ internal sealed class ApplicableItemsSession : IDisposable
             widget.Hide(); // Releases old pooled widgets; onWidgetHide disposes this session.
             container.inventoriesData.Clear();
             container.inventoriesData.AddRange(sections);
+            container.SelectedWidgetData = null;
             container.HeaderLocaleId = originalHeader;
             widget.Draw(container); // A fresh setup is safe after Hide cleared all sections.
         }
@@ -316,6 +346,7 @@ internal sealed class ApplicableItemsSession : IDisposable
             container.onWidgetHide -= Dispose;
             container.inventoriesData.Clear();
             container.inventoriesData.AddRange(originalSections);
+            container.SelectedWidgetData = null;
             container.HeaderLocaleId = originalHeader;
         }
         current = null;

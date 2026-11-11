@@ -54,6 +54,30 @@ internal sealed class PickerSnapshot<T> where T : class
         return new PickerSnapshot<T>(StackAggregation.Build(included), policy.CanSelect);
     }
 
+    // Materialize sources once and finish every section before publishing any
+    // view. Ambiguous membership or a failure in either section rejects the plan.
+    public static PickerSnapshot<T>[] BuildAll(IEnumerable<StackSource<T>> sources,
+        IReadOnlyList<PickerPolicy<T>> policies)
+    {
+        if (policies.Count == 0)
+            throw new ArgumentException("A picker needs at least one section.", nameof(policies));
+        var materialized = new List<StackSource<T>>(sources);
+        var ids = new HashSet<PickerId>();
+        var assigned = new HashSet<T>(ReferenceComparer<T>.Instance);
+        var result = new PickerSnapshot<T>[policies.Count];
+        for (int i = 0; i < policies.Count; i++)
+        {
+            if (!ids.Add(policies[i].Id))
+                throw new NotSupportedException("Picker sections must have distinct identities.");
+            result[i] = Build(materialized, policies[i]);
+            foreach (var group in result[i].Groups)
+                foreach (var source in group.Sources)
+                    if (!assigned.Add(source.Item))
+                        throw new NotSupportedException("An item belongs to more than one picker section.");
+        }
+        return result;
+    }
+
     public bool TryResolveSelectable(string key, out T? item)
     {
         for (int i = 0; i < Groups.Count; i++)

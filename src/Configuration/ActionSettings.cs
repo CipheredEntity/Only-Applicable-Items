@@ -13,6 +13,7 @@ internal sealed class ActionSettings
     public ConfigEntry<bool> ZombieEquipment { get; }
     public ConfigEntry<bool> ResurrectionCollars { get; }
     public ConfigEntry<bool> Sermons { get; }
+    public ConfigEntry<bool> StudyTable { get; }
 
     public ActionSettings(ConfigFile config)
     {
@@ -55,5 +56,9 @@ internal sealed class ActionSettings
             "Combine native-eligible sermons into one Sermons inventory at the prayer stand. " +
             "Preserves full item definitions and quality variants. Attendance, success chance, execution, and rewards remain native. " +
             "Disabling restores an open sermon picker on the next frame; enabling applies the next time it opens.");
+        StudyTable = config.Bind("Actions", "Study Table", true,
+            "Consolidate the study picker into Researchable and Decomposable, in that order, including empty sections. " +
+            "Uses native eligibility and survey resolution; requirements, completion, and consumption remain unchanged. " +
+            "Disabling restores both sections to the original picker on the next frame; enabling applies the next time it opens.");
     }
 }

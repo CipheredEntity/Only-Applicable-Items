@@ -1,4 +1,4 @@
-Only Applicable Items 0.10.0
+Only Applicable Items 0.11.0
 ============================
 
 A BepInEx 5 plugin for Graveyard Keeper 2. Garden seed selection displays one
@@ -63,6 +63,14 @@ and quality variants stay separate. Attendance requirements, success chance,
 execution, and rewards remain unchanged; insufficient attendance still blocks
 starting the sermon in the prayer interface, not choosing it in the picker.
 
+Study-table selection displays two virtual inventories in order: "Researchable"
+and "Decomposable". Both remain present when empty. Native eligibility identifies
+available targets, and the game's resolved survey definition determines the
+category. Equivalent full definitions have combined quantities. Research completion,
+requirements, and consumption remain native: research retains its main item;
+decomposition consumes its configured quantity. Missing supporting resources still
+affect the normal craft button rather than hiding an otherwise eligible item.
+
 Configuration
 -------------
 After the plugin first loads, BepInEx creates:
@@ -78,13 +86,16 @@ After the plugin first loads, BepInEx creates:
   Zombie Equipment = true
   Resurrection Collars = true
   Sermons = true
+  Study Table = true
 
-All nine options are enabled by default and independent. Body Parts controls all
+All ten options are enabled by default and independent. Body Parts controls all
 six body-part categories and both insertion and replacement. Grave Decorations
 controls both Tombstones and Fences. Zombie Equipment controls Collars, Armor,
 Weapons, and Tools together; Resurrection Collars controls only resurrection-table
 collar selection. Both collar inventories default to "Collars", with distinct
-internal identities ready for future naming settings. Names are not configurable
+internal identities. Study Table controls Researchable and Decomposable together,
+with a separate stable identity for each section. These identities are
+ready for future naming settings. Names are not configurable
 in this version. Set an option to false to use
 the original interface for that action. Existing settings are kept when the new
 entry is added. No configuration-manager plugin
@@ -163,6 +174,11 @@ docs/RESURRECTION_COLLARS.md for integration details and native limitations.
 Sermon checks exercise the production action contract, exact native predicate
 forwarding, source/variant aggregation, safety fallback, and independent settings.
 See docs/SERMONS.md for integration details and an in-game checklist.
+Study Table checks also execute the production coordinated session against
+in-memory inventory/UI boundaries: empty sections, independent aggregation,
+atomic build/refresh fallback, native callback forwarding, and shared toggling.
+Single-section session regressions cover every existing picker identity. These
+checks do not run Unity rendering or actual controller input. See docs/STUDY_TABLE.md.
 
 Build output:
   bin/Release/net472/OnlyApplicableItems.dll
@@ -272,12 +288,19 @@ Manual validation checklist
     quantity, while inventories retain full counts. Disable Resurrection Collars
     while the table is open to restore the native selected-slot quantity; re-enable
     to hide it again. Verify preparation still consumes exactly one collar.
+    See docs/RESURRECTION_COLLARS.md for the delayed-selection limitation.
 22. At the prayer stand, check Sermons totals across player/bags/zone storage,
     separate types and qualities, hidden unrelated items, and unchanged sermon
     selection and prayer controls. Test insufficient attendance, low success
     chance, cancellation, source changes, and the independent live Sermons toggle.
     Compare execution costs and rewards with vanilla. See docs/SERMONS.md.
-    See docs/RESURRECTION_COLLARS.md for the delayed-selection limitation.
+23. At the study table, check ordered Researchable/Decomposable headers, combined
+    quantities across player/bags/storage, distinct qualities, and either/both
+    categories empty. Test normal research completion, repeated science decomposition,
+    insufficient requirements, cancellation, source changes, controller navigation,
+    and live Study Table disabling. Unexpected studyable item properties should
+    restore the entire native picker. Recheck existing single-section actions.
+    See docs/STUDY_TABLE.md for the detailed checklist and native behavior.
 
 The mod falls back to vanilla for unexpected instance properties on included items
 or an unsupported picker contract. These cases appear once per failure category
@@ -297,6 +320,8 @@ Resurrection Collars requires in-game validation of Harmony scoping, Unity rende
 and delayed native consumption; the automated checks do not execute those systems.
 Sermons also requires in-game validation of picker rendering and native sermon
 execution; its automated checks do not run the game or serialized prayer scripts.
+Study Table requires in-game validation of both headers, empty-group controller
+navigation, native survey effects, and the shared session's single-section UI paths.
 An alchemy reflection/display failure disables that feature for the current plugin
 session and logs a warning; restart after resolving it. Garden features remain
 available. Do not treat a successful build or logic checks as proof of UI integration.

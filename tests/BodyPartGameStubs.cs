@@ -13,6 +13,8 @@ public sealed class ItemDef
     public bool hasDurability;
     public bool isTool;
     public bool isWeapon;
+    public bool isBag;
+    public int sortOrder;
     public System.Collections.Generic.List<string> itemGroupIds = new System.Collections.Generic.List<string>();
 }
 
@@ -24,6 +26,9 @@ public sealed class Item
     public int Count;
     public bool HasInstanceData;
     public bool IsEmpty => Count <= 0;
+    public bool IsBag => Definition.isBag;
+    public int InventorySize;
+    public System.Collections.Generic.List<Item> Inventory { get; } = new System.Collections.Generic.List<Item>();
 
     public Item(string id, ItemType category, int count = 1)
     {
@@ -42,6 +47,15 @@ public sealed class UIItemCell
     public bool CounterVisible { get; private set; }
     public bool ThrowOnNextCountUpdate;
     public int CountUpdates { get; private set; }
+
+    public void Draw(Item? item)
+    {
+        DisplayingItem = item;
+        Value = item?.Count ?? 0;
+        UpdateCountLabel();
+    }
+
+    public void UpdateCountLabelAsRegularItem() => UpdateCountLabel(forceDraw: true);
 
     // Minimal stand-in for the verified normal-collar counter branch, not Unity.
     public void UpdateCountLabel(int multiplier = 1, bool forceDraw = false)

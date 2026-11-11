@@ -14,7 +14,7 @@ public sealed class Plugin : BaseUnityPlugin
 {
     public const string Guid = "ciphe.gk2.onlyapplicableitems";
     public const string Name = "Only Applicable Items";
-    public const string Version = "0.10.0";
+    public const string Version = "0.11.0";
     internal static Plugin? Instance { get; private set; }
     internal ActionSettings Settings { get; private set; } = null!;
     private readonly List<ApplicableItemsSession> sessions = new List<ApplicableItemsSession>();
@@ -29,6 +29,7 @@ public sealed class Plugin : BaseUnityPlugin
     private GraveDecorationPickerContract? graveDecorations;
     private ZombieEquipmentPickerContract? zombieEquipment;
     private SermonPickerContract? sermons;
+    private StudyTablePickerContract? studyTable;
     internal ResurrectionCollarPickerContract? ResurrectionCollars { get; private set; }
     internal ResurrectionCollarDisplay? ResurrectionCollarSlot { get; private set; }
     internal AlchemyFeatures? Alchemy { get; private set; }
@@ -66,6 +67,21 @@ public sealed class Plugin : BaseUnityPlugin
             InitializeResurrectionCollars();
             InitializeResurrectionCollarDisplay();
             InitializeSermons();
+            InitializeStudyTable();
+        }
+    }
+
+    private void InitializeStudyTable()
+    {
+        try
+        {
+            studyTable = new StudyTablePickerContract(() => Settings.StudyTable.Value, contract!.ValidatePlainItem);
+            Logger.LogInfo("Study Table ready. Enabled: " + Settings.StudyTable.Value);
+        }
+        catch (Exception exception)
+        {
+            studyTable = null;
+            WarnOnce("study-table-startup", "Study Table is unavailable; existing actions remain supported. " + exception);
         }
     }
 
@@ -213,6 +229,7 @@ public sealed class Plugin : BaseUnityPlugin
         if (contract == null)
             return;
         PickerPolicy<Item>? policy = null;
+        IReadOnlyList<PickerPolicy<Item>>? policies = null;
         ApplicableItemsSession? session = null;
         try
         {
@@ -222,14 +239,19 @@ public sealed class Plugin : BaseUnityPlugin
                 ?? bodyParts?.GetPolicy(callback, predicate) ?? embalming?.GetPolicy(callback, predicate)
                 ?? graveDecorations?.GetPolicy(callback, predicate) ?? zombieEquipment?.GetPolicy(callback, predicate)
                 ?? ResurrectionCollars?.GetPolicy(callback, predicate) ?? sermons?.GetPolicy(callback, predicate);
-            if (policy == null || !policy.IsEnabled)
+            policies = policy != null ? new[] { policy } : studyTable?.GetPolicies(callback, predicate);
+            if (policies == null)
                 return;
-            session = new ApplicableItemsSession(this, policy, data, predicate);
+            foreach (var section in policies)
+                if (!section.IsEnabled)
+                    return;
+            session = new ApplicableItemsSession(this, policies, data, predicate);
             session.Commit();
         }
         catch (Exception exception)
         {
             session?.Dispose();
+            policy = policy ?? (policies != null && policies.Count > 0 ? policies[0] : null);
             var title = policy?.Title ?? "item";
             WarnOnce("construction-" + (policy?.Id.ToString() ?? "item"), "Leaving the original " + title +
                 " picker in place because consolidation was unsafe. " + exception);

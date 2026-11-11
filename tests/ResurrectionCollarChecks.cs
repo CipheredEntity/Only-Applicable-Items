@@ -35,7 +35,8 @@ internal static partial class Program
             (PickerId.Fences, "Fences"), (PickerId.ZombieCollars, "Collars"),
             (PickerId.ZombieArmor, "Armor"), (PickerId.ZombieWeapons, "Weapons"),
             (PickerId.ZombieTools, "Tools"), (PickerId.ResurrectionCollars, "Collars"),
-            (PickerId.Sermons, "Sermons")
+            (PickerId.Sermons, "Sermons"), (PickerId.StudyResearchable, "Researchable"),
+            (PickerId.StudyDecomposable, "Decomposable")
         };
         Assert(Enum.GetValues(typeof(PickerId)).Length == expected.Length, "Every picker has an explicit default name.");
         foreach (var entry in expected)
@@ -158,8 +159,9 @@ internal static partial class Program
         var collar = new Item("collar", ItemType.Collar, 8);
         var sources = new[] { CollarSource(new object(), collar) };
         var disabled = PickerSnapshot<Item>.Build(sources, policy);
-        var view = new OnlyApplicableItems.UI.ApplicableInventoryWidgetData(
-            new OnlyApplicableItems.UI.ApplicableItemsSession(policy), new Inventory(), disabled, new InventoryWidgetDataBase());
+        using var fixture = new SessionFixture(new[] { policy }, SessionSources(collar), policy.CanSelect);
+        fixture.Open();
+        var view = fixture.View(0);
         Assert(disabled.Groups.Count == 1 && !disabled.TryResolveSelectable(collar.id, out _) &&
             !view.CustomItemsAvailableCondition!(collar), "Native rejection must disable the displayed cell as well as resolution.");
         allowed = true;

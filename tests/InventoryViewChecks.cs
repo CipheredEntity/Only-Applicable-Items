@@ -13,16 +13,15 @@ internal static partial class Program
         var native = owner.ArmorPredicate;
         var policy = CreateZombieEquipmentContract().GetPolicy(owner.ReplaceCallback, native)!;
         var item = EquipmentItem("Armor");
-        var snapshot = PickerSnapshot<Item>.Build(new[] { CollarSource(new object(), item) }, policy);
-        var original = new InventoryWidgetDataBase
-        {
-            CustomItemsAvailableCondition = native,
-            OnItemCellOver = _ => { },
-            OnItemCellOut = _ => { },
-            ExtraRedTooltipLocIdProvider = _ => "native-tooltip"
-        };
-        var session = new ApplicableItemsSession(policy);
-        var view = new ApplicableInventoryWidgetData(session, new Inventory(), snapshot, original);
+        Item? selected = null;
+        using var fixture = new SessionFixture(new[] { policy }, SessionSources(item), native,
+            cell => selected = cell.DisplayingItem);
+        var original = fixture.Originals[0];
+        original.OnItemCellOver = _ => { };
+        original.OnItemCellOut = _ => { };
+        original.ExtraRedTooltipLocIdProvider = _ => "native-tooltip";
+        fixture.Open();
+        var view = fixture.View(0);
         var available = view.CustomItemsAvailableCondition ?? throw new InvalidOperationException("Missing UI availability predicate.");
         Assert(native(item) && ReferenceEquals(available, policy.CanSelect) &&
             !available(item), "The real virtual-view constructor must pass the full policy to the native gray-out/input mechanism.");
@@ -33,6 +32,9 @@ internal static partial class Program
         owner.EquipmentRule = _ => false;
         Assert(!available(item), "Native rejection must still disable the UI.");
         view.OnItemCellPress!(new UIItemCell { DisplayingItem = item });
-        Assert(ReferenceEquals(session.Selected, item), "Keep click dispatch routed through the session's selection handler.");
+        Assert(selected == null, "The real session must reject a disabled native action at click time.");
+        owner.EquipmentRule = _ => true;
+        view.OnItemCellPress!(new UIItemCell { DisplayingItem = item });
+        Assert(ReferenceEquals(selected, item), "Keep click dispatch routed through the real session's selection handler.");
     }
 }

@@ -96,7 +96,16 @@ internal static partial class Program
             SermonsRevalidateNativeEligibilityAndSourceChanges,
             SermonsRetainTheExistingItemSafetyValidator,
             SermonsResolveARealSourceForTheOriginalDefinitionCallback,
-            SermonsDefaultOnAndUseAnIndependentLiveSetting
+            SermonsDefaultOnAndUseAnIndependentLiveSetting,
+            StudyTableRecognizesOnlyItsNativeContextAndOrderedIdentities,
+            StudyTableUsesNativeEligibilityAndTheSingleResolvedSurvey,
+            CoordinatedSnapshotsEnumerateSourcesOnceAndRejectAmbiguity,
+            StudySessionAggregatesPlayerBagsAndStorageWithVisibleHeaders,
+            StudySessionKeepsEmptySectionsAndRejectsStaleCategoryClicks,
+            StudySessionBuildAndRefreshFailuresRestoreTheWholePicker,
+            StudySessionNativeRedrawFailureAndLiveToggleRestoreBothSections,
+            ExistingSingleSectionSessionsRetainTheirLayoutAndRealSourceBehavior,
+            StudyTableSettingsDefaultOnAndControlBothIndependentIdentities
         };
         foreach (var check in checks)
         {
@@ -291,7 +300,7 @@ internal static partial class Program
 
     private static void ActionSettingsRemainIndependent()
     {
-        var settings = new bool[9];
+        var settings = new bool[10];
         var policies = new[]
         {
             new PickerPolicy<Stack>(PickerId.Seeds, () => settings[0], _ => true, _ => true, _ => { }),
@@ -302,7 +311,8 @@ internal static partial class Program
             new PickerPolicy<Stack>(PickerId.Tombstones, () => settings[5], _ => true, _ => true, _ => { }),
             new PickerPolicy<Stack>(PickerId.ZombieCollars, () => settings[6], _ => true, _ => true, _ => { }),
             new PickerPolicy<Stack>(PickerId.ResurrectionCollars, () => settings[7], _ => true, _ => true, _ => { }),
-            new PickerPolicy<Stack>(PickerId.Sermons, () => settings[8], _ => true, _ => true, _ => { })
+            new PickerPolicy<Stack>(PickerId.Sermons, () => settings[8], _ => true, _ => true, _ => { }),
+            new PickerPolicy<Stack>(PickerId.StudyResearchable, () => settings[9], _ => true, _ => true, _ => { })
         };
         for (int combination = 0; combination < (1 << settings.Length); combination++)
         {

@@ -64,6 +64,9 @@ the private item-property field's type:
    SermonPickerContract requires the exact UIPrayWindowData.CanUsePray predicate
    with a native callback declared on and bound to that same prayer-data instance.
    Both visibility and selection use CanUsePray without naming its inline callback.
+   StudyTablePickerContract similarly requires IsItemAllowed on the same
+   UIResourceBasedCraftWindowData owner as its native callback. The game's survey
+   resolver and isScienceFuelCraft split eligible targets into two ordered policies.
    Unknown predicates, multicast delegates, and unsupported
    actions use vanilla.
 2. Prefix on `InventoryWidget.OnRedraw`. It only handles the mod's
@@ -100,6 +103,7 @@ Action-specific contracts create independent PickerPolicy<Item> objects:
 | Zombie Equipment | Native slot category, including disabled entries | CanUpgradeCollarTo, IsArmor, IsWeapon, IsTool | Zombie Equipment / Collars, Armor, Weapons, Tools |
 | Resurrection Collars | ItemType.Collar, including disabled entries | Original skull-range predicate | Resurrection Collars / Collars |
 | Sermons | CanUsePray | CanUsePray | Sermons |
+| Study Table | IsItemAllowed plus the resolved survey category | Same native eligibility/category | Study Table / Researchable, Decomposable |
 
 Every policy has a stable PickerId independent of its displayed Title. Default
 titles are centralized in Core/PickerIdentity.cs. ZombieCollars and
@@ -112,6 +116,16 @@ Sermons adds no new Harmony patches. Its original callback retains a SermonDef,
 not a stack or UID, and creates one CraftElementSermon with empty item requirements.
 Attendance, success chance, execution, and rewards stay in the original prayer
 systems. See SERMONS.md for native scope and validation details.
+
+The session accepts an ordered policy list, with previous actions represented by
+one policy. BuildAll materializes sources once, builds independent snapshots,
+and rejects duplicate identities or overlapping item membership. All snapshots
+and virtual views finish before publishing any changes. Study Table keeps two
+sections even when empty, using each section's own ID, header, availability, and
+click route. Existing single-section actions retain the window title and hidden
+section header. Multi-section pickers retain the original window caption and show
+their section headers. A failure or live disabling restores the entire picker.
+No additional Harmony patch or consumption logic is introduced. See STUDY_TABLE.md.
 
 The session excludes empty stacks for all policies. Each policy rejects instance
 properties, contents, internal inventory capacity, bag status, or durability.
@@ -170,9 +184,9 @@ also captures per-group selectability. Perk changes therefore trigger refresh
 even when stock is identical. Unchanged snapshots do not redraw. Main-thread
 LateUpdate coalesces updates.
 
-Refresh replaces the single section's data and calls OnItemsAvailabilityChanged,
-which the game binds to the child widget's Redraw. This preserves the section
-count and lets InventoryWidget.SetData unsubscribe from its old display holder.
+Refresh replaces all section data together and calls OnItemsAvailabilityChanged,
+which the game binds to the multi-inventory widget's Redraw. This preserves the
+section count and lets each InventoryWidget.SetData unsubscribe from its old holder.
 It does not call the shared window's Redraw, which would add duplicate sections.
 Availability changes use that full child redraw, not just SetWidgetState: the
 native UIItemCell.Draw also updates its separate isInteractable flag.

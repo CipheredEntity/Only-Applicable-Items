@@ -21,5 +21,10 @@ namespace OnlyApplicableItems
         public static Plugin? Instance { get; set; }
         public ResurrectionCollarPickerContract? ResurrectionCollars { get; set; }
         public UI.ResurrectionCollarDisplay? ResurrectionCollarSlot { get; set; }
+        public System.Collections.Generic.HashSet<UI.ApplicableItemsSession> Sessions { get; } = new();
+        public System.Collections.Generic.List<string> Warnings { get; } = new();
+        public void Register(UI.ApplicableItemsSession session) => Sessions.Add(session);
+        public void Unregister(UI.ApplicableItemsSession session) => Sessions.Remove(session);
+        public void WarnOnce(string key, string message) { if (!Warnings.Contains(key)) Warnings.Add(key); }
     }
 }
