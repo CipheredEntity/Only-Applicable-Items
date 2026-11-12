@@ -134,6 +134,13 @@ header data objects use an empty HeaderIconId for the game's icon-free layout;
 all other header defaults remain unchanged. Native cell draws restore visibility
 on pooled reuse. These visuals share the Study Table toggle and fallback lifecycle.
 
+The selected study item slot has a separate display owner with postfixes on
+UIResourceBasedCraftWindow.Redraw/Hide. The redraw postfix receives mainIngredient,
+resolves its displayed ID through the native survey resolver, and hides only a
+research counter. Decomposable, empty, unknown, and disabled cases retain native
+rendering. Toggle changes/shutdown redraw tracked visible windows; selection,
+requirements, inventory data, and execution remain untouched. See STUDY_TABLE.md.
+
 The session excludes empty stacks for all policies. Each policy rejects instance
 properties, contents, internal inventory capacity, bag status, or durability.
 Armor/Weapons/Tools also require a declared stack limit of one and actual source

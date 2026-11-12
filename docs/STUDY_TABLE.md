@@ -8,13 +8,16 @@ remain visible when empty. Name customization is not implemented yet.
 Researchable hides only its item quantity labels; Decomposable keeps its combined
 counts. Both category headers use the game's icon-free header mode. The same
 Study Table toggle controls these visuals, with vanilla restored when disabled.
+The selected-item slot follows the same research-only rule, classified through
+the native survey resolver on each redraw rather than its former inventory section.
 
 ## Native action and classification
 
 StudyTablePickerContract recognizes UIResourceBasedCraftWindowData.IsItemAllowed
 and a native callback declared on and bound to that same data instance. Unknown
-owners, wrappers, or multicast delegates retain vanilla. No generated method
-names, extra Harmony patches, or independently maintained item lists are used.
+owners, wrappers, or multicast delegates retain vanilla. Picker consolidation
+uses no generated method names, extra Harmony patches, or independently maintained
+item lists. Selected-slot rendering has its own display-only hooks described below.
 
 For each native-eligible nonempty item, GameBalance.GetSurveyDefForItemOrNull(id)
 provides its survey. isScienceFuelCraft=false means Researchable; true means
@@ -65,7 +68,8 @@ only the StudyResearchable policy hides UIItemCell's private countLabel GameObje
 StudyTableVisuals validates that field's name/type once, lazily, and never writes
 Item.Count, the aggregate, UIItemCell.Value, drawCounter, callbacks, or requirements.
 Other section IDs, including StudyDecomposable, retain normal counter rendering.
-The selected study item slot and supporting-resource counters are not patched.
+Supporting-resource counters are not patched. Selected-slot rendering is isolated
+from the inventory decorator and follows the native resolver as described below.
 An incompatible label contract enters the existing whole-picker safe fallback.
 
 Native UIItemCell.Draw/DrawCount explicitly sets counter visibility each time a
@@ -84,6 +88,33 @@ A read-only scan of the installed GameBalance.surveyDefs found all 395 primary-i
 quantity expressions equal to 1. This supports hiding research stock labels in
 the current build; the native code still supports other quantities, and those
 requirements remain enforced if game data or other mods change them.
+
+## Selected-item slot
+
+UIResourceBasedCraftWindow.Redraw populates its private mainIngredient cell with
+new Item(data.SelectedItem.id, data.MainIngredientCount). That native projection
+explains the stock counter in the selected slot even for non-consuming research.
+
+StudySelectedItemDisplay uses isolated postfixes on that window's Redraw and Hide.
+The redraw postfix receives only mainIngredient through Harmony field injection,
+after validating the field type during initialization. It classifies the cell's
+currently displayed full ID through GameBalance.GetSurveyDefForItemOrNull. Only
+a nonempty item resolving to isScienceFuelCraft=false has its label hidden using
+the existing StudyTableVisuals helper. Decomposable and unknown definitions retain
+the native draw. No cached category, picker section, selected reference/UID, stored
+Count, native display Item, UIItemCell.Value, callback, or craft requirement is changed.
+
+Each native populated draw restores label visibility before the postfix, so
+switching categories resets correctly. Empty selections retain the game's blank
+slot, and the next populated draw resets pooled-cell counters. Open windows are
+tracked only to refresh on Study Table toggle changes. Hidden windows are forgotten;
+disabling and plugin shutdown redraw native selected slots. An unchanged toggle
+does not cause recurring redraws. No inventory access or consumption hook is added.
+
+Selected-slot initialization/runtime failure is isolated from consolidation and
+attempts native visual restoration. A native redraw that throws is not retried.
+The tests model the redraw/label boundaries; actual Harmony injection, native empty
+draws, controller focus, and Unity pooling still require in-game validation.
 
 ## Selection and consumption
 
@@ -111,7 +142,10 @@ the game's resolver implementation, knowledge logic, or native consumption.
 Visual checks execute the production decorator and label-field access against
 small UI boundaries, verifying retained aggregates/UIDs/counts, visible Decomposable
 labels, icon-free study header data, pooled reuse in vanilla/every other picker,
-and native counter/icon restoration after disabling or fallback.
+and native counter/icon restoration after disabling or fallback. Selected-slot
+checks additionally cover resolver changes for the same ID, category switching,
+clearing/depletion, missing definitions, reopening/reuse, live toggle and shutdown
+restoration, failure isolation, and exact item-reference/UID/count/cache preservation.
 
 Manual checklist:
 
@@ -129,7 +163,9 @@ Manual checklist:
    Seeds, Fertilizers, Alchemy, Body Parts, Embalming, Graves, Zombie Equipment,
    Resurrection Collars (including its selected-slot display), and Sermons.
 7. Check Researchable quantity labels are hidden at 1 and larger combined totals,
-   while Decomposable (including a total of 1), the selected-item slot, and resource
-   requirements keep their quantities. Close/reopen and switch to vanilla storage
+   while Decomposable (including a total of 1) and resource requirements keep their
+   quantities. The selected slot should hide research quantities and show native
+   decomposition quantities. Switch categories, clear or deplete selections,
+   reopen, and toggle Study Table while the window is open. Close/reopen and switch to vanilla storage
    or another picker to check pooled counters restore. Check both icon-free header
    titles and spacing, then disable Study Table to compare vanilla icons/counters.

@@ -14,7 +14,7 @@ public sealed class Plugin : BaseUnityPlugin
 {
     public const string Guid = "ciphe.gk2.onlyapplicableitems";
     public const string Name = "Only Applicable Items";
-    public const string Version = "0.11.1";
+    public const string Version = "0.11.2";
     internal static Plugin? Instance { get; private set; }
     internal ActionSettings Settings { get; private set; } = null!;
     private readonly List<ApplicableItemsSession> sessions = new List<ApplicableItemsSession>();
@@ -23,6 +23,7 @@ public sealed class Plugin : BaseUnityPlugin
     private Harmony? alchemyHarmony;
     private Harmony? resurrectionHarmony;
     private Harmony? resurrectionDisplayHarmony;
+    private Harmony? studyDisplayHarmony;
     private GardenPickerContract? contract;
     private BodyPartPickerContract? bodyParts;
     private EmbalmingPickerContract? embalming;
@@ -32,6 +33,7 @@ public sealed class Plugin : BaseUnityPlugin
     private StudyTablePickerContract? studyTable;
     internal ResurrectionCollarPickerContract? ResurrectionCollars { get; private set; }
     internal ResurrectionCollarDisplay? ResurrectionCollarSlot { get; private set; }
+    internal StudySelectedItemDisplay? StudySelectedSlot { get; private set; }
     internal AlchemyFeatures? Alchemy { get; private set; }
 
     private void Awake()
@@ -68,6 +70,29 @@ public sealed class Plugin : BaseUnityPlugin
             InitializeResurrectionCollarDisplay();
             InitializeSermons();
             InitializeStudyTable();
+            InitializeStudySelectedItemDisplay();
+        }
+    }
+
+    private void InitializeStudySelectedItemDisplay()
+    {
+        try
+        {
+            StudySelectedSlot = new StudySelectedItemDisplay(() => Settings.StudyTable.Value,
+                (operation, exception) => WarnOnce("study-selected-display-" + operation,
+                    "Study selected-item quantity correction failed while " + operation + ". " + exception));
+            studyDisplayHarmony = new Harmony(Guid + ".study-selected-display");
+            studyDisplayHarmony.Patch(StudySelectedSlot.Redraw,
+                postfix: new HarmonyMethod(typeof(StudySelectedItemPatches), nameof(StudySelectedItemPatches.AfterRedraw)));
+            studyDisplayHarmony.Patch(StudySelectedSlot.Hide,
+                postfix: new HarmonyMethod(typeof(StudySelectedItemPatches), nameof(StudySelectedItemPatches.AfterHidden)));
+        }
+        catch (Exception exception)
+        {
+            StudySelectedSlot?.Dispose();
+            studyDisplayHarmony?.UnpatchSelf();
+            StudySelectedSlot = null;
+            WarnOnce("study-selected-display-startup", "The selected study counter remains native; picker features remain available. " + exception);
         }
     }
 
@@ -274,6 +299,7 @@ public sealed class Plugin : BaseUnityPlugin
         }
         Alchemy?.Tick();
         ResurrectionCollarSlot?.Tick();
+        StudySelectedSlot?.Tick();
     }
 
     internal void Register(ApplicableItemsSession session) => sessions.Add(session);
@@ -290,6 +316,9 @@ public sealed class Plugin : BaseUnityPlugin
         foreach (var session in sessions.ToArray())
             session.RestoreVanilla();
         Alchemy?.Dispose();
+        StudySelectedSlot?.Dispose();
+        studyDisplayHarmony?.UnpatchSelf();
+        StudySelectedSlot = null;
         ResurrectionCollarSlot?.Dispose();
         resurrectionDisplayHarmony?.UnpatchSelf();
         ResurrectionCollarSlot = null;

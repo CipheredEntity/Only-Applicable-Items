@@ -109,7 +109,12 @@ internal static partial class Program
             StudyVisualsHideResearchLabelsWithoutChangingTotalsOrSelection,
             StudyVisualsUseNativeIconFreeHeadersOnlyForStudySections,
             StudyVisualsPooledCellsRecoverInVanillaAndEveryOtherPicker,
-            StudyVisualsRestoreVanillaCountersAndIconsOnToggleOrFallback
+            StudyVisualsRestoreVanillaCountersAndIconsOnToggleOrFallback,
+            StudySelectedSlotUsesTheResolverAndPreservesEveryItemAndQuantity,
+            StudySelectedSlotSwitchesClearsAndReopensWithoutStaleCounters,
+            StudySelectedSlotLiveToggleAndShutdownRestoreFreshNativeTotals,
+            StudySelectedSlotDisplayFailureDoesNotDisableConsolidationOrRetryNativeFailure,
+            StudySelectedSlotPostfixesUseOnlyTheDedicatedWindowAndCell
         };
         foreach (var check in checks)
         {

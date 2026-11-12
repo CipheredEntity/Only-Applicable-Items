@@ -28,5 +28,7 @@
     <Compile Include="..\src\UI\ApplicableInventoryWidgetData.cs" Link="UI\ApplicableInventoryWidgetData.cs" />
     <Compile Include="..\src\UI\ApplicableItemsSession.cs" Link="UI\ApplicableItemsSession.cs" />
     <Compile Include="..\src\UI\StudyTableVisuals.cs" Link="UI\StudyTableVisuals.cs" />
+    <Compile Include="..\src\UI\StudySelectedItemDisplay.cs" Link="UI\StudySelectedItemDisplay.cs" />
+    <Compile Include="..\src\Integration\StudySelectedItemPatches.cs" Link="Integration\StudySelectedItemPatches.cs" />
   </ItemGroup>
 </Project>

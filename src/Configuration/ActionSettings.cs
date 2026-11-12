@@ -59,6 +59,7 @@ internal sealed class ActionSettings
         StudyTable = config.Bind("Actions", "Study Table", true,
             "Consolidate the study picker into Researchable and Decomposable, in that order, including empty sections. " +
             "Hide Researchable quantity labels and both category header icons; Decomposable quantities stay visible. " +
+            "Also hide the selected-item quantity for research, using the native survey classification; disabling restores the native slot display. " +
             "Uses native eligibility and survey resolution; requirements, completion, and consumption remain unchanged. " +
             "Disabling restores both sections to the original picker on the next frame; enabling applies the next time it opens.");
     }
