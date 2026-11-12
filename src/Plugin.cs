@@ -14,9 +14,11 @@ public sealed class Plugin : BaseUnityPlugin
 {
     public const string Guid = "ciphe.gk2.onlyapplicableitems";
     public const string Name = "Only Applicable Items";
-    public const string Version = "0.11.2";
+    public const string Version = "0.12.0";
     internal static Plugin? Instance { get; private set; }
     internal ActionSettings Settings { get; private set; } = null!;
+    private FixSettings fixes = null!;
+    private WindowSortingFix? windowSorting;
     private readonly List<ApplicableItemsSession> sessions = new List<ApplicableItemsSession>();
     private readonly HashSet<string> warnings = new HashSet<string>(StringComparer.Ordinal);
     private Harmony? harmony;
@@ -39,6 +41,7 @@ public sealed class Plugin : BaseUnityPlugin
     private void Awake()
     {
         Instance = this;
+        InitializeWindowSorting();
         Settings = new ActionSettings(Config);
         try
         {
@@ -71,6 +74,23 @@ public sealed class Plugin : BaseUnityPlugin
             InitializeSermons();
             InitializeStudyTable();
             InitializeStudySelectedItemDisplay();
+        }
+    }
+
+    private void InitializeWindowSorting()
+    {
+        try
+        {
+            fixes = new FixSettings(Config);
+            windowSorting = new WindowSortingFix(Guid + ".window-sorting", () => fixes.WindowSortingOrder.Value,
+                (operation, exception) => WarnOnce("window-sorting-" + operation,
+                    "Window sorting correction suspended while " + operation + ". " + exception));
+            Logger.LogInfo("Window Sorting Order ready. Enabled: " + fixes.WindowSortingOrder.Value);
+        }
+        catch (Exception exception)
+        {
+            windowSorting = null;
+            WarnOnce("window-sorting-startup", "Window sorting remains native; inventory features are independent. " + exception);
         }
     }
 
@@ -285,6 +305,7 @@ public sealed class Plugin : BaseUnityPlugin
 
     private void LateUpdate()
     {
+        windowSorting?.Tick();
         foreach (var session in sessions.ToArray())
         {
             try
@@ -313,6 +334,10 @@ public sealed class Plugin : BaseUnityPlugin
 
     private void OnDestroy()
     {
+        try { windowSorting?.Dispose(); }
+        catch (Exception exception)
+        { WarnOnce("window-sorting-shutdown", "Window sorting cleanup failed; its hooks are inactive. " + exception); }
+        finally { windowSorting = null; }
         foreach (var session in sessions.ToArray())
             session.RestoreVanilla();
         Alchemy?.Dispose();

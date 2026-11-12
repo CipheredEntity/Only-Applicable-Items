@@ -216,6 +216,13 @@ per-frame or per-item informational messages are emitted.
 
 ## Configuration and future scope
 
+A separate global `[Fixes] Window Sorting Order` setting and Harmony owner correct
+allocation-counter accumulation independently of picker startup and action gates.
+They track original stack allocations without changing surviving canvases, suspend
+on reentrancy/unexpected state, and resume at a fresh root. The canonical generic
+patches are verified on shipped Mono/Harmony with a standalone controller probe.
+See [WINDOW_SORTING.md](WINDOW_SORTING.md) for the contract, limitations, and tests.
+
 Config.Bind creates independent `[Actions] Seeds = true`, `Fertilizers = true`,
 `Alchemical Ingredients = true`, `Body Parts = true`, `Embalming Fluids = true`,
 `Grave Decorations = true`, and `Zombie Equipment = true`
@@ -239,7 +246,9 @@ and equipment transfers have different contracts.
 ## Remaining validation
 
 Successful compilation and the pure-logic checks do not validate Harmony runtime
-installation, Unity prefabs, pooled component behavior, or controller input.
+installation, Unity prefabs, pooled component behavior, or controller input. The
+separate window-sorting runtime probe verifies its generic Harmony interception on
+shipped Mono with stand-in windows, not Unity rendering or the picker patches.
 The user validated Seeds, Fertilizers, Alchemical Ingredients, Body Parts, and
 Embalming Fluids in-game before the Grave Decorations extension. Grave Decorations
 and regression testing require in-game checks.

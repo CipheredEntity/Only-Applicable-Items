@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\OnlyApplicableItems.local.props" Condition="Exists('..\..\OnlyApplicableItems.local.props')" />
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net472</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <!-- The linked, unchanged native controller predates nullable annotations. -->
+    <Nullable>annotations</Nullable>
+    <PlatformTarget>x64</PlatformTarget>
+    <GameManagedPath Condition="'$(GameManagedPath)' == ''">$(MSBuildProjectDirectory)\..\..\..\Game Assemblies Copies\Managed</GameManagedPath>
+    <GameInstallPath Condition="'$(GameInstallPath)' == ''">$(MSBuildProgramFiles32)\Steam\steamapps\common\Graveyard Keeper 2</GameInstallPath>
+    <BepInExCorePath Condition="'$(BepInExCorePath)' == ''">$(GameInstallPath)\BepInEx\core</BepInExCorePath>
+    <AutomaticallyUseReferenceAssemblyPackages>false</AutomaticallyUseReferenceAssemblyPackages>
+    <FrameworkPathOverride>$(GameManagedPath)</FrameworkPathOverride>
+    <_TargetFrameworkDirectories>$(GameManagedPath)</_TargetFrameworkDirectories>
+    <_FullFrameworkReferenceAssemblyPaths>$(GameManagedPath)</_FullFrameworkReferenceAssemblyPaths>
+    <RestorePackagesPath>$(MSBuildProjectDirectory)\..\..\.nuget\packages</RestorePackagesPath>
+    <RestoreSources>$(MSBuildProjectDirectory)\..\..\.nuget\packages</RestoreSources>
+    <NuGetAudit>false</NuGetAudit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\..\src\Core\StackAggregation.cs" Link="Core\StackAggregation.cs" />
+    <Compile Include="..\..\src\Core\WindowSortingTracker.cs" Link="Core\WindowSortingTracker.cs" />
+    <Compile Include="..\..\src\Integration\WindowSortingFix.cs" Link="Integration\WindowSortingFix.cs" />
+    <Compile Include="..\..\..\Decompiled Source\LazyBearTechnology\LazyBearTechnology\LazyWindowsStackController.cs" Link="Native\LazyWindowsStackController.cs" />
+    <Reference Include="mscorlib" HintPath="$(GameManagedPath)\mscorlib.dll" Private="false" />
+    <Reference Include="System" HintPath="$(GameManagedPath)\System.dll" Private="false" />
+    <Reference Include="System.Core" HintPath="$(GameManagedPath)\System.Core.dll" Private="false" />
+    <Reference Include="0Harmony" HintPath="$(BepInExCorePath)\0Harmony.dll" />
+    <Reference Include="Mono.Cecil" HintPath="$(BepInExCorePath)\Mono.Cecil.dll" />
+    <Reference Include="MonoMod.RuntimeDetour" HintPath="$(BepInExCorePath)\MonoMod.RuntimeDetour.dll" />
+    <Reference Include="MonoMod.Utils" HintPath="$(BepInExCorePath)\MonoMod.Utils.dll" />
+  </ItemGroup>
+</Project>

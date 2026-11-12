@@ -1,4 +1,4 @@
-Only Applicable Items 0.11.2
+Only Applicable Items 0.12.0
 ============================
 
 A BepInEx 5 plugin for Graveyard Keeper 2. Garden seed selection displays one
@@ -15,7 +15,7 @@ items and those that fail the native research requirements stay hidden. The
 native selection restrictions still apply, including repeated ingredient slots.
 Laboratory ingredient counters show total accessible stock rather than just the
 originally selected stack. All actions retain the game's own selection, crafting
-calculations, and consumption. Unsupported actions are unaffected.
+calculations, and consumption. Unsupported actions retain their original inventories.
 
 Autopsy body-part insertion and zombie replacement display one category inventory:
 "Brains", "Hearts", "Guts", "Skulls", "Bones", or "Skins". Equivalent full item
@@ -94,7 +94,19 @@ After the plugin first loads, BepInEx creates:
   Sermons = true
   Study Table = true
 
-All ten options are enabled by default and independent. Body Parts controls all
+  [Fixes]
+  Window Sorting Order = true
+
+Window Sorting Order is a separate global fix, independent of all action settings.
+It prevents repeated nested-window openings from accumulating sorting orders above
+tooltips, including interfaces without consolidated inventories. It preserves
+native 15-point increments and never rearranges existing canvases. Disabling stops
+corrections immediately; enabling waits for a fresh root window (close all stacked
+windows and reopen). Reentrant callbacks or unexpected state suspend correction
+until that same fresh-root boundary. Existing inflated windows are not relayered.
+See docs/WINDOW_SORTING.md for compatibility limits and validation.
+
+All ten action options are enabled by default and independent. Body Parts controls all
 six body-part categories and both insertion and replacement. Grave Decorations
 controls both Tombstones and Fences. Zombie Equipment controls Collars, Armor,
 Weapons, and Tools together; Resurrection Collars controls only resurrection-table
@@ -132,8 +144,10 @@ targeting pack. BepInEx 5.4.23.5 and Harmony are referenced from the game's
 BepInEx/core directory; Unity Mono and game DLLs come from:
   ../Game Assemblies Copies/Managed
 
-Keep those copyrighted reference files outside this repository. They are not
-copied to build or package output. Never ship BepInEx, Harmony, or game DLLs.
+Keep those copyrighted reference files outside this repository. The production
+build does not copy them to its output or package. Never ship BepInEx, Harmony,
+or game DLLs. The optional runtime probe copies tooling dependencies only into
+its ignored test output; that directory is never packaged.
 
 The default game path is the standard Program Files (x86) Steam library. For a
 different installation, create the git-ignored OnlyApplicableItems.local.props:
@@ -185,6 +199,14 @@ in-memory inventory/UI boundaries: empty sections, independent aggregation,
 atomic build/refresh fallback, native callback forwarding, and shared toggling.
 Single-section session regressions cover every existing picker identity. These
 checks do not run Unity rendering or actual controller input. See docs/STUDY_TABLE.md.
+
+Window-sorting checks cover allocation history, nesting, out-of-order closure,
+reentrancy, native failures, unexpected state, live settings, and cleanup. A separate
+Windows x64 probe verifies the actual Harmony hooks on the shipped Mono runtime,
+using the unchanged decompiled controller with stand-in windows/canvases. It also
+inspects the reference DLL's generic signatures and allocation IL without executing
+game assembly methods. It launches no Unity/game process. Commands and the remaining
+in-game checklist are in docs/WINDOW_SORTING.md.
 
 Build output:
   bin/Release/net472/OnlyApplicableItems.dll
@@ -313,6 +335,12 @@ Manual validation checklist
     window. Check header spacing without sack icons, and that counters
     return when the same cells are reused in other pickers or vanilla inventories.
     See docs/STUDY_TABLE.md for the detailed checklist and native behavior.
+
+24. With Window Sorting Order enabled, repeat study/alchemy/other picker openings
+    100 times, with action consolidation both enabled and disabled. Check tooltip
+    layering, nested menus, mouse/controller focus, tab layers, credits, and fades.
+    Disable the fix to confirm original allocation behavior. Enable mid-stack and
+    verify correction waits until all windows close and a new root opens.
 
 The mod falls back to vanilla for unexpected instance properties on included items
 or an unsupported picker contract. These cases appear once per failure category

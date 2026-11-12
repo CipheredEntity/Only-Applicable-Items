@@ -114,7 +114,20 @@ internal static partial class Program
             StudySelectedSlotSwitchesClearsAndReopensWithoutStaleCounters,
             StudySelectedSlotLiveToggleAndShutdownRestoreFreshNativeTotals,
             StudySelectedSlotDisplayFailureDoesNotDisableConsolidationOrRetryNativeFailure,
-            StudySelectedSlotPostfixesUseOnlyTheDedicatedWindowAndCell
+            StudySelectedSlotPostfixesUseOnlyTheDedicatedWindowAndCell,
+            SortingReusesOnlySurvivingAssignments,
+            SortingPreservesGapsAndHandlesRootRemoval,
+            SortingConfigIsIndependentAndWaitsForFreshRoot,
+            SortingLateInitializationDoesNotInventHistory,
+            SortingReentrantAddsAndRemovesSuspendWithoutReplay,
+            SortingNativeFailurePreservesIdentityAndPartialState,
+            SortingUnexpectedCounterChangesAreNotOverwritten,
+            SortingUnexpectedMembershipAndSkippedOriginalSuspend,
+            SortingDuplicateStateAndReadFailuresFailConservatively,
+            SortingWriteAndSettingFailuresDoNotEscape,
+            SortingLiveChangesDuringCallbacksAndDisposeStayNative,
+            SortingHonorsNativeBaseAndGuardsOverflow,
+            SortingFinalizersAreIdempotentAndDiagnosticsCannotBreakUi
         };
         foreach (var check in checks)
         {
