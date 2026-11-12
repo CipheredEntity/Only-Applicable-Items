@@ -154,6 +154,8 @@ internal sealed class ApplicableItemsSession : IDisposable
                 throw new InvalidOperationException("A source stack changed while the picker was drawing.");
             cell.Value = view.Groups[i].Total;
             cell.UpdateCountLabelAsRegularItem();
+            if (view.Policy.Id == PickerId.StudyResearchable && view.Policy.IsEnabled)
+                StudyTableVisuals.HideResearchQuantity(cell);
         }
     }
 

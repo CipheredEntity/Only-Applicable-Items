@@ -105,7 +105,11 @@ internal static partial class Program
             StudySessionBuildAndRefreshFailuresRestoreTheWholePicker,
             StudySessionNativeRedrawFailureAndLiveToggleRestoreBothSections,
             ExistingSingleSectionSessionsRetainTheirLayoutAndRealSourceBehavior,
-            StudyTableSettingsDefaultOnAndControlBothIndependentIdentities
+            StudyTableSettingsDefaultOnAndControlBothIndependentIdentities,
+            StudyVisualsHideResearchLabelsWithoutChangingTotalsOrSelection,
+            StudyVisualsUseNativeIconFreeHeadersOnlyForStudySections,
+            StudyVisualsPooledCellsRecoverInVanillaAndEveryOtherPicker,
+            StudyVisualsRestoreVanillaCountersAndIconsOnToggleOrFallback
         };
         foreach (var check in checks)
         {

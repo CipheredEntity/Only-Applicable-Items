@@ -127,6 +127,13 @@ section header. Multi-section pickers retain the original window caption and sho
 their section headers. A failure or live disabling restores the entire picker.
 No additional Harmony patch or consumption logic is introduced. See STUDY_TABLE.md.
 
+StudyResearchable additionally hides only its rendered count-label object after
+normal aggregation, preserving cached totals and real items. Its validated private
+label access is resolved lazily so unrelated pickers are unaffected. Both study
+header data objects use an empty HeaderIconId for the game's icon-free layout;
+all other header defaults remain unchanged. Native cell draws restore visibility
+on pooled reuse. These visuals share the Study Table toggle and fallback lifecycle.
+
 The session excludes empty stacks for all policies. Each policy rejects instance
 properties, contents, internal inventory capacity, bag status, or durability.
 Armor/Weapons/Tools also require a declared stack limit of one and actual source

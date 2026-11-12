@@ -1,4 +1,4 @@
-Only Applicable Items 0.11.0
+Only Applicable Items 0.11.1
 ============================
 
 A BepInEx 5 plugin for Graveyard Keeper 2. Garden seed selection displays one
@@ -65,7 +65,9 @@ starting the sermon in the prayer interface, not choosing it in the picker.
 
 Study-table selection displays two virtual inventories in order: "Researchable"
 and "Decomposable". Both remain present when empty. Native eligibility identifies
-available targets, and the game's resolved survey definition determines the
+available targets. Researchable quantity labels are hidden; Decomposable still
+shows combined quantities. Both category headers use the native icon-free layout.
+The game's resolved survey definition determines the
 category. Equivalent full definitions have combined quantities. Research completion,
 requirements, and consumption remain native: research retains its main item;
 decomposition consumes its configured quantity. Missing supporting resources still
@@ -300,6 +302,10 @@ Manual validation checklist
     insufficient requirements, cancellation, source changes, controller navigation,
     and live Study Table disabling. Unexpected studyable item properties should
     restore the entire native picker. Recheck existing single-section actions.
+    Researchable labels should stay hidden while its totals still aggregate;
+    Decomposable counters, selected-item quantities, and requirement counters
+    remain native. Check header spacing without sack icons, and that counters
+    return when the same cells are reused in other pickers or vanilla inventories.
     See docs/STUDY_TABLE.md for the detailed checklist and native behavior.
 
 The mod falls back to vanilla for unexpected instance properties on included items

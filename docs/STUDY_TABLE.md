@@ -5,6 +5,10 @@ actions. The stable IDs `StudyResearchable` and `StudyDecomposable` have central
 default titles **Researchable** and **Decomposable**, in that order. Both headers
 remain visible when empty. Name customization is not implemented yet.
 
+Researchable hides only its item quantity labels; Decomposable keeps its combined
+counts. Both category headers use the game's icon-free header mode. The same
+Study Table toggle controls these visuals, with vanilla restored when disabled.
+
 ## Native action and classification
 
 StudyTablePickerContract recognizes UIResourceBasedCraftWindowData.IsItemAllowed
@@ -54,6 +58,33 @@ durability, bag status, contents, or internal capacity. Study has a broad item
 pool, so eligible tools/containers with such data can make the whole picker fall
 back. Irrelevant items are filtered before validation. This safeguard is not relaxed.
 
+## Study-only visuals and pooled-cell reuse
+
+After the standard counter decorator computes and renders each combined total,
+only the StudyResearchable policy hides UIItemCell's private countLabel GameObject.
+StudyTableVisuals validates that field's name/type once, lazily, and never writes
+Item.Count, the aggregate, UIItemCell.Value, drawCounter, callbacks, or requirements.
+Other section IDs, including StudyDecomposable, retain normal counter rendering.
+The selected study item slot and supporting-resource counters are not patched.
+An incompatible label contract enters the existing whole-picker safe fallback.
+
+Native UIItemCell.Draw/DrawCount explicitly sets counter visibility each time a
+populated cell is drawn; other mod pickers also force their aggregate labels
+visible. Consequently, no hidden flag remains on a pooled cell. DrawEmpty clears
+the label text, and the next populated draw restores normal visibility. No prefab,
+global counter setting, or global Draw patch is changed.
+
+ApplicableInventoryWidgetData supplies an empty HeaderIconId only for the two
+enabled study policies, keeping DrawHeader and CustomHeaderId intact. The native
+InventoryHeaderWidget.UpdateHeader hides its icon and enables decorWhenNoHeaderIcon;
+it restores the icon for subsequent nonempty IDs. Original header data and defaults
+remain untouched. Check the native icon-free spacing/decoration visually in-game.
+
+A read-only scan of the installed GameBalance.surveyDefs found all 395 primary-item
+quantity expressions equal to 1. This supports hiding research stock labels in
+the current build; the native code still supports other quantities, and those
+requirements remain enforced if game data or other mods change them.
+
 ## Selection and consumption
 
 The original callback receives a currently accessible real representative. It
@@ -77,6 +108,10 @@ sections, stale category clicks, atomic initial and refresh failures, shared liv
 toggle behavior, and regressions for every existing single-section picker identity.
 They do not execute Unity rendering, actual controller input, Harmony interception,
 the game's resolver implementation, knowledge logic, or native consumption.
+Visual checks execute the production decorator and label-field access against
+small UI boundaries, verifying retained aggregates/UIDs/counts, visible Decomposable
+labels, icon-free study header data, pooled reuse in vanilla/every other picker,
+and native counter/icon restoration after disabling or fallback.
 
 Manual checklist:
 
@@ -93,3 +128,8 @@ Manual checklist:
 6. Test eligible unusual tools/containers: safe native fallback is expected. Recheck
    Seeds, Fertilizers, Alchemy, Body Parts, Embalming, Graves, Zombie Equipment,
    Resurrection Collars (including its selected-slot display), and Sermons.
+7. Check Researchable quantity labels are hidden at 1 and larger combined totals,
+   while Decomposable (including a total of 1), the selected-item slot, and resource
+   requirements keep their quantities. Close/reopen and switch to vanilla storage
+   or another picker to check pooled counters restore. Check both icon-free header
+   titles and spacing, then disable Study Table to compare vanilla icons/counters.

@@ -38,7 +38,7 @@ public static class InventoryWidgetDataHelper
         }
         return result;
         void Add(Inventory inventory) => result.Add(new InventoryWidgetData(inventory,
-            new InventoryHeaderWidgetData(inventory, "native"), over, outCallback, press, press2, down, available));
+            new InventoryHeaderWidgetData(inventory, customHeaderId: "native"), over, outCallback, press, press2, down, available));
     }
 }
 
@@ -54,7 +54,12 @@ public sealed class UIMultiInventoryWindowData
     }
 }
 
-public sealed class TestGameObject { public bool activeInHierarchy = true; }
+public sealed class TestGameObject
+{
+    public bool activeInHierarchy = true;
+    public bool activeSelf { get; private set; } = true;
+    public void SetActive(bool value) { activeSelf = value; activeInHierarchy = value; }
+}
 
 public sealed class InventoryWidget
 {

@@ -40,11 +40,12 @@ public sealed class Item
 
 public sealed class UIItemCell
 {
+    private readonly TMPro.TextMeshProUGUI countLabel = new();
     public Item? DisplayingItem;
     public int Value { get; set; }
     public Action<UIItemCell>? OnItemCellPress;
     public int RenderedCount { get; private set; }
-    public bool CounterVisible { get; private set; }
+    public bool CounterVisible => countLabel.gameObject.activeSelf;
     public bool ThrowOnNextCountUpdate;
     public int CountUpdates { get; private set; }
 
@@ -62,7 +63,7 @@ public sealed class UIItemCell
     {
         CountUpdates++;
         RenderedCount = Value * multiplier;
-        CounterVisible = RenderedCount > 1 || forceDraw;
+        countLabel.gameObject.SetActive(RenderedCount > 1 || forceDraw);
         if (ThrowOnNextCountUpdate)
         {
             ThrowOnNextCountUpdate = false;

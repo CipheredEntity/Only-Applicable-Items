@@ -23,7 +23,12 @@ public sealed class InventoryHeaderWidgetData
 {
     public bool DrawHeader { get; set; } = true;
     public string CustomHeaderId { get; }
-    public InventoryHeaderWidgetData(Inventory inventory, string customHeaderId) { CustomHeaderId = customHeaderId; }
+    public string HeaderIconId { get; set; }
+    public InventoryHeaderWidgetData(Inventory inventory, string headerIconId = "comm-header_2-type_icon-main_inventory", string customHeaderId = "")
+    {
+        CustomHeaderId = customHeaderId;
+        HeaderIconId = headerIconId;
+    }
 }
 
 public class InventoryWidgetDataBase
