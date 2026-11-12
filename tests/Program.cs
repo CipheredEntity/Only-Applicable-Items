@@ -8,6 +8,12 @@ internal static partial class Program
 {
     private static int Main()
     {
+        try { return RunChecks(); }
+        catch (Exception exception) { Console.Error.WriteLine("FAILED: " + exception); return 1; }
+    }
+
+    private static int RunChecks()
+    {
         var checks = new Action[]
         {
             CombinesContainersWithoutChangingSources,
@@ -127,7 +133,40 @@ internal static partial class Program
             SortingWriteAndSettingFailuresDoNotEscape,
             SortingLiveChangesDuringCallbacksAndDisposeStayNative,
             SortingHonorsNativeBaseAndGuardsOverflow,
-            SortingFinalizersAreIdempotentAndDiagnosticsCannotBreakUi
+            SortingFinalizersAreIdempotentAndDiagnosticsCannotBreakUi,
+            ShopSellingUsesNativeTierRulesSourcesAndFullIds,
+            ShopSellingBulkUsesNativeDialogPricesAndDistributedRemoval,
+            ShopSellingSingletonsStayOneUnitAndCannotBypassGuard,
+            ShopSellingStackableSingletonSourcesStillOfferBulkAndEmptySafely,
+            ShopSellingPendingCapacityAndStockAreRevalidated,
+            ShopSellingPendingDialogsRejectDepletedReboundAndRemovedSources,
+            ShopSellingPendingEligibilityAndDialogBoundsRemainNative,
+            ShopSellingSafetyFallbackPreservesStagedDealsAndNativeCallbacks,
+            ShopSellingInitialUnsafeAndDisabledItemsUseTheExistingValidator,
+            ShopSellingToggleDefersPanelRestoreUntilDialogCloses,
+            ShopSellingReentrancyCannotReplayOrRebindANativeTransfer,
+            ShopSellingNativeFailuresDoNotRetryOrResetTransactions,
+            ShopSellingOtherTransfersAndExplicitCloseRemainNative,
+            ShopSellingRejectsForeignPanelChangesAndUnrelatedCountDialogs,
+            ShopSellingConfigurationIdentityAndEmptyPanelsAreIndependent,
+            ShopSellingChecksAgainAtNativeEntryAfterPreflight,
+            ShopSellingClosedDialogsAndDisposedFeaturesCannotAuthorizeSales,
+            ShopSellingChangedMerchantContextCannotRedirectAPendingSale,
+            ShopSellingUsesOnlyDeclaredNongenericHookTargets,
+            ShopSellingReentrantDialogOpeningCannotInheritTheSellingScope,
+            ShopSellingDisposalDuringCallbacksCompletesPanelRestoration,
+            ShopSellingNavigationDoesNotStealModalOrMouseFocus,
+            ShopSellingDisabledAtOpeningLeavesNativeTradingUntouched,
+            ShopSellingFallbackUsesCurrentOwnedBagsAndLeavesForeignPanelsAlone,
+            ShopCapacityFixtureReproducesNativeMinusOneLossWhenDisabled,
+            ShopCapacityWarmsFreshCacheAndCapsTheDialogAt300,
+            ShopCapacityCountsPartialMatchingStacksAndMixedSlots,
+            ShopCapacityMixedDialogMatchesPhysicalRoomAndConservesGoods,
+            ShopCapacityClampsAChangedDestinationAtDialogBinding,
+            ShopCapacityRevalidatesPendingChangesAndTheFinalNativeEntry,
+            ShopCapacitySingleMovesAlsoInitializeAndVerifyTheCache,
+            ShopCapacityStaleCacheAndUnexpectedLayoutsFallBackWithoutTransfers,
+            ShopSellableSectionHeaderIsVisibleIconFreeAndRestoresNativeHeaders
         };
         foreach (var check in checks)
         {
@@ -322,7 +361,7 @@ internal static partial class Program
 
     private static void ActionSettingsRemainIndependent()
     {
-        var settings = new bool[10];
+        var settings = new bool[11];
         var policies = new[]
         {
             new PickerPolicy<Stack>(PickerId.Seeds, () => settings[0], _ => true, _ => true, _ => { }),
@@ -334,7 +373,8 @@ internal static partial class Program
             new PickerPolicy<Stack>(PickerId.ZombieCollars, () => settings[6], _ => true, _ => true, _ => { }),
             new PickerPolicy<Stack>(PickerId.ResurrectionCollars, () => settings[7], _ => true, _ => true, _ => { }),
             new PickerPolicy<Stack>(PickerId.Sermons, () => settings[8], _ => true, _ => true, _ => { }),
-            new PickerPolicy<Stack>(PickerId.StudyResearchable, () => settings[9], _ => true, _ => true, _ => { })
+            new PickerPolicy<Stack>(PickerId.StudyResearchable, () => settings[9], _ => true, _ => true, _ => { }),
+            new PickerPolicy<Stack>(PickerId.ShopSelling, () => settings[10], _ => true, _ => true, _ => { })
         };
         for (int combination = 0; combination < (1 << settings.Length); combination++)
         {

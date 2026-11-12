@@ -25,6 +25,10 @@ public sealed class MultiInventoryWidgetData
 
 public static class InventoryWidgetDataHelper
 {
+    public static List<InventoryWidgetDataBase> GetWidgetsDataForInventory(Inventory inventory,
+        Action<UIItemCell>? over, Action<UIItemCell>? outCallback, Action<UIItemCell>? press,
+        Action<UIItemCell>? press2, Action<UIItemCell>? down, Func<Item, bool> available)
+        => GetWidgetsDataForMultiInventory(new MultiInventory { inventoryList = { inventory } }, over, outCallback, press, press2, down, available);
     public static List<InventoryWidgetDataBase> GetWidgetsDataForMultiInventory(MultiInventory inventories,
         Action<UIItemCell>? over, Action<UIItemCell>? outCallback, Action<UIItemCell>? press,
         Action<UIItemCell>? press2, Action<UIItemCell>? down, Func<Item, bool> available)
@@ -79,14 +83,16 @@ public sealed class InventoryWidget
             Cells[i].OnItemCellPress = Data.OnItemCellPress;
         }
         if (Data is ApplicableInventoryWidgetData view) view.Session.Decorate(this, view);
+        if (Data is ShopSellingInventoryData) OnlyApplicableItems.Integration.ShopSellingPatches.BeforeDraw(this);
     }
+    public void OnRedraw() { }
 }
 
 public sealed class MultiInventoryWidget
 {
     public MultiInventoryWidgetData Data = null!;
     public TestGameObject gameObject = new();
-    public UIMultiInventoryWindow? Window;
+    public object? Window;
     public List<InventoryWidget> DrawnInventories { get; } = new();
     public int NavigationRefreshes;
     public bool FailNextRedraw;

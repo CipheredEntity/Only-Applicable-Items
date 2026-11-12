@@ -13,7 +13,7 @@ internal sealed class GardenPickerContract
     private readonly MethodInfo selected;
     private readonly MethodInfo eligible;
     private readonly MethodInfo? fertilizerEligible;
-    private readonly FieldInfo properties;
+    private readonly PlainItemValidator validator;
     public bool SupportsFertilizers => fertilizerEligible != null;
 
     public GardenPickerContract()
@@ -28,10 +28,7 @@ internal sealed class GardenPickerContract
             typeof(PlayerData), typeof(Action<UIItemCell>), typeof(Func<Item, bool>),
             typeof(bool), typeof(string), typeof(Func<Item, string>)
         }) ?? throw new MissingMethodException("The supported item-picker constructor was not found.");
-        properties = typeof(Item).GetField("properties", BindingFlags.Instance | BindingFlags.NonPublic)
-            ?? throw new MissingFieldException(typeof(Item).FullName, "properties");
-        if (properties.FieldType != typeof(Dictionary<Type, SerializedItemProperty>))
-            throw new NotSupportedException("The game's instance-property representation has changed.");
+        validator = new PlainItemValidator();
     }
 
     public PickerPolicy<Item>? GetPolicy(Action<UIItemCell>? callback, Func<Item, bool>? predicate, ActionSettings settings)
@@ -49,12 +46,7 @@ internal sealed class GardenPickerContract
 
     internal void ValidatePlainItem(Item item)
     {
-        // Grouping uses the full definition ID. Reject unknown instance data even for
-        // UID-consuming autopsy actions, whose results recreate the part by definition.
-        var instanceProperties = (Dictionary<Type, SerializedItemProperty>?)properties.GetValue(item);
-        if (item.InventoryCount != 0 || item.InventorySize != 0 || item.IsBag || item.Definition.hasDurability ||
-            (instanceProperties != null && instanceProperties.Count != 0))
-            throw new NotSupportedException("Item '" + item.id + "' has instance data; preserving the original picker.");
+        validator.Validate(item);
     }
 
     private static MethodInfo RequireMethod(Type type, string name, Type result, params Type[] arguments)

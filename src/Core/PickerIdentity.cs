@@ -25,7 +25,8 @@ internal enum PickerId
     ResurrectionCollars,
     Sermons,
     StudyResearchable,
-    StudyDecomposable
+    StudyDecomposable,
+    ShopSelling
 }
 
 internal static class PickerTitles
@@ -54,6 +55,7 @@ internal static class PickerTitles
             case PickerId.Sermons: return "Sermons";
             case PickerId.StudyResearchable: return "Researchable";
             case PickerId.StudyDecomposable: return "Decomposable";
+            case PickerId.ShopSelling: return "Sellable";
             default: throw new ArgumentOutOfRangeException(nameof(id));
         }
     }

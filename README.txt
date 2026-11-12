@@ -1,4 +1,4 @@
-Only Applicable Items 0.12.0
+Only Applicable Items 0.13.1
 ============================
 
 A BepInEx 5 plugin for Graveyard Keeper 2. Garden seed selection displays one
@@ -77,6 +77,22 @@ requirements, and consumption remain native: research retains its main item;
 decomposition consumes its configured quantity. Missing supporting resources still
 affect the normal craft button rather than hiding an otherwise eligible item.
 
+Merchant selling displays one "Sellable" inventory across the backpack and
+directly held bags. Its native section header is visible without a sack icon;
+the original Keeper panel title is unchanged. Currently accepted full item definitions are selectable;
+items bought only at higher defined tiers remain visible but disabled. Products
+the merchant never buys at its current or higher tiers are hidden. Qualities stay
+separate. Stackable items use native quantity dialogs and distributed removal;
+nonstackable items show combined ownership but transfer only one unit per action.
+Merchant stock, deal slots, prices, acceptance, rewards, and cancellation remain
+native. Stock, eligibility, source identity, and full destination capacity are
+checked again before each consolidated sale, including dialog confirmation.
+Capacity validation initializes the destination's native occupancy cache, verifies
+it against actual contents, and bounds quantities by real slots and matching stack
+space. A fresh six-slot deal with 50-per-stack carrots is limited to 300, preventing
+the native -1 cache from incorrectly permitting 350. This protection applies only
+to active consolidated selling; native transactions and cancellation are retained.
+
 Configuration
 -------------
 After the plugin first loads, BepInEx creates:
@@ -93,6 +109,7 @@ After the plugin first loads, BepInEx creates:
   Resurrection Collars = true
   Sermons = true
   Study Table = true
+  Shop Selling = true
 
   [Fixes]
   Window Sorting Order = true
@@ -106,7 +123,7 @@ windows and reopen). Reentrant callbacks or unexpected state suspend correction
 until that same fresh-root boundary. Existing inflated windows are not relayered.
 See docs/WINDOW_SORTING.md for compatibility limits and validation.
 
-All ten action options are enabled by default and independent. Body Parts controls all
+All eleven action options are enabled by default and independent. Body Parts controls all
 six body-part categories and both insertion and replacement. Grave Decorations
 controls both Tombstones and Fences. Zombie Equipment controls Collars, Armor,
 Weapons, and Tools together; Resurrection Collars controls only resurrection-table
@@ -121,6 +138,16 @@ is required. Compatible managers expose the entries using these same names.
 A live setting change disables an open picker for that action on the next frame;
 enabling applies to the next opening. For manual file edits, close the game,
 edit the file, and launch again.
+
+Shop Selling has a separate trading session. Disabling immediately blocks new
+consolidated sales; an open selling quantity dialog must close before its captured
+inventory cells are released and the native player panel is restored. Enabling
+applies at the next shop opening. Safety fallback restores only that child panel,
+without accepting, cancelling, returning, or clearing staged deals. Pending stale
+confirmations do nothing. Unsupported instance properties use vanilla rather
+than risk choosing a different instance through native definition-ID removal.
+The existing native trading cancellation/full-inventory bugs are not repaired.
+See docs/SHOP_SELLING.md for native limits and the manual validation checklist.
 
 Alchemical Ingredients controls BOTH the picker and laboratory counter correction.
 Its label correction refreshes an open laboratory when toggled. Disabling restores
@@ -199,6 +226,19 @@ in-memory inventory/UI boundaries: empty sections, independent aggregation,
 atomic build/refresh fallback, native callback forwarding, and shared toggling.
 Single-section session regressions cover every existing picker identity. These
 checks do not run Unity rendering or actual controller input. See docs/STUDY_TABLE.md.
+
+Shop Selling checks execute the production session, shared item validator, contract,
+and patch forwarding against stand-in inventories/trading/UI. They cover full-ID
+and quality grouping, future-tier restrictions, distributed transfers, one-unit
+nonstackable moves, native-entry revalidation, stale dialogs, partial-capacity
+rejection, preserved staging on fallback, live toggles, reentrancy, controller focus,
+and failure/unload handling. The native-cache regression fixture preserves the -1
+sentinel and split-before-insert loss: disabled selling reproduces 350 removed and
+300 staged; enabled selling caps at 300 and conserves all 350 through cancellation.
+Header checks assert section visibility, icon-free data, unchanged Keeper title,
+and native restoration. The runtime probe also checks the copied game DLL's
+shop hook/delegate signatures, fields, and raw-cache behavior as metadata. These do not execute actual
+game trading or prove Unity rendering, pricing expressions, and transaction effects.
 
 Window-sorting checks cover allocation history, nesting, out-of-order closure,
 reentrancy, native failures, unexpected state, live settings, and cleanup. A separate
@@ -341,6 +381,20 @@ Manual validation checklist
     layering, nested menus, mouse/controller focus, tab layers, credits, and fades.
     Disable the fix to confirm original allocation behavior. Enable mid-stack and
     verify correction waits until all windows close and a new root opens.
+
+25. In shops, check Sellable totals across backpack/bags, quality variants, future
+    tiers shown disabled, and never-bought items hidden. Confirm Sellable appears
+    as an icon-free section under the unchanged Keeper title, including after
+    refresh/reopening, and native headers return when disabled. Sell stackable quantities
+    crossing bag/stack boundaries and transfer identical nonstackable items one at
+    a time. Check both mouse buttons/controller actions, prices, town happiness,
+    full/partial staging, acceptance, cancellation, and closing. Change stock or
+    capacity while a quantity dialog is open and verify stale confirmation is
+    rejected. Toggle with staged goods and an open dialog: no automatic cancellation
+    or loss of staging. See docs/SHOP_SELLING.md for the detailed checklist.
+    On a freshly opened enabled shop with 350 carrots in 50-unit stacks, the first
+    dialog must allow at most 300. Offer 300, verify 50 remain owned, then cancel
+    and verify all 350 are present. Repeat with partial stacks and mixed staged items.
 
 The mod falls back to vanilla for unexpected instance properties on included items
 or an unsupported picker contract. These cases appear once per failure category

@@ -45,6 +45,7 @@ internal static class Program
         harmony.UnpatchSelf();
         if (calls != 2) throw new InvalidOperationException("Reference-type generic sharing was not observed.");
         SortingRuntimeChecks.Run(managedPath);
+        ShopMetadataChecks.Run(managedPath);
         return 0;
     }
 

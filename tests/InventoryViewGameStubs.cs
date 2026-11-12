@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using OnlyApplicableItems.Core;
 
 // Test-only game/UI stand-ins for the production virtual inventory data constructor.
-public sealed class Inventory
+public sealed partial class Inventory
 {
     public Item Data { get; }
     public Inventory() : this("inventory", 0) { }
@@ -44,6 +44,7 @@ public class InventoryWidgetDataBase
     public Func<Item, bool>? CustomItemSelectedCondition;
     public Func<Item, string>? ExtraRedTooltipLocIdProvider;
     public ItemRelatedWidgetState ItemRelatedWidgetState;
+    public bool DrawEmptyCellsAsDisabledWhenUnavailable;
 }
 
 public class InventoryWidgetData : InventoryWidgetDataBase

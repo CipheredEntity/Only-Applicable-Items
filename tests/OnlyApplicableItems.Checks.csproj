@@ -18,6 +18,12 @@
     <Compile Include="..\src\Core\QuantityDisplayScope.cs" Link="Core\QuantityDisplayScope.cs" />
     <Compile Include="..\src\Core\AlchemyVisibility.cs" Link="Core\AlchemyVisibility.cs" />
     <Compile Include="..\src\Configuration\ActionSettings.cs" Link="Configuration\ActionSettings.cs" />
+    <Compile Include="..\src\Integration\PlainItemValidator.cs" Link="Integration\PlainItemValidator.cs" />
+    <Compile Include="..\src\Integration\ShopSellingContract.cs" Link="Integration\ShopSellingContract.cs" />
+    <Compile Include="..\src\Integration\ShopSellingCapacity.cs" Link="Integration\ShopSellingCapacity.cs" />
+    <Compile Include="..\src\Integration\ShopSellingPatches.cs" Link="Integration\ShopSellingPatches.cs" />
+    <Compile Include="..\src\UI\ShopSellingSession.cs" Link="UI\ShopSellingSession.cs" />
+    <Compile Include="..\src\UI\ShopSellingFeatures.cs" Link="UI\ShopSellingFeatures.cs" />
     <Compile Include="..\src\Integration\BodyPartPickerContract.cs" Link="Integration\BodyPartPickerContract.cs" />
     <Compile Include="..\src\Integration\EmbalmingPickerContract.cs" Link="Integration\EmbalmingPickerContract.cs" />
     <Compile Include="..\src\Integration\GraveDecorationPickerContract.cs" Link="Integration\GraveDecorationPickerContract.cs" />

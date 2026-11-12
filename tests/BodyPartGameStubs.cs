@@ -5,7 +5,7 @@ using System;
 // and the configurable predicates do not claim to simulate actual collar calculations.
 public enum ItemType { None, Brain, Heart, Guts, Skull, Bones, Skin, Flesh, Embalm, Collar, BodyArmor, Sword, Preach }
 
-public sealed class ItemDef
+public sealed partial class ItemDef
 {
     public ItemType type;
     public bool isOrganMistake;
@@ -18,7 +18,7 @@ public sealed class ItemDef
     public System.Collections.Generic.List<string> itemGroupIds = new System.Collections.Generic.List<string>();
 }
 
-public sealed class Item
+public sealed partial class Item
 {
     public readonly string id;
     public readonly ItemDef Definition;
@@ -35,6 +35,8 @@ public sealed class Item
         this.id = id;
         Count = count;
         Definition = new ItemDef { type = category };
+        Definition.id = id;
+        TestItemDefinitions.Values[id] = Definition;
     }
 }
 

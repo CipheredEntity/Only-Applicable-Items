@@ -14,7 +14,7 @@ public sealed class Plugin : BaseUnityPlugin
 {
     public const string Guid = "ciphe.gk2.onlyapplicableitems";
     public const string Name = "Only Applicable Items";
-    public const string Version = "0.12.0";
+    public const string Version = "0.13.1";
     internal static Plugin? Instance { get; private set; }
     internal ActionSettings Settings { get; private set; } = null!;
     private FixSettings fixes = null!;
@@ -26,6 +26,7 @@ public sealed class Plugin : BaseUnityPlugin
     private Harmony? resurrectionHarmony;
     private Harmony? resurrectionDisplayHarmony;
     private Harmony? studyDisplayHarmony;
+    private Harmony? shopHarmony;
     private GardenPickerContract? contract;
     private BodyPartPickerContract? bodyParts;
     private EmbalmingPickerContract? embalming;
@@ -37,12 +38,14 @@ public sealed class Plugin : BaseUnityPlugin
     internal ResurrectionCollarDisplay? ResurrectionCollarSlot { get; private set; }
     internal StudySelectedItemDisplay? StudySelectedSlot { get; private set; }
     internal AlchemyFeatures? Alchemy { get; private set; }
+    internal ShopSellingFeatures? ShopSelling { get; private set; }
 
     private void Awake()
     {
         Instance = this;
         InitializeWindowSorting();
         Settings = new ActionSettings(Config);
+        InitializeShopSelling();
         try
         {
             contract = new GardenPickerContract();
@@ -75,6 +78,40 @@ public sealed class Plugin : BaseUnityPlugin
             InitializeStudyTable();
             InitializeStudySelectedItemDisplay();
         }
+    }
+
+    private void InitializeShopSelling()
+    {
+        try
+        {
+            var shop = new ShopSellingContract();
+            ShopSelling = new ShopSellingFeatures(shop, () => Settings.ShopSelling.Value, new PlainItemValidator().Validate,
+                (operation, exception) => WarnOnce("shop-selling-" + operation, "Shop Selling fallback while " + operation + ". " + exception));
+            shopHarmony = new Harmony(Guid + ".shop-selling");
+            shopHarmony.Patch(shop.Fill, postfix: new HarmonyMethod(typeof(ShopSellingPatches), nameof(ShopSellingPatches.AfterFilled)));
+            shopHarmony.Patch(shop.Draw, prefix: new HarmonyMethod(typeof(ShopSellingPatches), nameof(ShopSellingPatches.BeforeDraw)));
+            shopHarmony.Patch(shop.Redraw, prefix: new HarmonyMethod(typeof(ShopSellingPatches), nameof(ShopSellingPatches.BeforeRedraw)));
+            shopHarmony.Patch(shop.Hide, postfix: new HarmonyMethod(typeof(ShopSellingPatches), nameof(ShopSellingPatches.AfterHidden)));
+            shopHarmony.Patch(shop.CountOpen, prefix: new HarmonyMethod(typeof(ShopSellingPatches), nameof(ShopSellingPatches.BeforeCountOpen)));
+            shopHarmony.Patch(shop.Move, prefix: new HarmonyMethod(typeof(ShopSellingPatches), nameof(ShopSellingPatches.BeforeMove)),
+                finalizer: new HarmonyMethod(typeof(ShopSellingPatches), nameof(ShopSellingPatches.AfterMove)));
+            Logger.LogInfo("Shop Selling ready. Enabled: " + Settings.ShopSelling.Value);
+        }
+        catch (Exception exception)
+        {
+            ShutdownShopSelling();
+            WarnOnce("shop-selling-startup", "Shop Selling remains native; other features are independent. " + exception);
+        }
+    }
+
+    private void ShutdownShopSelling()
+    {
+        var feature = ShopSelling; ShopSelling = null;
+        try { feature?.Dispose(); }
+        catch (Exception exception) { WarnOnce("shop-selling-shutdown", "Shop Selling cleanup failed. " + exception); }
+        try { shopHarmony?.UnpatchSelf(); }
+        catch (Exception exception) { WarnOnce("shop-selling-unpatch", "Shop Selling hooks are inactive but could not be removed. " + exception); }
+        shopHarmony = null;
     }
 
     private void InitializeWindowSorting()
@@ -306,6 +343,7 @@ public sealed class Plugin : BaseUnityPlugin
     private void LateUpdate()
     {
         windowSorting?.Tick();
+        ShopSelling?.Tick();
         foreach (var session in sessions.ToArray())
         {
             try
@@ -334,6 +372,7 @@ public sealed class Plugin : BaseUnityPlugin
 
     private void OnDestroy()
     {
+        ShutdownShopSelling();
         try { windowSorting?.Dispose(); }
         catch (Exception exception)
         { WarnOnce("window-sorting-shutdown", "Window sorting cleanup failed; its hooks are inactive. " + exception); }

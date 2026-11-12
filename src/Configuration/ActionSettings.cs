@@ -14,6 +14,7 @@ internal sealed class ActionSettings
     public ConfigEntry<bool> ResurrectionCollars { get; }
     public ConfigEntry<bool> Sermons { get; }
     public ConfigEntry<bool> StudyTable { get; }
+    public ConfigEntry<bool> ShopSelling { get; }
 
     public ActionSettings(ConfigFile config)
     {
@@ -62,5 +63,11 @@ internal sealed class ActionSettings
             "Also hide the selected-item quantity for research, using the native survey classification; disabling restores the native slot display. " +
             "Uses native eligibility and survey resolution; requirements, completion, and consumption remain unchanged. " +
             "Disabling restores both sections to the original picker on the next frame; enabling applies the next time it opens.");
+        ShopSelling = config.Bind("Actions", "Shop Selling", true,
+            "Consolidate owned merchant-relevant items from the backpack and bags into Sellable. " +
+            "Higher-tier purchases remain visible but disabled; nonstackable items move only one unit at a time. " +
+            "Preserves native deals and cancellation. Unsafe item data restores the original selling panel. " +
+            "Disabling blocks new consolidated transfers immediately and restores the panel after any open quantity dialog closes. " +
+            "Enabling applies the next time a shop opens.");
     }
 }

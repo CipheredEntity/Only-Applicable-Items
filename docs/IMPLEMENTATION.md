@@ -216,6 +216,17 @@ per-frame or per-item informational messages are emitted.
 
 ## Configuration and future scope
 
+Shop Selling has a dedicated trading session and Harmony owner, independently
+initialized before shared picker integration. It replaces only merchant player
+sections, reuses native quantity/price/transfer code, and validates marked sales
+at dispatch and native entry. `PlainItemValidator` shares the unchanged instance
+safety checks with existing actions. See [SHOP_SELLING.md](SHOP_SELLING.md) for
+native limits, pending-dialog handling, fallback, and validation.
+v0.13.1 uses a visible icon-free native section header without replacing Keeper.
+Its selling-only capacity helper initializes/verifies the native occupancy cache
+and bounds quantities by physical slots/stack room before dialog creation/binding
+and both transfer checks. No global inventory method or transaction is replaced.
+
 A separate global `[Fixes] Window Sorting Order` setting and Harmony owner correct
 allocation-counter accumulation independently of picker startup and action gates.
 They track original stack allocations without changing surviving canvases, suspend
