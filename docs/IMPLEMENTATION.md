@@ -247,7 +247,8 @@ patches are verified on shipped Mono/Harmony with a standalone controller probe.
 See [WINDOW_SORTING.md](WINDOW_SORTING.md) for the contract, limitations, and tests.
 
 Config.Bind creates 11 independent default-on `[Actions]` toggles, 21 `[Inventory Names]`
-strings, and one default-on `[Fixes]` toggle. Concise descriptions and optional
+strings (blank by default, resolving to centralized fallback titles), and one
+default-on `[Fixes]` toggle. Brief group/counter hints and optional
 ConfigurationManagerAttributes tags supply readable labels and descending order
 without a configuration-menu dependency. The installed GK2 Mod Menu's actual
 configuration model and real BepInEx persistence are covered by the standalone

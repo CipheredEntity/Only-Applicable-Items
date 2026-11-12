@@ -1,4 +1,4 @@
-Only Applicable Items 0.14.0
+Only Applicable Items 0.14.1
 ============================
 
 A BepInEx 5 plugin for Graveyard Keeper 2. Garden seed selection displays one
@@ -116,27 +116,27 @@ After the plugin first loads, BepInEx creates:
   Shop Selling = true
 
   [Inventory Names]
-  Seeds = Seeds
-  Fertilizers = Fertilizers
-  Alchemical Ingredients = Alchemical Ingredients
-  Body Parts - Brains = Brains
-  Body Parts - Hearts = Hearts
-  Body Parts - Guts = Guts
-  Body Parts - Skulls = Skulls
-  Body Parts - Bones = Bones
-  Body Parts - Skins = Skins
-  Embalming Fluids = Embalming Fluids
-  Grave Decorations - Tombstones = Tombstones
-  Grave Decorations - Fences = Fences
-  Zombie Equipment - Collars = Collars
-  Zombie Equipment - Armor = Armor
-  Zombie Equipment - Weapons = Weapons
-  Zombie Equipment - Tools = Tools
-  Resurrection Collars = Collars
-  Prayers = Prayers
-  Study Table - Study = Study
-  Study Table - Decompose = Decompose
-  Shop Selling = Sellable
+  Seeds =
+  Fertilizers =
+  Alchemical Ingredients =
+  Body Parts - Brains =
+  Body Parts - Hearts =
+  Body Parts - Guts =
+  Body Parts - Skulls =
+  Body Parts - Bones =
+  Body Parts - Skins =
+  Embalming Fluids =
+  Grave Decorations - Tombstones =
+  Grave Decorations - Fences =
+  Zombie Equipment - Collars =
+  Zombie Equipment - Armor =
+  Zombie Equipment - Weapons =
+  Zombie Equipment - Tools =
+  Resurrection Collars =
+  Prayers =
+  Study Table - Study =
+  Study Table - Decompose =
+  Shop Selling =
 
   [Fixes]
   Window Sorting Order = true
@@ -162,14 +162,19 @@ entry is added. No configuration-manager plugin
 is required. Compatible managers expose the entries using these same names.
 
 Inventory Names has one editable name for each of the 21 virtual inventories.
+All name settings default to blank, preserving the original displayed titles.
+Each hint says which title is used when blank, for example: Leave blank to use "Seeds".
+Existing saved names are retained; changing the default does not reset preferences.
 Use the separate Zombie Equipment - Collars and Resurrection Collars entries even
-though both default to Collars. Names may match, include spaces and punctuation,
+though both display Collars when blank. Names may match, include spaces and punctuation,
 or be left empty/whitespace-only to use the default. Editing names never changes
 which items appear or can be selected. Names are kept when an action is disabled.
 
 Name changes apply the next time that picker or shop opens. An open inventory keeps
 its current title, including during stock refreshes or a pending sale. GK2 Mod Menu
 is optional: it exposes all settings with readable labels and ordered entries.
+Only grouped actions and Alchemical Ingredients have brief descriptions; the other
+action toggles have none. GK2 Mod Menu omits those empty description rows.
 Standard BepInEx files also work independently. Saved file edits are checked when
 opening an inventory picker or shop; restarting the game is not required. Avoid
 editing the same file in a menu and text editor at the same time.

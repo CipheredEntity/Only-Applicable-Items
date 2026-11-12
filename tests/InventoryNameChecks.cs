@@ -9,7 +9,7 @@ namespace OnlyApplicableItems.Checks;
 internal static partial class Program
 {
     private static ConfigEntry<string> NameEntry(ConfigFile config, PickerId id)
-        => config.Bind("Inventory Names", InventoryNameSettings.GetKey(id), PickerTitles.GetDefault(id), "");
+        => config.Bind("Inventory Names", InventoryNameSettings.GetKey(id), string.Empty, "");
 
     private static void ReleaseConfigurationHasExactlyThreeCategoriesAndOptionalMenuTags()
     {
@@ -32,7 +32,7 @@ internal static partial class Program
             var tag = description.Tags.Single();
             Assert(tag.GetType().Name == "ConfigurationManagerAttributes" &&
                 (string)tag.GetType().GetField("DispName")!.GetValue(tag)! == key &&
-                tag.GetType().GetField("Order")!.GetValue(tag) is int && !string.IsNullOrWhiteSpace(description.Description),
+                tag.GetType().GetField("Order")!.GetValue(tag) is int,
                 "Expose optional reflection-readable menu labels/order and ordinary BepInEx descriptions.");
         }
     }
@@ -47,16 +47,48 @@ internal static partial class Program
             InventoryNameSettings.GetKey(PickerId.ResurrectionCollars) == "Resurrection Collars",
             "Keep every stable inventory independently identifiable, including the two Collars names.");
         foreach (PickerId id in ids)
-            Assert(names.GetTitle(id) == PickerTitles.GetDefault(id) && NameEntry(config, id).DefaultValue == names.GetTitle(id),
-                "Keep every centralized default title unchanged.");
+            Assert(names.GetTitle(id) == PickerTitles.GetDefault(id) && NameEntry(config, id).DefaultValue == "" &&
+                NameEntry(config, id).Value == "" && NameEntry(config, id).Description.Description ==
+                    "Leave blank to use \"" + PickerTitles.GetDefault(id) + "\".",
+                "All 21 name entries default to blank with the exact concise hint, while original titles remain unchanged.");
         foreach (PickerId id in ids)
         {
             NameEntry(config, id).Value = "Custom " + id;
             foreach (PickerId other in ids)
                 Assert(names.GetTitle(other) == (other == id ? "Custom " + id : PickerTitles.GetDefault(other)),
                     "Editing one name must not affect any other inventory, even if their defaults match.");
-            NameEntry(config, id).Value = PickerTitles.GetDefault(id);
+            NameEntry(config, id).Value = "";
         }
+    }
+
+    private static void ConfigurationDescriptionsAndOrderingMatchCompactLayout()
+    {
+        var config = new ConfigFile();
+        new ActionSettings(config);
+        var fixes = new FixSettings(config);
+        (string Key, string Description, int Order)[] expected =
+        {
+            ("Seeds", "", 110), ("Fertilizers", "", 100),
+            ("Alchemical Ingredients", "Also corrects ingredient quantity counters.", 90),
+            ("Body Parts", "Controls Brains, Hearts, Guts, Skulls, Bones, and Skins.", 80),
+            ("Embalming Fluids", "", 70),
+            ("Grave Decorations", "Controls Tombstones and Fences.", 60),
+            ("Zombie Equipment", "Controls Collars, Armor, Weapons, and Tools.", 50),
+            ("Resurrection Collars", "", 40), ("Prayers", "", 30),
+            ("Study Table", "Controls Study and Decompose.", 20), ("Shop Selling", "", 10)
+        };
+        foreach (var item in expected)
+        {
+            var entry = config.Bind("Actions", item.Key, true, "");
+            var tag = (ConfigurationManagerAttributes)entry.Description.Tags.Single();
+            Assert(entry.Description.Description == item.Description && tag.DispName == item.Key &&
+                tag.Order == item.Order && entry.DefaultValue && entry.Value,
+                "Use exactly the requested action hint (including truly empty descriptions) without changing labels, order, or defaults.");
+        }
+        Assert(fixes.WindowSortingOrder.Description.Description ==
+            "Prevents tooltips from appearing behind windows after repeatedly opening them." &&
+            ((ConfigurationManagerAttributes)fixes.WindowSortingOrder.Description.Tags.Single()).Order == 10 &&
+            fixes.WindowSortingOrder.Value, "Keep the sorting fix's concise description, order, and default enabled state.");
     }
 
     private static void InventoryNamesAllowDuplicatesWhitespaceAndOrdinarySpecialCharacters()

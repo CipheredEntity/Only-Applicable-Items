@@ -15,8 +15,8 @@ internal sealed class InventoryNameSettings
         {
             string key = GetKey(id);
             string title = PickerTitles.GetDefault(id);
-            entries.Add(id, config.Bind("Inventory Names", key, title, SettingMetadata.Describe(key,
-                "Name shown for " + key + ". Leave blank to use " + title + ". Applies the next time the inventory opens.",
+            entries.Add(id, config.Bind("Inventory Names", key, string.Empty, SettingMetadata.Describe(key,
+                "Leave blank to use \"" + title + "\".",
                 1000 - (int)id)));
         }
     }

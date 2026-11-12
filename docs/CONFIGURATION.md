@@ -9,7 +9,11 @@ may remain as unbound data in an existing BepInEx file but have no effect.
 
 ## Inventory Names
 
-| Configuration key | Default title | Stable ID |
+All 21 name settings default to an empty string. Their descriptions are exactly
+`Leave blank to use "Default Name".`, substituting the corresponding fallback below.
+Existing saved values are preserved; no preference migration or reset is performed.
+
+| Configuration key | Fallback title | Stable ID |
 | --- | --- | --- |
 | Seeds | Seeds | Seeds |
 | Fertilizers | Fertilizers | Fertilizers |
@@ -33,7 +37,7 @@ may remain as unbound data in an existing BepInEx file but have no effect.
 | Study Table - Decompose | Decompose | StudyDecomposable |
 | Shop Selling | Sellable | ShopSelling |
 
-Titles default to `PickerTitles.GetDefault` and remain independent even when the
+Blank settings resolve through `PickerTitles.GetDefault` and remain independent even when the
 displayed names match. Empty/whitespace-only values use the default without
 rewriting the preference. Spaces, punctuation, accents, and repeated names are
 accepted. Custom headers use native TextMeshPro no-parse tags so markup-like text
@@ -77,16 +81,37 @@ placement, so we do not rename categories to force a different group order.
 String entries use its normal text editor, with no custom drawers or controls.
 Neither GK2 Mod Menu nor ConfigurationManager is referenced, packaged, or required.
 
+Action descriptions are limited to these five hints; all six other action
+descriptions are empty strings. Labels, categories, ordering, and default-on
+values are unchanged.
+
+| Action | Description |
+| --- | --- |
+| Alchemical Ingredients | Also corrects ingredient quantity counters. |
+| Body Parts | Controls Brains, Hearts, Guts, Skulls, Bones, and Skins. |
+| Grave Decorations | Controls Tombstones and Fences. |
+| Zombie Equipment | Controls Collars, Armor, Weapons, and Tools. |
+| Study Table | Controls Study and Decompose. |
+
+The Window Sorting Order hint is `Prevents tooltips from appearing behind windows
+after repeatedly opening them.` (one line in the actual setting).
+The installed menu's `ModSettingsWindow.AddItem` creates a hint label only when
+`Item.Info.Length > 0`. Empty descriptions therefore add no description row;
+no menu layout patch is necessary. This branch is checked through assembly
+metadata in the standalone probe; final visual layout still needs in-game testing.
+
 ## Validation
 
 The pure regression harness covers all 21 unique keys/defaults, independent and
 duplicate names, blank fallback, punctuation/markup-like values, the exact 33-entry
-schema and metadata, unchanged policy delegates/snapshots, action-disabled names,
+schema and metadata, exact compact descriptions/ordering, unchanged policy delegates/snapshots, action-disabled names,
 next-opening behavior, stock refreshes, duplicate Study section titles/visuals,
 and the separate trading integration. Existing action and transfer tests still run.
 
 The standalone shipped-Mono probe uses the installed real BepInEx library to save
-and reload all names, disabled action preferences, and special/blank values. It
+and reload all names, disabled action preferences, and special/blank values. All
+21 fresh blank settings are separately saved/reloaded and checked against their
+original fallback titles before custom names are tested. It
 also checks manual file reload and invokes only GK2 Mod Menu's pure `BuildItems`
 configuration model to verify all 33 labels/categories/descriptions/orders and
 editable-entry persistence. It does not instantiate that plugin/window or run Unity
@@ -97,7 +122,8 @@ explicitly if that optional DLL is unavailable; BepInEx checks remain independen
 In-game checks before release:
 
 1. Confirm the three categories, 11 toggles, 21 editable names, help text, ordering,
-   text entry, and reset-to-default behavior in GK2 Mod Menu (mouse/controller).
+   text entry, blank name defaults, empty action-description spacing, and
+   reset-to-default behavior in GK2 Mod Menu (mouse/controller).
 2. Rename every inventory, especially both Collars entries, both Study sections,
    and Sellable. Check section headings, window captions, and Keeper's caption.
 3. Try duplicate names, blank values, accents, punctuation, literal `<b>` and

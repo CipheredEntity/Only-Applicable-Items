@@ -91,6 +91,7 @@ internal static partial class Program
             PickerIdentitiesPreserveAllDefaultTitles,
             ReleaseConfigurationHasExactlyThreeCategoriesAndOptionalMenuTags,
             AllInventoryNamesHaveUniqueKeysAndIndependentDefaults,
+            ConfigurationDescriptionsAndOrderingMatchCompactLayout,
             InventoryNamesAllowDuplicatesWhitespaceAndOrdinarySpecialCharacters,
             RenamedPoliciesPreserveEveryGameplayDelegateAndSavedDisabledNames,
             SharedPickerNamesApplyOnNextOpenAndStayStableDuringRefresh,

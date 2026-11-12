@@ -42,6 +42,16 @@ internal static class ConfigurationRuntimeChecks
             var names = new InventoryNameSettings(config);
             new FixSettings(config);
             Require(config.Count == 33, "Release settings count differs from 11 + 21 + 1.");
+            foreach (PickerId id in Enum.GetValues(typeof(PickerId)))
+                Require(Entry(config, id).Value == "" && (string)Entry(config, id).DefaultValue == "" &&
+                    names.GetTitle(id) == PickerTitles.GetDefault(id), "A fresh name must be blank and resolve to its original title: " + id);
+            config.Save();
+            var blankReload = new ConfigFile(path, false) { SaveOnConfigSet = false };
+            var blankNames = new InventoryNameSettings(blankReload);
+            foreach (PickerId id in Enum.GetValues(typeof(PickerId)))
+                Require(Entry(blankReload, id).Value == "" && blankNames.GetTitle(id) == PickerTitles.GetDefault(id),
+                    "Blank-name fallback did not survive real BepInEx save/reload: " + id);
+            Console.WriteLine("PASS all 21 blank configuration defaults retain their original titles after real BepInEx save/reload.");
             var expected = new Dictionary<PickerId, string>();
             foreach (PickerId id in Enum.GetValues(typeof(PickerId)))
             {
@@ -64,7 +74,7 @@ internal static class ConfigurationRuntimeChecks
                 reloadedActions.StudyTable.Value, "Action values did not survive real BepInEx save/reload.");
             foreach (var pair in expected)
                 Require(reloadedNames.GetTitle(pair.Key) == pair.Value &&
-                    (string)Entry(reloaded, pair.Key).DefaultValue == PickerTitles.GetDefault(pair.Key),
+                    (string)Entry(reloaded, pair.Key).DefaultValue == "",
                     "Inventory title did not survive real BepInEx save/reload: " + pair.Key);
             Console.WriteLine("PASS real BepInEx configuration: 33 entries, all 21 names, duplicate/blank/special values, and disabled-action preferences survive save/reload.");
 
@@ -129,13 +139,36 @@ internal static class ConfigurationRuntimeChecks
                 savedNames.GetTitle(PickerId.ResurrectionCollars) == "Same name", "Menu-style editing did not persist independently.");
             Require(!typeof(InventoryNameSettings).Assembly.GetReferencedAssemblies().Any(a => a.Name == "GK2ModMenu"),
                 "Optional GK2 Mod Menu acquired a compile-time dependency.");
+            VerifyEmptyDescriptionRendering(menuPath);
             Console.WriteLine("PASS installed GK2 Mod Menu " + menu.GetName().Version + ": all 33 labels/categories/descriptions/orders, editable names, and independent persistence (configuration model only).");
         }
         finally { if (File.Exists(path)) File.Delete(path); }
     }
 
     private static ConfigEntry<string> Entry(ConfigFile config, PickerId id)
-        => config.Bind("Inventory Names", InventoryNameSettings.GetKey(id), PickerTitles.GetDefault(id), "");
+        => config.Bind("Inventory Names", InventoryNameSettings.GetKey(id), string.Empty, "");
+
+    private static void VerifyEmptyDescriptionRendering(string menuPath)
+    {
+        // Inspect the installed UI's branch without instantiating Unity objects.
+        using (var assembly = Mono.Cecil.AssemblyDefinition.ReadAssembly(menuPath))
+        {
+            var method = assembly.MainModule.Types.Single(t => t.FullName == "GK2ModMenu.ModSettingsWindow")
+                .Methods.Single(m => m.Name == "AddItem");
+            var code = method.Body.Instructions;
+            var info = code.Single(i => (i.Operand as Mono.Cecil.FieldReference)?.Name == "Info" &&
+                (i.Next?.Operand as Mono.Cecil.MethodReference)?.Name == "get_Length");
+            var zero = info.Next.Next;
+            var branch = zero.Next;
+            var label = code.Single(i => i.Operand is Mono.Cecil.MethodReference call &&
+                call.DeclaringType.FullName == "GK2ModMenu.NativeUi" && call.Name == "Label");
+            Require(zero.OpCode == Mono.Cecil.Cil.OpCodes.Ldc_I4_0 &&
+                (branch.OpCode == Mono.Cecil.Cil.OpCodes.Ble_S || branch.OpCode == Mono.Cecil.Cil.OpCodes.Ble) &&
+                branch.Operand is Mono.Cecil.Cil.Instruction skip && skip.Offset > label.Offset,
+                "GK2 Mod Menu no longer skips description-label creation for an empty description.");
+        }
+        Console.WriteLine("PASS GK2 Mod Menu omits empty description rows (installed UI metadata verified; no Unity rendering executed).");
+    }
     private static void Require(bool condition, string message)
     { if (!condition) throw new InvalidOperationException(message); }
 }

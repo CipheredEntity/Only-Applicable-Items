@@ -9,6 +9,6 @@ internal sealed class FixSettings
     {
         WindowSortingOrder = config.Bind("Fixes", "Window Sorting Order", true,
             SettingMetadata.Describe("Window Sorting Order",
-                "Keep tooltips in front of inventory windows after repeated openings. Applies throughout the game. After enabling, close all windows and reopen them.", 10));
+                "Prevents tooltips from appearing behind windows after repeatedly opening them.", 10));
     }
 }
