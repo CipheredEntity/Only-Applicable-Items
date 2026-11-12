@@ -14,7 +14,7 @@ public sealed class Plugin : BaseUnityPlugin
 {
     public const string Guid = "ciphe.gk2.onlyapplicableitems";
     public const string Name = "Only Applicable Items";
-    public const string Version = "0.13.1";
+    public const string Version = "0.13.2";
     internal static Plugin? Instance { get; private set; }
     internal ActionSettings Settings { get; private set; } = null!;
     private FixSettings fixes = null!;
@@ -172,12 +172,12 @@ public sealed class Plugin : BaseUnityPlugin
         try
         {
             sermons = new SermonPickerContract(() => Settings.Sermons.Value, contract!.ValidatePlainItem);
-            Logger.LogInfo("Sermons ready. Enabled: " + Settings.Sermons.Value);
+            Logger.LogInfo("Prayers ready. Enabled: " + Settings.Sermons.Value);
         }
         catch (Exception exception)
         {
             sermons = null;
-            WarnOnce("sermons-startup", "Sermons is unavailable; existing actions remain supported. " + exception);
+            WarnOnce("sermons-startup", "Prayers is unavailable; existing actions remain supported. " + exception);
         }
     }
 

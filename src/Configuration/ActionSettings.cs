@@ -53,13 +53,17 @@ internal sealed class ActionSettings
             "Also hide the selected resurrection collar slot's stack counter; disabling restores its native display. " +
             "Independent of Zombie Equipment. Disabling restores an open resurrection collar picker on the next frame; " +
             "enabling applies the next time it opens. Selection and later one-unit consumption remain native.");
-        Sermons = config.Bind("Actions", "Sermons", true,
-            "Combine native-eligible sermons into one Sermons inventory at the prayer stand. " +
+        // Bind consumes any saved legacy entry, including an unbound entry loaded from disk.
+        // A saved Prayers value wins over this migration default. Fresh configurations default on.
+        var legacySermons = config.Bind("Actions", "Sermons", true, "Renamed to Prayers.");
+        Sermons = config.Bind("Actions", "Prayers", legacySermons.Value,
+            "Combine native-eligible prayers into one Prayers inventory at the prayer stand. " +
             "Preserves full item definitions and quality variants. Attendance, success chance, execution, and rewards remain native. " +
             "Disabling restores an open sermon picker on the next frame; enabling applies the next time it opens.");
+        config.Remove(new ConfigDefinition("Actions", "Sermons"));
         StudyTable = config.Bind("Actions", "Study Table", true,
-            "Consolidate the study picker into Researchable and Decomposable, in that order, including empty sections. " +
-            "Hide Researchable quantity labels and both category header icons; Decomposable quantities stay visible. " +
+            "Consolidate the study picker into Study and Decompose, in that order, including empty sections. " +
+            "Hide Study quantity labels and both category header icons; Decompose quantities stay visible. " +
             "Also hide the selected-item quantity for research, using the native survey classification; disabling restores the native slot display. " +
             "Uses native eligibility and survey resolution; requirements, completion, and consumption remain unchanged. " +
             "Disabling restores both sections to the original picker on the next frame; enabling applies the next time it opens.");

@@ -45,7 +45,7 @@ internal static partial class Program
         window.SelectedItem = new Item("research:1", ItemType.None, 5);
         window.MainIngredientCount = 20;
         window.Redraw();
-        Assert(!cell.CounterVisible, "Researchable selection hides its counter.");
+        Assert(!cell.CounterVisible, "Study selection hides its counter.");
         window.SelectedItem = new Item("decompose", ItemType.None, 2);
         window.MainIngredientCount = 8;
         window.Redraw();

@@ -52,9 +52,9 @@ internal static class PickerTitles
             case PickerId.ZombieArmor: return "Armor";
             case PickerId.ZombieWeapons: return "Weapons";
             case PickerId.ZombieTools: return "Tools";
-            case PickerId.Sermons: return "Sermons";
-            case PickerId.StudyResearchable: return "Researchable";
-            case PickerId.StudyDecomposable: return "Decomposable";
+            case PickerId.Sermons: return "Prayers";
+            case PickerId.StudyResearchable: return "Study";
+            case PickerId.StudyDecomposable: return "Decompose";
             case PickerId.ShopSelling: return "Sellable";
             default: throw new ArgumentOutOfRangeException(nameof(id));
         }

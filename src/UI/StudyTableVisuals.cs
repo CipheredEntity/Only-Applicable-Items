@@ -6,7 +6,7 @@ namespace OnlyApplicableItems.UI;
 
 internal static class StudyTableVisuals
 {
-    // Resolve only when Researchable actually draws; a changed counter contract
+    // Resolve only when the Study section actually draws; a changed counter contract
     // must not prevent unrelated pickers from initializing or rendering.
     private static readonly Lazy<FieldInfo> countLabel = new Lazy<FieldInfo>(() =>
     {

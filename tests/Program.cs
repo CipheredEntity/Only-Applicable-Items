@@ -103,6 +103,7 @@ internal static partial class Program
             SermonsRetainTheExistingItemSafetyValidator,
             SermonsResolveARealSourceForTheOriginalDefinitionCallback,
             SermonsDefaultOnAndUseAnIndependentLiveSetting,
+            PrayersMigratesLegacyPreferenceAndHonorsTheNewKey,
             StudyTableRecognizesOnlyItsNativeContextAndOrderedIdentities,
             StudyTableUsesNativeEligibilityAndTheSingleResolvedSurvey,
             CoordinatedSnapshotsEnumerateSourcesOnceAndRejectAmbiguity,

@@ -1,8 +1,13 @@
-# Sermons
+# Prayers
 
-`[Actions] Sermons = true` independently controls the prayer stand's picker.
-`PickerId.Sermons` and the centralized default title **Sermons** prepare this
+`[Actions] Prayers = true` independently controls the prayer stand's picker.
+`PickerId.Sermons` and the centralized default title **Prayers** prepare this
 category for future naming configuration; names are not configurable yet.
+
+The old `[Actions] Sermons` preference migrates to Prayers if no saved Prayers
+value exists. A saved Prayers value takes precedence, and the legacy entry is
+removed from the bound settings. New configurations remain enabled by default.
+The internal `PickerId.Sermons` identity and native sermon APIs are unchanged.
 
 ## Native contract and integration
 
@@ -27,7 +32,7 @@ click-time resolution use the original native predicate and real surviving sourc
 
 ValidatePlainItem is reused without changes: properties, durability, bags, contents,
 or internal capacity on included items cause the original picker to be retained
-or restored. Irrelevant items are excluded before validation. Disabling Sermons
+or restored. Irrelevant items are excluded before validation. Disabling Prayers
 restores an open picker on the next frame; enabling applies on the next opening.
 Existing action settings and saved values are not changed.
 
@@ -61,7 +66,7 @@ attendance calculations, or rewards.
 Manual checklist:
 
 1. Put identical sermons in player inventory, a bag, and accessible zone storage.
-   Check one Sermons inventory, exact combined counts, and no irrelevant items.
+   Check one Prayers inventory, exact combined counts, and no irrelevant items.
 2. Check different sermon types and qualities remain separate, including quantities
    beyond a normal stack limit, empty inventories, and repeated opening/closing.
 3. Select with insufficient attendance: selection should succeed while the original
@@ -70,6 +75,6 @@ Manual checklist:
    aggregation must not multiply executions or consume additional sermon items.
 5. Change accessible stock before clicking where possible, and compare changes
    after selection with vanilla's definition-based behavior. No new checks are added.
-6. Toggle Sermons independently, including disabling an open picker. Check all
+6. Toggle Prayers independently, including disabling an open picker. Check all
    previous action toggles, mouse/controller navigation, selected-slot appearance,
    and native tooltips. Unexpected properties should fall back without consuming.

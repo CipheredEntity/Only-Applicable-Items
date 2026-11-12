@@ -102,8 +102,8 @@ Action-specific contracts create independent PickerPolicy<Item> objects:
 | Grave Decorations | gravetop or gravebot group | IsGraveItem | Grave Decorations / Tombstones or Fences |
 | Zombie Equipment | Native slot category, including disabled entries | CanUpgradeCollarTo, IsArmor, IsWeapon, IsTool | Zombie Equipment / Collars, Armor, Weapons, Tools |
 | Resurrection Collars | ItemType.Collar, including disabled entries | Original skull-range predicate | Resurrection Collars / Collars |
-| Sermons | CanUsePray | CanUsePray | Sermons |
-| Study Table | IsItemAllowed plus the resolved survey category | Same native eligibility/category | Study Table / Researchable, Decomposable |
+| Prayers | CanUsePray | CanUsePray | Prayers |
+| Study Table | IsItemAllowed plus the resolved survey category | Same native eligibility/category | Study Table / Study, Decompose |
 
 Every policy has a stable PickerId independent of its displayed Title. Default
 titles are centralized in Core/PickerIdentity.cs. ZombieCollars and
@@ -112,7 +112,7 @@ and diagnostic keys. Other policies retain their existing default labels. No
 display-name configuration has been added; enum names, not numeric positions or
 titles, identify pickers in diagnostic keys.
 
-Sermons adds no new Harmony patches. Its original callback retains a SermonDef,
+Prayers adds no new Harmony patches. Its original callback retains a SermonDef,
 not a stack or UID, and creates one CraftElementSermon with empty item requirements.
 Attendance, success chance, execution, and rewards stay in the original prayer
 systems. See SERMONS.md for native scope and validation details.
@@ -137,7 +137,7 @@ on pooled reuse. These visuals share the Study Table toggle and fallback lifecyc
 The selected study item slot has a separate display owner with postfixes on
 UIResourceBasedCraftWindow.Redraw/Hide. The redraw postfix receives mainIngredient,
 resolves its displayed ID through the native survey resolver, and hides only a
-research counter. Decomposable, empty, unknown, and disabled cases retain native
+research counter. Decompose, empty, unknown, and disabled cases retain native
 rendering. Toggle changes/shutdown redraw tracked visible windows; selection,
 requirements, inventory data, and execution remain untouched. See STUDY_TABLE.md.
 

@@ -22,7 +22,7 @@ internal static partial class Program
         var other = new UIPrayWindowData();
         var predicate = owner.Predicate;
         var policy = contract.GetPolicy(owner.Callback, predicate);
-        Assert(policy != null && policy.Id == PickerId.Sermons && policy.Title == "Sermons" && policy.IsEnabled &&
+        Assert(policy != null && policy.Id == PickerId.Sermons && policy.Title == "Prayers" && policy.IsEnabled &&
             ReferenceEquals(policy.IncludeInDisplay, predicate) && ReferenceEquals(policy.CanSelect, predicate),
             "Use the exact native predicate for both visibility and selection, with the stable Sermons identity.");
         Assert(contract.GetPolicy(owner.Callback, other.Predicate) == null && contract.GetPolicy(other.Callback, predicate) == null &&
@@ -142,12 +142,35 @@ internal static partial class Program
         Assert(policy.IsEnabled && settings.Sermons.Value && !settings.Seeds.Value && !settings.ResurrectionCollars.Value &&
             settings.Fertilizers.Value && settings.AlchemicalIngredients.Value && settings.BodyParts.Value &&
             settings.EmbalmingFluids.Value && settings.GraveDecorations.Value && settings.ZombieEquipment.Value,
-            "The production Sermons setting must default on without resetting existing preferences or other defaults.");
+            "The production Prayers setting must default on without resetting existing preferences or other defaults.");
         settings.Sermons.Value = false;
         settings.ResurrectionCollars.Value = true;
         Assert(!policy.IsEnabled && settings.ResurrectionCollars.Value && settings.ZombieEquipment.Value && !settings.Seeds.Value,
             "The sermon policy must read its independent setting live without changing other features.");
-        Assert(ReferenceEquals(settings.Sermons, config.Bind("Actions", "Sermons", true, "")),
-            "Use the requested Actions/Sermons key, independently of its displayed inventory title.");
+        Assert(ReferenceEquals(settings.Sermons, config.Bind("Actions", "Prayers", true, "")) &&
+            !config.ContainsKey(new ConfigDefinition("Actions", "Sermons")),
+            "Expose only Actions/Prayers while retaining the stable internal identity.");
+    }
+
+    private static void PrayersMigratesLegacyPreferenceAndHonorsTheNewKey()
+    {
+        foreach (bool legacy in new[] { false, true })
+        {
+            foreach (bool? current in new bool?[] { null, false, true })
+            {
+                var config = new ConfigFile();
+                config.LoadSavedValue("Actions", "Sermons", legacy);
+                if (current.HasValue) config.LoadSavedValue("Actions", "Prayers", current.Value);
+                config.LoadSavedValue("Actions", "Study Table", false);
+                var settings = new ActionSettings(config);
+                Assert(settings.Sermons.Value == (current ?? legacy) && !settings.StudyTable.Value &&
+                    !config.ContainsKey(new ConfigDefinition("Actions", "Sermons")) &&
+                    ReferenceEquals(settings.Sermons, config.Bind("Actions", "Prayers", true, "")),
+                    "Preserve a saved legacy preference, prefer the new key, and leave Study Table unchanged.");
+                var rebound = new ActionSettings(config);
+                Assert(rebound.Sermons.Value == settings.Sermons.Value,
+                    "Repeated initialization must preserve the migrated Prayers value.");
+            }
+        }
     }
 }

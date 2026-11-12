@@ -1,4 +1,4 @@
-Only Applicable Items 0.13.1
+Only Applicable Items 0.13.2
 ============================
 
 A BepInEx 5 plugin for Graveyard Keeper 2. Garden seed selection displays one
@@ -56,16 +56,16 @@ so the slot represents the single collar required. Inventory quantities and the
 real selected item remain unchanged. Toggling refreshes an open selected slot;
 disabling restores its original native counter.
 
-Prayer-stand sermon selection displays one "Sermons" inventory with combined
+Prayer-stand sermon selection displays one "Prayers" inventory with combined
 quantities from the player, bags, and normally accessible zone storage. The
 game's CanUsePray rule identifies valid sermon items. Different full definitions
 and quality variants stay separate. Attendance requirements, success chance,
 execution, and rewards remain unchanged; insufficient attendance still blocks
 starting the sermon in the prayer interface, not choosing it in the picker.
 
-Study-table selection displays two virtual inventories in order: "Researchable"
-and "Decomposable". Both remain present when empty. Native eligibility identifies
-available targets. Researchable quantity labels are hidden; Decomposable still
+Study-table selection displays two virtual inventories in order: "Study"
+and "Decompose". Both remain present when empty. Native eligibility identifies
+available targets. Study quantity labels are hidden; Decompose still
 shows combined quantities. Both category headers use the native icon-free layout.
 The selected-item slot also hides its quantity for research, using the game's
 resolved survey classification. Decomposition retains its native selected-slot
@@ -107,7 +107,7 @@ After the plugin first loads, BepInEx creates:
   Grave Decorations = true
   Zombie Equipment = true
   Resurrection Collars = true
-  Sermons = true
+  Prayers = true
   Study Table = true
   Shop Selling = true
 
@@ -128,13 +128,18 @@ six body-part categories and both insertion and replacement. Grave Decorations
 controls both Tombstones and Fences. Zombie Equipment controls Collars, Armor,
 Weapons, and Tools together; Resurrection Collars controls only resurrection-table
 collar selection. Both collar inventories default to "Collars", with distinct
-internal identities. Study Table controls Researchable and Decomposable together,
+internal identities. Study Table controls Study and Decompose together,
 with a separate stable identity for each section. These identities are
 ready for future naming settings. Names are not configurable
 in this version. Set an option to false to use
 the original interface for that action. Existing settings are kept when the new
 entry is added. No configuration-manager plugin
 is required. Compatible managers expose the entries using these same names.
+
+Prayers replaces the former Sermons setting. An existing Sermons preference is
+carried over when Prayers has no saved value; an existing Prayers value takes
+precedence. The internal Sermons, StudyResearchable, and StudyDecomposable
+identities remain unchanged; their display titles are Prayers, Study, and Decompose.
 A live setting change disables an open picker for that action on the next frame;
 enabling applies to the next opening. For manual file edits, close the game,
 edit the file, and launch again.
@@ -357,19 +362,19 @@ Manual validation checklist
     while the table is open to restore the native selected-slot quantity; re-enable
     to hide it again. Verify preparation still consumes exactly one collar.
     See docs/RESURRECTION_COLLARS.md for the delayed-selection limitation.
-22. At the prayer stand, check Sermons totals across player/bags/zone storage,
+22. At the prayer stand, check Prayers totals across player/bags/zone storage,
     separate types and qualities, hidden unrelated items, and unchanged sermon
     selection and prayer controls. Test insufficient attendance, low success
-    chance, cancellation, source changes, and the independent live Sermons toggle.
+    chance, cancellation, source changes, and the independent live Prayers toggle.
     Compare execution costs and rewards with vanilla. See docs/SERMONS.md.
-23. At the study table, check ordered Researchable/Decomposable headers, combined
+23. At the study table, check ordered Study/Decompose headers, combined
     quantities across player/bags/storage, distinct qualities, and either/both
     categories empty. Test normal research completion, repeated science decomposition,
     insufficient requirements, cancellation, source changes, controller navigation,
     and live Study Table disabling. Unexpected studyable item properties should
     restore the entire native picker. Recheck existing single-section actions.
-    Researchable labels should stay hidden while its totals still aggregate;
-    Decomposable counters and requirement counters remain native. The selected-item
+    Study labels should stay hidden while its totals still aggregate;
+    Decompose counters and requirement counters remain native. The selected-item
     slot should hide only research quantities and retain decomposition quantities.
     Check category switching, clearing, reopening, and live toggling in the study
     window. Check header spacing without sack icons, and that counters
@@ -412,7 +417,7 @@ and regression checks require in-game validation; automated checks do not execut
 native transfers, equipment assignment, or collar arithmetic.
 Resurrection Collars requires in-game validation of Harmony scoping, Unity rendering,
 and delayed native consumption; the automated checks do not execute those systems.
-Sermons also requires in-game validation of picker rendering and native sermon
+Prayers also requires in-game validation of picker rendering and native sermon
 execution; its automated checks do not run the game or serialized prayer scripts.
 Study Table requires in-game validation of both headers, empty-group controller
 navigation, native survey effects, and the shared session's single-section UI paths.

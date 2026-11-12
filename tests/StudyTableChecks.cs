@@ -37,8 +37,8 @@ internal static partial class Program
         var callback = owner.Callback;
         var predicate = owner.Predicate;
         var policies = contract.GetPolicies(callback, predicate)!;
-        Assert(policies.Length == 2 && policies[0].Id == PickerId.StudyResearchable && policies[0].Title == "Researchable" &&
-            policies[1].Id == PickerId.StudyDecomposable && policies[1].Title == "Decomposable", "Use independent stable IDs in the requested fixed order.");
+        Assert(policies.Length == 2 && policies[0].Id == PickerId.StudyResearchable && policies[0].Title == "Study" &&
+            policies[1].Id == PickerId.StudyDecomposable && policies[1].Title == "Decompose", "Use independent stable IDs in the requested fixed order.");
         Assert(contract.GetPolicies(other.Callback, predicate) == null && contract.GetPolicies(callback, other.Predicate) == null &&
             contract.GetPolicies(callback, owner.OtherPredicate) == null && contract.GetPolicies(cell => callback(cell), predicate) == null &&
             contract.GetPolicies(callback, item => predicate(item)) == null && contract.GetPolicies(callback + callback, predicate) == null &&
@@ -121,8 +121,8 @@ internal static partial class Program
             owner.Predicate, owner.Callback);
         fixture.Open();
         Assert(fixture.Container.inventoriesData.Count == 2 && fixture.View(0).Groups[0].Total == 105 &&
-            fixture.View(1).Groups[0].Total == 4 && fixture.View(0).InventoryHeaderWidgetData.CustomHeaderId == "Researchable" &&
-            fixture.View(1).InventoryHeaderWidgetData.CustomHeaderId == "Decomposable" &&
+            fixture.View(1).Groups[0].Total == 4 && fixture.View(0).InventoryHeaderWidgetData.CustomHeaderId == "Study" &&
+            fixture.View(1).InventoryHeaderWidgetData.CustomHeaderId == "Decompose" &&
             fixture.View(0).InventoryHeaderWidgetData.DrawHeader && fixture.View(1).InventoryHeaderWidgetData.DrawHeader &&
             fixture.Container.HeaderLocaleId == "ui_multiinventory", "The real session must create two named sections without replacing the window caption.");
         Assert(fixture.Window.Widget.DrawnInventories[0].Cells[0].Value == 105 && a.Count == 20 && b.Count == 35 &&
@@ -254,7 +254,7 @@ internal static partial class Program
     private static void StudyTableSettingsDefaultOnAndControlBothIndependentIdentities()
     {
         var config = new ConfigFile();
-        config.Bind("Actions", "Sermons", false, "Saved setting");
+        config.Bind("Actions", "Prayers", false, "Saved setting");
         var settings = new ActionSettings(config);
         var owner = StudyOwner();
         var policies = CreateStudyContract(() => settings.StudyTable.Value).GetPolicies(owner.Callback, owner.Predicate)!;

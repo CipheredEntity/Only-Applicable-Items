@@ -2,10 +2,10 @@
 
 `[Actions] Study Table = true` controls both sections independently of other
 actions. The stable IDs `StudyResearchable` and `StudyDecomposable` have centralized
-default titles **Researchable** and **Decomposable**, in that order. Both headers
+default titles **Study** and **Decompose**, in that order. Both headers
 remain visible when empty. Name customization is not implemented yet.
 
-Researchable hides only its item quantity labels; Decomposable keeps its combined
+Study hides only its item quantity labels; Decompose keeps its combined
 counts. Both category headers use the game's icon-free header mode. The same
 Study Table toggle controls these visuals, with vanilla restored when disabled.
 The selected-item slot follows the same research-only rule, classified through
@@ -20,8 +20,8 @@ uses no generated method names, extra Harmony patches, or independently maintain
 item lists. Selected-slot rendering has its own display-only hooks described below.
 
 For each native-eligible nonempty item, GameBalance.GetSurveyDefForItemOrNull(id)
-provides its survey. isScienceFuelCraft=false means Researchable; true means
-Decomposable. Missing definitions are excluded. The resolver selects one effective
+provides its survey. isScienceFuelCraft=false means Study; true means
+Decompose. Missing definitions are excluded. The resolver selects one effective
 survey, preferring an exact ID then its first matching group definition. The mod
 does not search for alternative surveys or switch completed research to science
 decomposition. Full item IDs retain definition and quality distinctions.
@@ -100,7 +100,7 @@ The redraw postfix receives only mainIngredient through Harmony field injection,
 after validating the field type during initialization. It classifies the cell's
 currently displayed full ID through GameBalance.GetSurveyDefForItemOrNull. Only
 a nonempty item resolving to isScienceFuelCraft=false has its label hidden using
-the existing StudyTableVisuals helper. Decomposable and unknown definitions retain
+the existing StudyTableVisuals helper. Decompose and unknown definitions retain
 the native draw. No cached category, picker section, selected reference/UID, stored
 Count, native display Item, UIItemCell.Value, callback, or craft requirement is changed.
 
@@ -140,7 +140,7 @@ toggle behavior, and regressions for every existing single-section picker identi
 They do not execute Unity rendering, actual controller input, Harmony interception,
 the game's resolver implementation, knowledge logic, or native consumption.
 Visual checks execute the production decorator and label-field access against
-small UI boundaries, verifying retained aggregates/UIDs/counts, visible Decomposable
+small UI boundaries, verifying retained aggregates/UIDs/counts, visible Decompose
 labels, icon-free study header data, pooled reuse in vanilla/every other picker,
 and native counter/icon restoration after disabling or fallback. Selected-slot
 checks additionally cover resolver changes for the same ID, category switching,
@@ -161,9 +161,9 @@ Manual checklist:
    Both virtual sections must restore together; other action toggles stay independent.
 6. Test eligible unusual tools/containers: safe native fallback is expected. Recheck
    Seeds, Fertilizers, Alchemy, Body Parts, Embalming, Graves, Zombie Equipment,
-   Resurrection Collars (including its selected-slot display), and Sermons.
-7. Check Researchable quantity labels are hidden at 1 and larger combined totals,
-   while Decomposable (including a total of 1) and resource requirements keep their
+   Resurrection Collars (including its selected-slot display), and Prayers.
+7. Check Study quantity labels are hidden at 1 and larger combined totals,
+   while Decompose (including a total of 1) and resource requirements keep their
    quantities. The selected slot should hide research quantities and show native
    decomposition quantities. Switch categories, clear or deplete selections,
    reopen, and toggle Study Table while the window is open. Close/reopen and switch to vanilla storage

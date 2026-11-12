@@ -28,7 +28,7 @@ internal static partial class Program
             "Hide only label visibility, retaining the exact aggregate and real displayed representative.");
         Assert(decompositionCell.CounterVisible && decompositionCell.Value == 1 &&
             unrelatedCell.CounterVisible && unrelatedCell.Value == 40,
-            "Keep the Decomposable single-item counter and all other cells unchanged.");
+            "Keep the Decompose single-item counter and all other cells unchanged.");
         b.Count = 70;
         decomposable.Count = 8;
         sources.inventoryList[0].Changed();
@@ -50,8 +50,8 @@ internal static partial class Program
         Assert(study.View(0).InventoryHeaderWidgetData.HeaderIconId == string.Empty &&
             study.View(1).InventoryHeaderWidgetData.HeaderIconId == string.Empty &&
             study.View(0).InventoryHeaderWidgetData.DrawHeader && study.View(1).InventoryHeaderWidgetData.DrawHeader &&
-            study.View(0).InventoryHeaderWidgetData.CustomHeaderId == "Researchable" &&
-            study.View(1).InventoryHeaderWidgetData.CustomHeaderId == "Decomposable",
+            study.View(0).InventoryHeaderWidgetData.CustomHeaderId == "Study" &&
+            study.View(1).InventoryHeaderWidgetData.CustomHeaderId == "Decompose",
             "Both empty study sections must keep titles and request the native icon-free header layout.");
         Assert(((InventoryWidgetData)study.Originals[0]).InventoryHeaderWidgetData.HeaderIconId == NativeInventoryIcon,
             "Never mutate the original header data or the native default icon.");
@@ -87,7 +87,7 @@ internal static partial class Program
         foreach (PickerId id in Enum.GetValues(typeof(PickerId)))
         {
             if (id == PickerId.StudyResearchable) continue;
-            StudyTableVisuals.HideResearchQuantity(reused); // Model a cell released from Researchable.
+            StudyTableVisuals.HideResearchQuantity(reused); // Model a cell released from Study.
             Func<Item, bool> eligible = item => item != null && !item.IsEmpty;
             var policy = new PickerPolicy<Item>(id, () => true, eligible, eligible, _ => { });
             var a = new Item("plain", ItemType.None, 7);
@@ -98,7 +98,7 @@ internal static partial class Program
             widget.Cells[0] = reused;
             widget.Draw(other.View(0));
             Assert(reused.CounterVisible && reused.Value == 15 && ReferenceEquals(reused.DisplayingItem, a) && a.Count == 7 && b.Count == 8,
-                "The same pooled cell must show consolidated totals in Decomposable and every other picker identity.");
+                "The same pooled cell must show consolidated totals in Decompose and every other picker identity.");
         }
     }
 
