@@ -8,8 +8,7 @@ internal sealed class FixSettings
     public FixSettings(ConfigFile config)
     {
         WindowSortingOrder = config.Bind("Fixes", "Window Sorting Order", true,
-            "Reuse surviving windows' original sorting allocations to prevent repeated nested windows overtaking tooltips. " +
-            "Global and independent of every action setting. Existing canvases are never rearranged. " +
-            "Disabling stops corrections; enabling or recovery after unexpected state waits for a fresh root window.");
+            SettingMetadata.Describe("Window Sorting Order",
+                "Keep tooltips in front of inventory windows after repeated openings. Applies throughout the game. After enabling, close all windows and reopen them.", 10));
     }
 }

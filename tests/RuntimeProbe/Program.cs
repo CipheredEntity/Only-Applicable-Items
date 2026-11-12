@@ -17,7 +17,7 @@ internal static class Program
     }
     private static int Run(string[] args)
     {
-        if (args.Length == 3 && args[0] == "--inside-mono") return Probe(args[2]);
+        if (args.Length == 3 && args[0] == "--inside-mono") return Probe(args[1], args[2]);
         if (args.Length != 2) throw new ArgumentException("Expected game-install and Managed-copy paths.");
         string mono = Path.Combine(args[0], "MonoBleedingEdge");
         if (!SetDllDirectory(Path.Combine(mono, "EmbedRuntime"))) throw new InvalidOperationException("SetDllDirectory failed.");
@@ -33,7 +33,7 @@ internal static class Program
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static int Probe(string managedPath)
+    private static int Probe(string gamePath, string managedPath)
     {
         Console.WriteLine("Runtime: " + Type.GetType("Mono.Runtime")?.GetMethod("GetDisplayName", BindingFlags.NonPublic | BindingFlags.Static)?.Invoke(null, null));
         Console.WriteLine("Harmony: " + typeof(Harmony).Assembly.GetName().Version);
@@ -46,6 +46,7 @@ internal static class Program
         if (calls != 2) throw new InvalidOperationException("Reference-type generic sharing was not observed.");
         SortingRuntimeChecks.Run(managedPath);
         ShopMetadataChecks.Run(managedPath);
+        ConfigurationRuntimeChecks.Run(gamePath);
         return 0;
     }
 

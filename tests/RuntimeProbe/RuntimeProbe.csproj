@@ -20,6 +20,13 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\..\src\Core\StackAggregation.cs" Link="Core\StackAggregation.cs" />
+    <Compile Include="..\..\src\Core\PickerIdentity.cs" Link="Core\PickerIdentity.cs" />
+    <Compile Include="..\..\src\Core\PickerPolicy.cs" Link="Core\PickerPolicy.cs" />
+    <Compile Include="..\..\src\Configuration\ActionSettings.cs" Link="Configuration\ActionSettings.cs" />
+    <Compile Include="..\..\src\Configuration\FixSettings.cs" Link="Configuration\FixSettings.cs" />
+    <Compile Include="..\..\src\Configuration\SettingMetadata.cs" Link="Configuration\SettingMetadata.cs" />
+    <Compile Include="..\..\src\Configuration\InventoryNameSettings.cs" Link="Configuration\InventoryNameSettings.cs" />
+    <Compile Include="..\..\src\Configuration\ConfigurationReload.cs" Link="Configuration\ConfigurationReload.cs" />
     <Compile Include="..\..\src\Core\WindowSortingTracker.cs" Link="Core\WindowSortingTracker.cs" />
     <Compile Include="..\..\src\Integration\WindowSortingFix.cs" Link="Integration\WindowSortingFix.cs" />
     <Compile Include="..\..\..\Decompiled Source\LazyBearTechnology\LazyBearTechnology\LazyWindowsStackController.cs" Link="Native\LazyWindowsStackController.cs" />
@@ -27,6 +34,7 @@
     <Reference Include="System" HintPath="$(GameManagedPath)\System.dll" Private="false" />
     <Reference Include="System.Core" HintPath="$(GameManagedPath)\System.Core.dll" Private="false" />
     <Reference Include="0Harmony" HintPath="$(BepInExCorePath)\0Harmony.dll" />
+    <Reference Include="BepInEx" HintPath="$(BepInExCorePath)\BepInEx.dll" />
     <Reference Include="Mono.Cecil" HintPath="$(BepInExCorePath)\Mono.Cecil.dll" />
     <Reference Include="MonoMod.RuntimeDetour" HintPath="$(BepInExCorePath)\MonoMod.RuntimeDetour.dll" />
     <Reference Include="MonoMod.Utils" HintPath="$(BepInExCorePath)\MonoMod.Utils.dll" />

@@ -1,4 +1,4 @@
-Only Applicable Items 0.13.3
+Only Applicable Items 0.14.0
 ============================
 
 A BepInEx 5 plugin for Graveyard Keeper 2. Garden seed selection displays one
@@ -115,6 +115,29 @@ After the plugin first loads, BepInEx creates:
   Study Table = true
   Shop Selling = true
 
+  [Inventory Names]
+  Seeds = Seeds
+  Fertilizers = Fertilizers
+  Alchemical Ingredients = Alchemical Ingredients
+  Body Parts - Brains = Brains
+  Body Parts - Hearts = Hearts
+  Body Parts - Guts = Guts
+  Body Parts - Skulls = Skulls
+  Body Parts - Bones = Bones
+  Body Parts - Skins = Skins
+  Embalming Fluids = Embalming Fluids
+  Grave Decorations - Tombstones = Tombstones
+  Grave Decorations - Fences = Fences
+  Zombie Equipment - Collars = Collars
+  Zombie Equipment - Armor = Armor
+  Zombie Equipment - Weapons = Weapons
+  Zombie Equipment - Tools = Tools
+  Resurrection Collars = Collars
+  Prayers = Prayers
+  Study Table - Study = Study
+  Study Table - Decompose = Decompose
+  Shop Selling = Sellable
+
   [Fixes]
   Window Sorting Order = true
 
@@ -133,20 +156,30 @@ controls both Tombstones and Fences. Zombie Equipment controls Collars, Armor,
 Weapons, and Tools together; Resurrection Collars controls only resurrection-table
 collar selection. Both collar inventories default to "Collars", with distinct
 internal identities. Study Table controls Study and Decompose together,
-with a separate stable identity for each section. These identities are
-ready for future naming settings. Names are not configurable
-in this version. Set an option to false to use
+with a separate stable identity for each section. Set an option to false to use
 the original interface for that action. Existing settings are kept when the new
 entry is added. No configuration-manager plugin
 is required. Compatible managers expose the entries using these same names.
 
-Prayers replaces the former Sermons setting. An existing Sermons preference is
-carried over when Prayers has no saved value; an existing Prayers value takes
-precedence. The internal Sermons, StudyResearchable, and StudyDecomposable
-identities remain unchanged; their display titles are Prayers, Study, and Decompose.
+Inventory Names has one editable name for each of the 21 virtual inventories.
+Use the separate Zombie Equipment - Collars and Resurrection Collars entries even
+though both default to Collars. Names may match, include spaces and punctuation,
+or be left empty/whitespace-only to use the default. Editing names never changes
+which items appear or can be selected. Names are kept when an action is disabled.
+
+Name changes apply the next time that picker or shop opens. An open inventory keeps
+its current title, including during stock refreshes or a pending sale. GK2 Mod Menu
+is optional: it exposes all settings with readable labels and ordered entries.
+Standard BepInEx files also work independently. Saved file edits are checked when
+opening an inventory picker or shop; restarting the game is not required. Avoid
+editing the same file in a menu and text editor at the same time.
+
+Development-era setting migrations have been removed. Use Actions/Prayers;
+the obsolete Actions/Sermons entry is ignored. Stable internal inventory IDs are
+unchanged. See docs/CONFIGURATION.md for settings, compatibility, and validation.
 A live setting change disables an open picker for that action on the next frame;
-enabling applies to the next opening. For manual file edits, close the game,
-edit the file, and launch again.
+enabling applies to the next opening. When editing the file manually, changes are
+loaded at the next inventory-picker or shop opening.
 
 Shop Selling has a separate trading session. Disabling immediately blocks new
 consolidated sales; an open selling quantity dialog must close before its captured

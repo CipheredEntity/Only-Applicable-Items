@@ -3,7 +3,7 @@ using System;
 namespace OnlyApplicableItems.Core;
 
 // Identity never comes from the displayed title. Separate categories can share a
-// default title and later receive independent naming settings without changing IDs.
+// default title and receive independent naming settings without changing IDs.
 internal enum PickerId
 {
     Seeds,
@@ -31,6 +31,14 @@ internal enum PickerId
 
 internal static class PickerTitles
 {
+    // Native headers pass through localization and TextMeshPro rich-text parsing.
+    // A no-op tag prevents custom names being mistaken for locale keys; escaping
+    // every opening angle bracket keeps user-supplied markup literal. Split '&'
+    // too, so LLBase does not turn a literal &#xA; into a line break.
+    public static string GetHeaderText(PickerId id, string title)
+        => title == GetDefault(id) ? title : "<noparse></noparse>" +
+            title.Replace("<", "<noparse><</noparse>").Replace("&", "&<noparse></noparse>");
+
     public static string GetDefault(PickerId id)
     {
         switch (id)

@@ -1,13 +1,11 @@
 # Prayers
 
 `[Actions] Prayers = true` independently controls the prayer stand's picker.
-`PickerId.Sermons` and the centralized default title **Prayers** prepare this
-category for future naming configuration; names are not configurable yet.
-
-The old `[Actions] Sermons` preference migrates to Prayers if no saved Prayers
-value exists. A saved Prayers value takes precedence, and the legacy entry is
-removed from the bound settings. New configurations remain enabled by default.
-The internal `PickerId.Sermons` identity and native sermon APIs are unchanged.
+`PickerId.Sermons` keeps the centralized default title **Prayers**. Its independent
+`[Inventory Names] Prayers` string changes the next opened picker's title.
+The internal identity and native sermon APIs are unchanged. Development-era
+Sermons-setting migration has been removed; `[Actions] Prayers` defaults on.
+See [CONFIGURATION.md](CONFIGURATION.md).
 
 ## Native contract and integration
 

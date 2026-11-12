@@ -112,7 +112,13 @@ state as well as source/selectability state, so reason-only changes trigger the
 existing redraw path. Native tooltip rendering and vanilla sections stay unchanged.
 
 Every policy has a stable PickerId independent of its displayed Title. Default
-titles are centralized in Core/PickerIdentity.cs. ZombieCollars and
+titles are centralized in Core/PickerIdentity.cs. InventoryNameSettings binds one
+string per ID and applies captured titles to fresh policies at opening, preserving
+all gameplay delegates. Shop Selling captures its title separately at session
+construction. ConfigurationReload detects saved-file edits only at picker/shop
+opening. Custom header text avoids localization-key lookup and rich-text markup;
+defaults retain the original native strings. See CONFIGURATION.md.
+ZombieCollars and
 ResurrectionCollars both default to Collars, but use separate settings, contracts,
 and diagnostic keys. Other policies retain their existing default labels. No
 display-name configuration has been added; enum names, not numeric positions or
@@ -240,11 +246,13 @@ on reentrancy/unexpected state, and resume at a fresh root. The canonical generi
 patches are verified on shipped Mono/Harmony with a standalone controller probe.
 See [WINDOW_SORTING.md](WINDOW_SORTING.md) for the contract, limitations, and tests.
 
-Config.Bind creates independent `[Actions] Seeds = true`, `Fertilizers = true`,
-`Alchemical Ingredients = true`, `Body Parts = true`, `Embalming Fluids = true`,
-`Grave Decorations = true`, and `Zombie Equipment = true`
-entries. The keys are the GUI labels; no configuration-manager dependency or
-custom metadata type is required. Each policy reads only its own live setting.
+Config.Bind creates 11 independent default-on `[Actions]` toggles, 21 `[Inventory Names]`
+strings, and one default-on `[Fixes]` toggle. Concise descriptions and optional
+ConfigurationManagerAttributes tags supply readable labels and descending order
+without a configuration-menu dependency. The installed GK2 Mod Menu's actual
+configuration model and real BepInEx persistence are covered by the standalone
+runtime probe. No development-era setting migration remains. Each policy reads
+only its own live action setting.
 Disable takes effect on the next plugin frame for that action's open picker;
 enable takes effect when its next picker opens. Existing values are retained.
 The alchemy option also controls the laboratory counter correction described in

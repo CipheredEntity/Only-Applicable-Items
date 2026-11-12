@@ -3,7 +3,10 @@
 `[Actions] Study Table = true` controls both sections independently of other
 actions. The stable IDs `StudyResearchable` and `StudyDecomposable` have centralized
 default titles **Study** and **Decompose**, in that order. Both headers
-remain visible when empty. Name customization is not implemented yet.
+remain visible when empty. `[Inventory Names] Study Table - Study` and
+`Study Table - Decompose` customize their next-open titles independently, including
+identical names, without changing section identities/order or visual rules.
+See [CONFIGURATION.md](CONFIGURATION.md).
 
 Study hides only its item quantity labels; Decompose keeps its combined
 counts. Both category headers use the game's icon-free header mode. The same

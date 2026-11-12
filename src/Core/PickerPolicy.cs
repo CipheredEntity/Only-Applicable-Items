@@ -17,16 +17,20 @@ internal sealed class PickerPolicy<T> where T : class
     private readonly Func<bool> enabled;
 
     public PickerPolicy(PickerId id, Func<bool> enabled, Func<T, bool> includeInDisplay,
-        Func<T, bool> canSelect, Action<T> validateItem, Func<T, string?>? extraRedTooltipLocIdProvider = null)
+        Func<T, bool> canSelect, Action<T> validateItem, Func<T, string?>? extraRedTooltipLocIdProvider = null,
+        string? title = null)
     {
         Id = id;
-        Title = PickerTitles.GetDefault(id);
+        Title = title ?? PickerTitles.GetDefault(id);
         this.enabled = enabled;
         IncludeInDisplay = includeInDisplay;
         CanSelect = canSelect;
         ValidateItem = validateItem;
         ExtraRedTooltipLocIdProvider = extraRedTooltipLocIdProvider;
     }
+
+    public PickerPolicy<T> WithTitle(string title)
+        => new PickerPolicy<T>(Id, enabled, IncludeInDisplay, CanSelect, ValidateItem, ExtraRedTooltipLocIdProvider, title);
 }
 
 internal sealed class PickerSnapshot<T> where T : class

@@ -152,7 +152,7 @@ internal static partial class Program
             "Expose only Actions/Prayers while retaining the stable internal identity.");
     }
 
-    private static void PrayersMigratesLegacyPreferenceAndHonorsTheNewKey()
+    private static void PrayersUsesOnlyTheReleaseSettingWithoutMigration()
     {
         foreach (bool legacy in new[] { false, true })
         {
@@ -163,13 +163,13 @@ internal static partial class Program
                 if (current.HasValue) config.LoadSavedValue("Actions", "Prayers", current.Value);
                 config.LoadSavedValue("Actions", "Study Table", false);
                 var settings = new ActionSettings(config);
-                Assert(settings.Sermons.Value == (current ?? legacy) && !settings.StudyTable.Value &&
+                Assert(settings.Sermons.Value == (current ?? true) && !settings.StudyTable.Value &&
                     !config.ContainsKey(new ConfigDefinition("Actions", "Sermons")) &&
                     ReferenceEquals(settings.Sermons, config.Bind("Actions", "Prayers", true, "")),
-                    "Preserve a saved legacy preference, prefer the new key, and leave Study Table unchanged.");
+                    "Use only Prayers, ignore obsolete development settings, and leave Study Table unchanged.");
                 var rebound = new ActionSettings(config);
                 Assert(rebound.Sermons.Value == settings.Sermons.Value,
-                    "Repeated initialization must preserve the migrated Prayers value.");
+                    "Repeated initialization must preserve the Prayers value.");
             }
         }
     }

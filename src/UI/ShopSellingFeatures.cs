@@ -1,4 +1,5 @@
 using System;
+using OnlyApplicableItems.Core;
 using OnlyApplicableItems.Integration;
 
 namespace OnlyApplicableItems.UI;
@@ -9,6 +10,8 @@ internal sealed class ShopSellingFeatures : IDisposable
     private readonly Func<bool> enabled;
     private readonly Action<Item> validate;
     private readonly Action<string, Exception> warn;
+    private readonly Func<PickerId, string> getTitle;
+    private readonly Action? refreshSettings;
     private ShopSellingSession? session;
     private ShopSaleRequest? opening;
     private ShopSaleRequest? pending;
@@ -20,11 +23,18 @@ internal sealed class ShopSellingFeatures : IDisposable
     internal bool Enabled => !disposed && enabled();
     internal bool Busy => opening != null || pending != null || transfer != null;
 
-    public ShopSellingFeatures(ShopSellingContract contract, Func<bool> enabled, Action<Item> validate, Action<string, Exception> warn)
-    { Contract = contract; this.enabled = enabled; this.validate = validate; this.warn = warn; }
+    public ShopSellingFeatures(ShopSellingContract contract, Func<bool> enabled, Action<Item> validate, Action<string, Exception> warn,
+        Func<PickerId, string>? getTitle = null, Action? refreshSettings = null)
+    {
+        Contract = contract; this.enabled = enabled; this.validate = validate; this.warn = warn;
+        this.getTitle = getTitle ?? PickerTitles.GetDefault; this.refreshSettings = refreshSettings;
+    }
+
+    internal string GetTitle(PickerId id) => getTitle(id);
 
     internal void Attach(Trading trading, UIVendorWindowData data)
     {
+        refreshSettings?.Invoke();
         if (!Enabled) return;
         ShopSellingSession? candidate = null;
         try

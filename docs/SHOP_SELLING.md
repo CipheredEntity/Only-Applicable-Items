@@ -3,7 +3,9 @@
 Version 0.13.0 adds `[Actions] Shop Selling = true`. Stable `PickerId.ShopSelling`
 maps to the centralized default title **Sellable**. Trading uses its own session,
 separate Harmony owner, and independent initialization; shared picker sessions and
-the global sorting fix do not depend on it. Names remain non-configurable.
+the global sorting fix do not depend on it. `[Inventory Names] Shop Selling`
+customizes its section title for the next merchant session, preserving the current
+deal's captured title and the outer Keeper caption. See [CONFIGURATION.md](CONFIGURATION.md).
 
 Version 0.13.1 corrects section-header visibility and protects consolidated sales
 against the native uninitialized capacity cache. Existing transactions are retained.

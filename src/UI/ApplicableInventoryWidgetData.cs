@@ -45,7 +45,7 @@ internal sealed class ApplicableInventoryWidgetData : InventoryWidgetData
 
     private static InventoryHeaderWidgetData CreateHeader(Inventory display, PickerPolicy<Item> policy, bool showHeader)
     {
-        var header = new InventoryHeaderWidgetData(display, customHeaderId: policy.Title) { DrawHeader = showHeader };
+        var header = new InventoryHeaderWidgetData(display, customHeaderId: PickerTitles.GetHeaderText(policy.Id, policy.Title)) { DrawHeader = showHeader };
         if ((policy.Id == PickerId.StudyResearchable || policy.Id == PickerId.StudyDecomposable) && policy.IsEnabled)
             header.HeaderIconId = string.Empty; // Native icon-free layout; title stays visible.
         return header;

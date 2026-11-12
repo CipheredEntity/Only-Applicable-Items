@@ -12,6 +12,8 @@
     <Compile Include="..\src\Core\StackAggregation.cs" Link="Core\StackAggregation.cs" />
     <Compile Include="..\src\Core\WindowSortingTracker.cs" Link="Core\WindowSortingTracker.cs" />
     <Compile Include="..\src\Configuration\FixSettings.cs" Link="Configuration\FixSettings.cs" />
+    <Compile Include="..\src\Configuration\SettingMetadata.cs" Link="Configuration\SettingMetadata.cs" />
+    <Compile Include="..\src\Configuration\InventoryNameSettings.cs" Link="Configuration\InventoryNameSettings.cs" />
     <Compile Include="..\src\Core\DelegateContext.cs" Link="Core\DelegateContext.cs" />
     <Compile Include="..\src\Core\PickerPolicy.cs" Link="Core\PickerPolicy.cs" />
     <Compile Include="..\src\Core\PickerIdentity.cs" Link="Core\PickerIdentity.cs" />

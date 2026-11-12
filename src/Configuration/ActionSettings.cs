@@ -18,61 +18,19 @@ internal sealed class ActionSettings
 
     public ActionSettings(ConfigFile config)
     {
-        Seeds = config.Bind("Actions", "Seeds", true,
-            "Combine eligible seeds into one Seeds inventory in the garden planting picker. " +
-            "Disabling restores an open picker on the next frame. Enabling takes effect the next time the seed picker opens.");
-        Fertilizers = config.Bind("Actions", "Fertilizers", true,
-            "Combine all owned fertilizers into one Fertilizers inventory in the garden fertilizer picker. " +
-            "Already-applied fertilizers stay visible but disabled. " +
-            "Disabling restores an open fertilizer picker on the next frame. Enabling takes effect the next time it opens.");
-        AlchemicalIngredients = config.Bind("Actions", "Alchemical Ingredients", true,
-            "Consolidate eligible alchemical ingredients and show total accessible stock in laboratory ingredient counters. " +
-            "Researched ingredients blocked by rune limits remain visible but disabled; unresearched and non-alchemical items stay hidden. " +
-            "Controls both improvements independently of Seeds and Fertilizers. Disabling restores the original picker and counters. " +
-            "Enabling refreshes an open laboratory; consolidation applies the next time its ingredient picker opens.");
-        BodyParts = config.Bind("Actions", "Body Parts", true,
-            "Consolidate body parts for autopsy insertion and zombie replacement into Brains, Hearts, Guts, Skulls, Bones, or Skins. " +
-            "Matching parts rejected by the game's rules remain visible but disabled. " +
-            "Disabling restores an open body-part picker on the next frame. Enabling takes effect the next time it opens.");
-        EmbalmingFluids = config.Bind("Actions", "Embalming Fluids", true,
-            "Combine owned embalming fluids into one Embalming Fluids inventory. " +
-            "Fluids blocked by the game's rules remain visible but disabled. " +
-            "Show the native collar-restriction tooltip warning only for confirmed zombie collar failures. " +
-            "Disabling restores an open embalming picker on the next frame. Enabling takes effect the next time it opens.");
-        GraveDecorations = config.Bind("Actions", "Grave Decorations", true,
-            "Combine grave decorations into Tombstones or Fences inventories, preserving the game's eligibility and crafting rules. " +
-            "Controls both categories independently of other actions. Disabling restores an open decoration picker on the next frame. " +
-            "Enabling takes effect the next time it opens.");
-        ZombieEquipment = config.Bind("Actions", "Zombie Equipment", true,
-            "Consolidate Collars, Armor, Weapons, and Tools in zombie equipment selection. " +
-            "Armor, Weapons, and Tools matching the currently equipped item stay visible but disabled. " +
-            "Items rejected by the native rules remain visible but disabled. Unusual item data or non-single-item equipment restores the original picker. " +
-            "Disabling restores an open equipment picker on the next frame. Enabling takes effect the next time it opens.");
-        ResurrectionCollars = config.Bind("Actions", "Resurrection Collars", true,
-            "Combine collars into one Collars inventory at the resurrection table, including accessible zone storage. " +
-            "Collars rejected by the native skull requirements remain visible but disabled. " +
-            "Also hide the selected resurrection collar slot's stack counter; disabling restores its native display. " +
-            "Independent of Zombie Equipment. Disabling restores an open resurrection collar picker on the next frame; " +
-            "enabling applies the next time it opens. Selection and later one-unit consumption remain native.");
-        // Bind consumes any saved legacy entry, including an unbound entry loaded from disk.
-        // A saved Prayers value wins over this migration default. Fresh configurations default on.
-        var legacySermons = config.Bind("Actions", "Sermons", true, "Renamed to Prayers.");
-        Sermons = config.Bind("Actions", "Prayers", legacySermons.Value,
-            "Combine native-eligible prayers into one Prayers inventory at the prayer stand. " +
-            "Preserves full item definitions and quality variants. Attendance, success chance, execution, and rewards remain native. " +
-            "Disabling restores an open sermon picker on the next frame; enabling applies the next time it opens.");
-        config.Remove(new ConfigDefinition("Actions", "Sermons"));
-        StudyTable = config.Bind("Actions", "Study Table", true,
-            "Consolidate the study picker into Study and Decompose, in that order, including empty sections. " +
-            "Hide Study quantity labels and both category header icons; Decompose quantities stay visible. " +
-            "Also hide the selected-item quantity for research, using the native survey classification; disabling restores the native slot display. " +
-            "Uses native eligibility and survey resolution; requirements, completion, and consumption remain unchanged. " +
-            "Disabling restores both sections to the original picker on the next frame; enabling applies the next time it opens.");
-        ShopSelling = config.Bind("Actions", "Shop Selling", true,
-            "Consolidate owned merchant-relevant items from the backpack and bags into Sellable. " +
-            "Higher-tier purchases remain visible but disabled; nonstackable items move only one unit at a time. " +
-            "Preserves native deals and cancellation. Unsafe item data restores the original selling panel. " +
-            "Disabling blocks new consolidated transfers immediately and restores the panel after any open quantity dialog closes. " +
-            "Enabling applies the next time a shop opens.");
+        Seeds = Bind("Seeds", "Combine available seeds when choosing what to plant.", 110);
+        Fertilizers = Bind("Fertilizers", "Combine fertilizers when treating a garden bed. Unavailable fertilizers remain visible but grayed out.", 100);
+        AlchemicalIngredients = Bind("Alchemical Ingredients", "Combine researched alchemy ingredients and show their total available quantities in the laboratory. Ingredients blocked by rune limits remain visible but grayed out.", 90);
+        BodyParts = Bind("Body Parts", "Combine matching body parts when inserting or replacing organs. Unavailable parts remain visible but grayed out.", 80);
+        EmbalmingFluids = Bind("Embalming Fluids", "Combine embalming fluids. Unavailable fluids remain visible but grayed out, with a warning when a zombie's collar prevents use.", 70);
+        GraveDecorations = Bind("Grave Decorations", "Combine tombstones and fences when decorating a grave.", 60);
+        ZombieEquipment = Bind("Zombie Equipment", "Combine collars, armor, weapons, and tools when equipping zombies. Unavailable or already-equipped equipment remains visible but grayed out.", 50);
+        ResurrectionCollars = Bind("Resurrection Collars", "Combine collars at the resurrection table. Unsuitable collars remain visible but grayed out. Hide the selected collar's stack quantity.", 40);
+        Sermons = Bind("Prayers", "Combine prayers when choosing one at the prayer stand.", 30);
+        StudyTable = Bind("Study Table", "Group study-table items into Study and Decompose inventories. Hide quantities for items being studied and sack icons on both headers.", 20);
+        ShopSelling = Bind("Shop Selling", "Combine items the merchant buys or will buy at a higher tier. Higher-tier items remain visible but grayed out.", 10);
+
+        ConfigEntry<bool> Bind(string name, string description, int order)
+            => config.Bind("Actions", name, true, SettingMetadata.Describe(name, description, order));
     }
 }

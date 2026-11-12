@@ -14,9 +14,11 @@ public sealed class Plugin : BaseUnityPlugin
 {
     public const string Guid = "ciphe.gk2.onlyapplicableitems";
     public const string Name = "Only Applicable Items";
-    public const string Version = "0.13.3";
+    public const string Version = "0.14.0";
     internal static Plugin? Instance { get; private set; }
     internal ActionSettings Settings { get; private set; } = null!;
+    private InventoryNameSettings inventoryNames = null!;
+    private ConfigurationReload configurationReload = null!;
     private FixSettings fixes = null!;
     private WindowSortingFix? windowSorting;
     private readonly List<ApplicableItemsSession> sessions = new List<ApplicableItemsSession>();
@@ -45,6 +47,9 @@ public sealed class Plugin : BaseUnityPlugin
         Instance = this;
         InitializeWindowSorting();
         Settings = new ActionSettings(Config);
+        inventoryNames = new InventoryNameSettings(Config);
+        configurationReload = new ConfigurationReload(Config,
+            exception => WarnOnce("config-reload", "Could not reload configuration; continuing with loaded settings. " + exception));
         InitializeShopSelling();
         try
         {
@@ -86,7 +91,8 @@ public sealed class Plugin : BaseUnityPlugin
         {
             var shop = new ShopSellingContract();
             ShopSelling = new ShopSellingFeatures(shop, () => Settings.ShopSelling.Value, new PlainItemValidator().Validate,
-                (operation, exception) => WarnOnce("shop-selling-" + operation, "Shop Selling fallback while " + operation + ". " + exception));
+                (operation, exception) => WarnOnce("shop-selling-" + operation, "Shop Selling fallback while " + operation + ". " + exception),
+                inventoryNames.GetTitle, configurationReload.Refresh);
             shopHarmony = new Harmony(Guid + ".shop-selling");
             shopHarmony.Patch(shop.Fill, postfix: new HarmonyMethod(typeof(ShopSellingPatches), nameof(ShopSellingPatches.AfterFilled)));
             shopHarmony.Patch(shop.Draw, prefix: new HarmonyMethod(typeof(ShopSellingPatches), nameof(ShopSellingPatches.BeforeDraw)));
@@ -317,6 +323,7 @@ public sealed class Plugin : BaseUnityPlugin
         {
             // Discovery includes private-field reads for autopsy pickers. If it fails,
             // the constructor's original inventory sections must remain usable.
+            configurationReload.Refresh();
             policy = contract.GetPolicy(callback, predicate, Settings) ?? Alchemy?.GetPolicy(callback, predicate)
                 ?? bodyParts?.GetPolicy(callback, predicate) ?? embalming?.GetPolicy(callback, predicate)
                 ?? graveDecorations?.GetPolicy(callback, predicate) ?? zombieEquipment?.GetPolicy(callback, predicate)
@@ -327,6 +334,7 @@ public sealed class Plugin : BaseUnityPlugin
             foreach (var section in policies)
                 if (!section.IsEnabled)
                     return;
+            policies = inventoryNames.Apply(policies);
             session = new ApplicableItemsSession(this, policies, data, predicate);
             session.Commit();
         }

@@ -27,6 +27,7 @@ internal sealed class ShopSellingSession
     internal Inventory Source { get; }
     internal Inventory Destination { get; }
     internal ShopSellingFeatures Feature => feature;
+    internal string Title { get; }
     internal bool Detached { get; private set; }
     private bool fallback;
     private bool dirty = true;
@@ -37,6 +38,7 @@ internal sealed class ShopSellingSession
     public ShopSellingSession(ShopSellingFeatures feature, Trading trading, UIVendorWindowData data, Action<Item> validate)
     {
         this.feature = feature; this.validate = validate;
+        Title = feature.GetTitle(PickerId.ShopSelling);
         Trading = trading; Data = data; vendor = data.Vendor;
         Source = MainGame.PlayerData.inventory;
         Destination = feature.Contract.SellInventory(trading);
@@ -339,7 +341,7 @@ internal sealed class ShopSellingInventoryData : InventoryWidgetData
     public ShopSellingInventoryData(ShopSellingSession session, Inventory inventory, PickerSnapshot<Item> snapshot,
         InventoryWidgetDataBase original, Func<Item, bool> eligible)
         : base(inventory, new InventoryHeaderWidgetData(inventory, headerIconId: string.Empty,
-            customHeaderId: PickerTitles.GetDefault(PickerId.ShopSelling)) { DrawHeader = true },
+            customHeaderId: PickerTitles.GetHeaderText(PickerId.ShopSelling, session.Title)) { DrawHeader = true },
             original.OnItemCellOver, original.OnItemCellOut, cell => session.Click(cell, false), cell => session.Click(cell, true), null, eligible)
     {
         Session = session; Snapshot = snapshot;

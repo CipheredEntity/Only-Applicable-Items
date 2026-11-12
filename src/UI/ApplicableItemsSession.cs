@@ -69,7 +69,7 @@ internal sealed class ApplicableItemsSession : IDisposable
         current = views;
         container.inventoriesData.Clear();
         container.inventoriesData.AddRange(views);
-        container.HeaderLocaleId = policies.Length == 1 ? Policy.Title : originalHeader;
+        container.HeaderLocaleId = policies.Length == 1 ? PickerTitles.GetHeaderText(Policy.Id, Policy.Title) : originalHeader;
         container.onWidgetHide += Dispose;
         committed = true;
     }

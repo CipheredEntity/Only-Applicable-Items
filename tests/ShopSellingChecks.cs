@@ -21,7 +21,8 @@ internal static partial class Program
         public Inventory Root => MainGame.PlayerData.inventory;
         public UIItemCountWindow Dialog => LazyUI.GetWindow<UIItemCountWindow>();
         public ShopSellingInventoryData View => (ShopSellingInventoryData)Data.PlayerMultiInventoryWidgetData.inventoriesData[0];
-        public ShopFixture(Item[] owned, Vendor vendor, Action<UIVendorWindowData>? customize = null, bool enabled = true)
+        public ShopFixture(Item[] owned, Vendor vendor, Action<UIVendorWindowData>? customize = null, bool enabled = true,
+            Func<OnlyApplicableItems.Core.PickerId, string>? getTitle = null)
         {
             Enabled = enabled;
             LazyUI.ResetForCheck(); UnityEngine.Time.unscaledTime = 0;
@@ -29,7 +30,7 @@ internal static partial class Program
             MainGame.PlayerData = new PlayerData(); Root.Data.Inventory.AddRange(owned);
             Data = new UIVendorWindowData { Vendor = vendor };
             Features = new ShopSellingFeatures(new ShopSellingContract(), () => Enabled, new PlainItemValidator().Validate,
-                (operation, _) => Warnings.Add(operation));
+                (operation, _) => Warnings.Add(operation), getTitle);
             OnlyApplicableItems.Plugin.Instance = new OnlyApplicableItems.Plugin { ShopSelling = Features };
             Trade.BeforeFilled = customize;
             Trade.FillVendorWindowData(Data, "vendor", () => { });

@@ -8,6 +8,7 @@ public sealed class ConfigFile
 {
     private readonly Dictionary<string, object> entries = new Dictionary<string, object>();
     private readonly Dictionary<string, object> saved = new Dictionary<string, object>();
+    public IReadOnlyDictionary<string, object> Entries => entries;
 
     public void LoadSavedValue<T>(string section, string key, T value)
         => saved.Add(section + "/" + key, value!);
@@ -15,17 +16,21 @@ public sealed class ConfigFile
     public bool ContainsKey(ConfigDefinition definition)
         => entries.ContainsKey(definition.Id);
 
-    public bool Remove(ConfigDefinition definition)
-        => entries.Remove(definition.Id);
-
     public ConfigEntry<T> Bind<T>(string section, string key, T defaultValue, string description)
+        => Bind(section, key, defaultValue, new ConfigDescription(description));
+
+    public ConfigEntry<T> Bind<T>(string section, string key, T defaultValue, ConfigDescription description)
     {
         string id = section + "/" + key;
         if (!entries.TryGetValue(id, out var entry))
         {
             T value = saved.TryGetValue(id, out var stored) ? (T)stored : defaultValue;
             saved.Remove(id);
-            entries.Add(id, entry = new ConfigEntry<T> { Value = value });
+            entries.Add(id, entry = new ConfigEntry<T>
+            {
+                Value = value, DefaultValue = defaultValue, Description = description,
+                Definition = new ConfigDefinition(section, key)
+            });
         }
         return (ConfigEntry<T>)entry;
     }
@@ -34,10 +39,24 @@ public sealed class ConfigFile
 public sealed class ConfigDefinition
 {
     internal string Id { get; }
-    public ConfigDefinition(string section, string key) => Id = section + "/" + key;
+    public string Section { get; }
+    public string Key { get; }
+    public ConfigDefinition(string section, string key)
+    { Section = section; Key = key; Id = section + "/" + key; }
+}
+
+public sealed class ConfigDescription
+{
+    public string Description { get; }
+    public object[] Tags { get; }
+    public ConfigDescription(string description, object? acceptableValues = null, params object[] tags)
+    { Description = description; Tags = tags; }
 }
 
 public sealed class ConfigEntry<T>
 {
     public T Value { get; set; } = default!;
+    public T DefaultValue { get; set; } = default!;
+    public ConfigDescription Description { get; set; } = new("");
+    public ConfigDefinition Definition { get; set; } = null!;
 }
