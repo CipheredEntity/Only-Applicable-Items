@@ -13,10 +13,11 @@ internal sealed class PickerPolicy<T> where T : class
     public Func<T, bool> IncludeInDisplay { get; }
     public Func<T, bool> CanSelect { get; }
     public Action<T> ValidateItem { get; }
+    public Func<T, string?>? ExtraRedTooltipLocIdProvider { get; }
     private readonly Func<bool> enabled;
 
     public PickerPolicy(PickerId id, Func<bool> enabled, Func<T, bool> includeInDisplay,
-        Func<T, bool> canSelect, Action<T> validateItem)
+        Func<T, bool> canSelect, Action<T> validateItem, Func<T, string?>? extraRedTooltipLocIdProvider = null)
     {
         Id = id;
         Title = PickerTitles.GetDefault(id);
@@ -24,6 +25,7 @@ internal sealed class PickerPolicy<T> where T : class
         IncludeInDisplay = includeInDisplay;
         CanSelect = canSelect;
         ValidateItem = validateItem;
+        ExtraRedTooltipLocIdProvider = extraRedTooltipLocIdProvider;
     }
 }
 
@@ -31,13 +33,20 @@ internal sealed class PickerSnapshot<T> where T : class
 {
     public IReadOnlyList<StackGroup<T>> Groups { get; }
     private readonly bool[] selectable;
+    private readonly string?[]? warnings;
 
-    private PickerSnapshot(List<StackGroup<T>> groups, Func<T, bool> canSelect)
+    private PickerSnapshot(List<StackGroup<T>> groups, PickerPolicy<T> policy)
     {
         Groups = groups;
         selectable = new bool[groups.Count];
+        if (policy.ExtraRedTooltipLocIdProvider != null)
+            warnings = new string?[groups.Count];
         for (int i = 0; i < groups.Count; i++)
-            selectable[i] = canSelect(groups[i].Representative);
+        {
+            selectable[i] = policy.CanSelect(groups[i].Representative);
+            if (warnings != null)
+                warnings[i] = policy.ExtraRedTooltipLocIdProvider!(groups[i].Representative);
+        }
     }
 
     public static PickerSnapshot<T> Build(IEnumerable<StackSource<T>> sources, PickerPolicy<T> policy)
@@ -51,7 +60,7 @@ internal sealed class PickerSnapshot<T> where T : class
             policy.ValidateItem(source.Item);
             included.Add(source);
         }
-        return new PickerSnapshot<T>(StackAggregation.Build(included), policy.CanSelect);
+        return new PickerSnapshot<T>(StackAggregation.Build(included), policy);
     }
 
     // Materialize sources once and finish every section before publishing any
@@ -97,7 +106,9 @@ internal sealed class PickerSnapshot<T> where T : class
         if (!StackAggregation.SameSnapshot(Groups, other.Groups))
             return false;
         for (int i = 0; i < selectable.Length; i++)
-            if (selectable[i] != other.selectable[i])
+            // A disabled item can change rejection reason without changing stock or selectability.
+            if (selectable[i] != other.selectable[i] ||
+                !string.Equals(warnings?[i], other.warnings?[i], StringComparison.Ordinal))
                 return false;
         return true;
     }

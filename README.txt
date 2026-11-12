@@ -1,4 +1,4 @@
-Only Applicable Items 0.13.2
+Only Applicable Items 0.13.3
 ============================
 
 A BepInEx 5 plugin for Graveyard Keeper 2. Garden seed selection displays one
@@ -29,6 +29,10 @@ Embalming fluid selection displays one "Embalming Fluids" inventory with combine
 quantities from the same accessible sources. Unusable fluids remain visible but
 disabled. The game retains its normal corpse/zombie rules, application effects,
 and immediate consumption of one real source item when a fluid is selected.
+Normal fluids blocked specifically by zombie collar limits show the game's existing
+red warning in their normal item tooltip. Full pockets, special-fluid restrictions,
+and uncertain contexts do not add that warning. Existing warning providers take
+precedence; the enhancement shares the Embalming Fluids toggle.
 
 Individual grave decoration selection displays "Tombstones" or "Fences",
 with equivalent definitions and their quantities combined across accessible
@@ -213,6 +217,8 @@ and real source resolution. They do not load or execute the game. Integration
 details are in docs/IMPLEMENTATION.md, docs/ALCHEMY.md, docs/BODY_PARTS.md, and
 docs/EMBALMING.md. Embalming checks exercise the production contract with test-only
 game stand-ins and the shared snapshot logic; no game assemblies are executed.
+Warning checks cover native collar-check forwarding, unrelated restrictions,
+reason-only refreshes, native provider precedence, live toggling, and cell reuse.
 Grave decoration checks cover both titles/groups, the shared live toggle, exact
 action isolation, variant/instance safety, disabled visibility, and real sources.
 See docs/GRAVE_DECORATIONS.md for integration details and in-game validation.

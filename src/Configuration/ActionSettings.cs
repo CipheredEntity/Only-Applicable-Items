@@ -37,6 +37,7 @@ internal sealed class ActionSettings
         EmbalmingFluids = config.Bind("Actions", "Embalming Fluids", true,
             "Combine owned embalming fluids into one Embalming Fluids inventory. " +
             "Fluids blocked by the game's rules remain visible but disabled. " +
+            "Show the native collar-restriction tooltip warning only for confirmed zombie collar failures. " +
             "Disabling restores an open embalming picker on the next frame. Enabling takes effect the next time it opens.");
         GraveDecorations = config.Bind("Actions", "Grave Decorations", true,
             "Combine grave decorations into Tombstones or Fences inventories, preserving the game's eligibility and crafting rules. " +

@@ -25,7 +25,33 @@ controls disabled appearance, input blocking, and fresh click-time validation:
   in the body's pockets.
 - There is no duplicate-fluid exclusion in CanEmbalm. Already applied fluids can
   instead change occupied slots and skull totals. No research or duplicate rules
-  are added by the mod. This picker has no custom failure-reason tooltip provider.
+  are added by the mod. Vanilla supplies no failure-reason tooltip provider here.
+
+## Collar warning (virtual inventory only)
+
+The consolidated section supplements ExtraRedTooltipLocIdProvider with the same
+ui_operation_failed_desc localization key used by the autopsy replacement picker.
+InventoryWidget.Redraw assigns it to UIItemCell.ExtraRedTooltipLocId; the unchanged
+UITooltip.ShowItemCell appends the native red paragraph to normal item information.
+Any existing provider's nonempty result takes precedence. No new Harmony patches,
+custom tooltip rendering, eligibility rules, or configuration entries are added.
+
+EmbalmingPickerContract reads the owning UIEmbalmWindowData's live bodyItem,
+zombieWgoData, and isZombie fields through type-checked reflection. The warning
+requires a valid zombie/body, a known non-ConsumesEmbalmItem craft, fewer than six
+pockets according to BodyPocketInventoryWidget.GetOccupiedSlotCount, and a valid
+equipped collar. The original CanEmbalm predicate must reject the fluid, and
+ZombieWgoData.CanAddItemToBody must reject its resulting skull totals. All skull
+arithmetic and minimum/maximum red/white collar bounds stay native. Missing craft,
+collar, or body context and failed inspection suppress only the added message.
+
+The provider belongs only to the virtual section; original section data and native
+providers are untouched. It reads the existing Embalming Fluids setting live.
+The optional policy warning result is included in snapshot comparisons, so the
+existing half-second poll redraws when a rejection reason changes even if stock
+and selectability do not. Normal native cell redraws overwrite the warning field;
+native Flush also clears it when releasing pooled cells. Disabling/fallback
+restores vanilla sections and their original providers.
 
 The original MultiInventory supplies player inventory and qualifying current-zone
 storage, with directly held bags projected by the shared session. Full definition
@@ -67,13 +93,25 @@ Automated checks compile the production contract with test-only type/signature
 stand-ins and execute production snapshot/aggregation code. They cover exact
 delegate ownership and isolation, full-ID variants, aliases, blocked fluids,
 availability-only changes and stale selection rejection, unusual-instance safety,
-real surviving sources, and live settings. Native craft rules and consumption
-are not simulated or executed; all 128 combinations of the seven settings are checked.
+real surviving sources, and live settings. Additional warning checks cover collar
+validation forwarding, full pockets/special fluids, missing context, failures,
+reason-only refreshes, original provider precedence, live toggling/reopening, and
+cell reuse across every picker identity and vanilla inventory data. Native craft
+rules, skull arithmetic, actual consumption, and Unity rendering are not executed.
 The TryEmbalm/CanEmbalm signatures and ItemType.Embalm were also verified against
 the reference Assembly-CSharp.dll through reflection-only metadata loading,
 without executing game code.
 
 Manual in-game checklist:
+
+- On a zombie near a collar boundary, confirm blocked ordinary fluids show the
+  same localized red paragraph as organ replacement while keeping normal tooltips.
+  Check red and white limits, including reductions below collar minimums.
+- Check full pockets, special fluids on ordinary corpses, missing/unknown context,
+  and selectable fluids do not show a misleading collar warning. If body/collar
+  state can change while the picker is open, verify warning-only changes refresh.
+- Reopen with a different corpse, use mouse/controller tooltips, toggle the feature
+  off, and open unrelated inventories to check that warning text never carries over.
 
 1. Confirm the Embalming Fluids startup log and default-enabled independent entry.
 2. With fluids split among player inventory, bags, and zone storage, check one

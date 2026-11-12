@@ -4,6 +4,12 @@ using System;
 // NativeRule simulates a changing eligibility result, not the game's craft rules.
 public sealed class UIEmbalmWindowData
 {
+    private Item? bodyItem = new Item("body", ItemType.None);
+    private ZombieWgoData? zombieWgoData;
+    private bool isZombie;
+    public Item? Body { get => bodyItem; set => bodyItem = value; }
+    public ZombieWgoData? Zombie { get => zombieWgoData; set => zombieWgoData = value; }
+    public bool IsZombie { get => isZombie; set => isZombie = value; }
     public Func<Item, bool> NativeRule = _ => true;
     public Item? Selected { get; private set; }
     public Action<UIItemCell> Callback => TryEmbalm;
@@ -11,4 +17,12 @@ public sealed class UIEmbalmWindowData
     private void TryEmbalm(UIItemCell cell) { Selected = cell.DisplayingItem; }
     private bool CanEmbalm(Item item) => item != null && !item.IsEmpty &&
         item.Definition.type == ItemType.Embalm && NativeRule(item);
+}
+
+public enum AutopsyTypeCraft { Embalm }
+public sealed class CraftDef { public bool ConsumesEmbalmItem; }
+public static class BodyPocketInventoryWidget
+{
+    // Supplied native count boundary, not a simulation of pocket classification.
+    public static int GetOccupiedSlotCount(Item body, ZombieWgoData zombie) => body.OccupiedPocketCount;
 }

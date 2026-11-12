@@ -29,6 +29,18 @@ internal sealed class ApplicableInventoryWidgetData : InventoryWidgetData
         SectionIndex = sectionIndex;
         Snapshot = snapshot;
         ExtraRedTooltipLocIdProvider = original.ExtraRedTooltipLocIdProvider;
+        if (policy.ExtraRedTooltipLocIdProvider != null)
+        {
+            // Native providers take precedence. Only this virtual view receives the
+            // supplemental provider; vanilla restoration retains the original delegate.
+            ExtraRedTooltipLocIdProvider = item =>
+            {
+                var native = original.ExtraRedTooltipLocIdProvider?.Invoke(item);
+                if (!string.IsNullOrEmpty(native))
+                    return native;
+                return policy.IsEnabled ? policy.ExtraRedTooltipLocIdProvider(item)! : null!;
+            };
+        }
     }
 
     private static InventoryHeaderWidgetData CreateHeader(Inventory display, PickerPolicy<Item> policy, bool showHeader)

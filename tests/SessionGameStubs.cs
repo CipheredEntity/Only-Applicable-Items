@@ -79,6 +79,10 @@ public sealed class InventoryWidget
         while (Cells.Count < Data.Inventory.Data.InventorySize) Cells.Add(new UIItemCell());
         for (int i = 0; i < Cells.Count; i++)
         {
+            // Like native InventoryWidget.Redraw: always assign, including a null
+            // provider/result, before Draw can refresh an already-visible tooltip.
+            Cells[i].ExtraRedTooltipLocId = i < Data.Inventory.Data.Inventory.Count
+                ? Data.ExtraRedTooltipLocIdProvider?.Invoke(Data.Inventory.Data.Inventory[i]) : null;
             Cells[i].Draw(i < Data.Inventory.Data.Inventory.Count ? Data.Inventory.Data.Inventory[i] : null);
             Cells[i].OnItemCellPress = Data.OnItemCellPress;
         }

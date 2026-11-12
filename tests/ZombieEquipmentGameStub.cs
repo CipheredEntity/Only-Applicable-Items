@@ -8,6 +8,10 @@ public sealed class ZombieWgoData
     public Item? Armor { get; set; }
     public Item? Weapon { get; set; }
     public Item? Hand { get; set; }
+    public Item? Collar { get; set; }
+    public Func<Item, bool> AddToBodyRule = _ => true;
+    public int AddToBodyCalls;
+    public bool CanAddItemToBody(Item item) { AddToBodyCalls++; return AddToBodyRule(item); }
     public Func<Item, bool> UpgradePredicate => CanUpgradeCollarTo;
     public bool CanUpgradeCollarTo(Item item) => item != null && !item.IsEmpty &&
         item.Definition.type == ItemType.Collar && UpgradeRule(item);

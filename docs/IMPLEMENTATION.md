@@ -105,6 +105,12 @@ Action-specific contracts create independent PickerPolicy<Item> objects:
 | Prayers | CanUsePray | CanUsePray | Prayers |
 | Study Table | IsItemAllowed plus the resolved survey category | Same native eligibility/category | Study Table / Study, Decompose |
 
+By default, policies have no supplemental warning provider. Embalming adds the native
+collar-warning localization key through an optional provider on its virtual view,
+giving existing warning providers precedence. Snapshots compare this presentation
+state as well as source/selectability state, so reason-only changes trigger the
+existing redraw path. Native tooltip rendering and vanilla sections stay unchanged.
+
 Every policy has a stable PickerId independent of its displayed Title. Default
 titles are centralized in Core/PickerIdentity.cs. ZombieCollars and
 ResurrectionCollars both default to Collars, but use separate settings, contracts,

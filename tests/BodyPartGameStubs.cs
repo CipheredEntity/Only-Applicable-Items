@@ -25,6 +25,7 @@ public sealed partial class Item
     public Guid UniqueId { get; } = Guid.NewGuid();
     public int Count;
     public bool HasInstanceData;
+    public int OccupiedPocketCount;
     public bool IsEmpty => Count <= 0;
     public bool IsBag => Definition.isBag;
     public int InventorySize;
@@ -46,6 +47,7 @@ public sealed class UIItemCell
     public Item? DisplayingItem;
     public int Value { get; set; }
     public Action<UIItemCell>? OnItemCellPress;
+    public string? ExtraRedTooltipLocId;
     public int RenderedCount { get; private set; }
     public bool CounterVisible => countLabel.gameObject.activeSelf;
     public bool ThrowOnNextCountUpdate;
