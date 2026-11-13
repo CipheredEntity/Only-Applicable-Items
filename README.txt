@@ -1,4 +1,4 @@
-Only Applicable Items 0.14.1
+Only Applicable Items 0.14.2
 ============================
 
 A BepInEx 5 plugin for Graveyard Keeper 2. Garden seed selection displays one

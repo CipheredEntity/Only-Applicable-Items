@@ -13,6 +13,9 @@ public sealed partial class Inventory
     public event Action<List<Item>>? OnItemsRemove;
     public event Action<Item>? OnBagAdded;
     public event Action<Item>? OnBagRemoved;
+    public int EventSubscribers => (OnItemsAdd?.GetInvocationList().Length ?? 0) +
+        (OnItemsRemove?.GetInvocationList().Length ?? 0) + (OnBagAdded?.GetInvocationList().Length ?? 0) +
+        (OnBagRemoved?.GetInvocationList().Length ?? 0);
     public void Changed() => OnItemsAdd?.Invoke(new List<Item>());
     public void Removed() => OnItemsRemove?.Invoke(new List<Item>());
     public void BagAdded(Item item) => OnBagAdded?.Invoke(item);

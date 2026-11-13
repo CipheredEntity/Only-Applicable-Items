@@ -6,13 +6,13 @@ namespace OnlyApplicableItems.Checks;
 
 internal static partial class Program
 {
-    private static int Main()
+    private static int Main(string[] args)
     {
-        try { return RunChecks(); }
+        try { return RunChecks(args); }
         catch (Exception exception) { Console.Error.WriteLine("FAILED: " + exception); return 1; }
     }
 
-    private static int RunChecks()
+    private static int RunChecks(string[] args)
     {
         var checks = new Action[]
         {
@@ -126,6 +126,18 @@ internal static partial class Program
             StudySessionBuildAndRefreshFailuresRestoreTheWholePicker,
             StudySessionNativeRedrawFailureAndLiveToggleRestoreBothSections,
             ExistingSingleSectionSessionsRetainTheirLayoutAndRealSourceBehavior,
+            SharedPickerForeignSectionsSurviveRestore,
+            SharedPickerForeignSectionsSurviveDispose,
+            SharedPickerPassiveTakeoverDetachesWithoutRefresh,
+            SharedPickerUnboundCommitDisposalRespectsSectionOwnership,
+            SharedPickerForeignSectionsSurviveDisablingAndFallback,
+            SharedPickerPartialTakeoverPreservesBothSections,
+            SharedPickerForeignTakeoverBlocksStaleSelection,
+            SharedPickerTakeoverDuringValidationBlocksDispatch,
+            SharedPickerRejectsUniformSecondaryCallbacks,
+            SharedPickerRejectsUniformDownCallbacks,
+            SharedPickerTakeoverDuringHideIsNotOverwritten,
+            SharedPickerOwnedSessionsRestoreAndCleanUpRepeatedly,
             StudyTableSettingsDefaultOnAndControlBothIndependentIdentities,
             StudyVisualsHideResearchLabelsWithoutChangingTotalsOrSelection,
             StudyVisualsUseNativeIconFreeHeadersOnlyForStudySections,
@@ -183,6 +195,15 @@ internal static partial class Program
             ShopCapacityStaleCacheAndUnexpectedLayoutsFallBackWithoutTransfers,
             ShopSellableSectionHeaderIsVisibleIconFreeAndRestoresNativeHeaders
         };
+        // Exact-name selection lets compatibility regressions be demonstrated
+        // independently against the old implementation before applying a fix.
+        if (args.Length != 0)
+        {
+            var requested = new HashSet<string>(args, StringComparer.Ordinal);
+            checks = Array.FindAll(checks, check => requested.Contains(check.Method.Name));
+            if (checks.Length != requested.Count)
+                throw new ArgumentException("Unknown regression check name.");
+        }
         foreach (var check in checks)
         {
             check();

@@ -28,6 +28,18 @@ internal sealed class ApplicableItemsSession : IDisposable
     private float nextPoll;
     public bool IsDisposed { get; private set; }
 
+    private bool OwnsSections => current != null && MatchesSections(current);
+
+    private bool MatchesSections(IReadOnlyList<InventoryWidgetDataBase> sections)
+    {
+        if (container.inventoriesData.Count != sections.Count)
+            return false;
+        for (int i = 0; i < sections.Count; i++)
+            if (!ReferenceEquals(container.inventoriesData[i], sections[i]))
+                return false;
+        return true;
+    }
+
     public ApplicableItemsSession(Plugin plugin, PickerPolicy<Item> policy, UIMultiInventoryWindowData data,
         Func<Item, bool> eligible)
         : this(plugin, new[] { policy }, data, eligible)
@@ -53,8 +65,8 @@ internal sealed class ApplicableItemsSession : IDisposable
         {
             if (section.CustomItemsAvailableCondition != eligible || section.CustomItemsNotShowCondition != null ||
                 section.CustomItemSelectedCondition != null || section.ItemRelatedWidgetState != ItemRelatedWidgetState.Default ||
-                section.OnItemCellPress != template.OnItemCellPress || section.OnItemCellPress2 != template.OnItemCellPress2 ||
-                section.OnItemCellDown != template.OnItemCellDown ||
+                section.OnItemCellPress != template.OnItemCellPress || section.OnItemCellPress2 != null ||
+                section.OnItemCellDown != null ||
                 section.ExtraRedTooltipLocIdProvider != template.ExtraRedTooltipLocIdProvider)
                 throw new NotSupportedException("Another customization changed the " + Policy.Title + " picker's filtering or selection mode.");
         }
@@ -128,6 +140,11 @@ internal sealed class ApplicableItemsSession : IDisposable
         if (IsDisposed || current == null || view.SectionIndex < 0 || view.SectionIndex >= current.Length ||
             !ReferenceEquals(current[view.SectionIndex], view))
             return;
+        if (!OwnsSections)
+        {
+            Dispose();
+            return;
+        }
         if (!active)
         {
             window = widget.GetComponentInParent<UIMultiInventoryWindow>();
@@ -177,6 +194,11 @@ internal sealed class ApplicableItemsSession : IDisposable
     {
         if (IsDisposed)
             return;
+        if (!OwnsSections)
+        {
+            Dispose();
+            return;
+        }
         if (owner == null)
         {
             // A different prefab hierarchy cannot safely be rebound. Close its owning
@@ -219,11 +241,8 @@ internal sealed class ApplicableItemsSession : IDisposable
 
     private void Refresh(PickerSnapshot<Item>[] snapshots)
     {
-        if (current == null || container.inventoriesData.Count != current.Length)
+        if (!OwnsSections)
             throw new InvalidOperationException("The picker sections were replaced by another system.");
-        for (int i = 0; i < current.Length; i++)
-            if (!ReferenceEquals(container.inventoriesData[i], current[i]))
-                throw new InvalidOperationException("The picker sections were replaced by another system.");
         var replacements = CreateViews(snapshots);
         var selected = container.SelectedWidgetData;
         int selectedIndex = selected == null ? -1 : container.inventoriesData.IndexOf(selected);
@@ -232,6 +251,11 @@ internal sealed class ApplicableItemsSession : IDisposable
             container.inventoriesData[i] = replacements[i];
         if (selectedIndex >= 0)
             container.SelectedWidgetData = replacements[selectedIndex];
+        if (!OwnsSections || (owner != null && !ReferenceEquals(owner.Data, container)))
+        {
+            Dispose();
+            return;
+        }
         // Redraw the existing child widget. Calling window.Redraw/child.Draw would run
         // MultiInventoryWidget.SetData again and create duplicate section widgets.
         var redraw = container.OnItemsAvailabilityChanged
@@ -245,6 +269,11 @@ internal sealed class ApplicableItemsSession : IDisposable
     {
         if (IsDisposed || current == null || sectionIndex < 0 || sectionIndex >= current.Length)
             return;
+        if (!OwnsSections || (owner != null && !ReferenceEquals(owner.Data, container)))
+        {
+            Dispose();
+            return;
+        }
         if (!IsEnabled || fallbackRequested)
         {
             RestoreVanilla();
@@ -261,6 +290,11 @@ internal sealed class ApplicableItemsSession : IDisposable
             if (key == null)
                 throw new InvalidOperationException("The clicked cell has no source group.");
             var fresh = BuildSnapshots();
+            if (!OwnsSections || (owner != null && !ReferenceEquals(owner.Data, container)))
+            {
+                Dispose();
+                return;
+            }
             // A visible item may be disabled. Resolve only against freshly evaluated
             // selectability before Draw can restore a cell's default interaction state.
             if (!fresh[sectionIndex].TryResolveSelectable(key, out representative) || representative == null)
@@ -279,6 +313,11 @@ internal sealed class ApplicableItemsSession : IDisposable
             return;
         }
 
+        if (!OwnsSections || (owner != null && !ReferenceEquals(owner.Data, container)))
+        {
+            Dispose();
+            return;
+        }
         // Deliberately outside the recovery catch: do not retry a game action after it starts.
         template.OnItemCellPress!(cell);
     }
@@ -297,11 +336,12 @@ internal sealed class ApplicableItemsSession : IDisposable
         if (IsDisposed)
             return;
         var widget = owner;
-        if (widget == null || !ReferenceEquals(widget.Data, container))
+        if (widget == null || !ReferenceEquals(widget.Data, container) || !OwnsSections)
         {
             Dispose();
             return;
         }
+        IReadOnlyList<InventoryWidgetDataBase> expected = current!;
         try
         {
             // Re-discover bags through the game's normal helper for the original access list.
@@ -310,10 +350,21 @@ internal sealed class ApplicableItemsSession : IDisposable
                 template.OnItemCellPress2, template.OnItemCellDown, eligible);
             foreach (var section in sections)
                 section.ExtraRedTooltipLocIdProvider = template.ExtraRedTooltipLocIdProvider;
-            widget.Hide(); // Releases old pooled widgets; onWidgetHide disposes this session.
+            if (!ReferenceEquals(widget.Data, container) || !OwnsSections)
+                return;
+            expected = current!;
+            // Unsubscribe before Hide invokes other mods' callbacks. Keep the
+            // owned views as an identity marker until native restoration is ready.
+            Detach(restoreSections: false);
+            widget.Hide();
+            if (!ReferenceEquals(widget.Data, container) || !MatchesSections(expected))
+                return;
             container.inventoriesData.Clear();
             container.inventoriesData.AddRange(sections);
+            expected = sections;
             container.SelectedWidgetData = null;
+            if (!ReferenceEquals(widget.Data, container) || !MatchesSections(expected))
+                return;
             container.HeaderLocaleId = originalHeader;
             widget.Draw(container); // A fresh setup is safe after Hide cleared all sections.
         }
@@ -321,7 +372,7 @@ internal sealed class ApplicableItemsSession : IDisposable
         {
             plugin.WarnOnce("restore-" + Policy.Id, "Could not restore the original picker; closing it safely. " + exception);
             var window = widget.GetComponentInParent<UIMultiInventoryWindow>();
-            if (window != null)
+            if (window != null && ReferenceEquals(widget.Data, container) && MatchesSections(expected))
                 window.Close();
         }
         finally
@@ -330,7 +381,9 @@ internal sealed class ApplicableItemsSession : IDisposable
         }
     }
 
-    public void Dispose()
+    public void Dispose() => Detach(restoreSections: true);
+
+    private void Detach(bool restoreSections)
     {
         if (IsDisposed)
             return;
@@ -346,10 +399,13 @@ internal sealed class ApplicableItemsSession : IDisposable
         if (committed)
         {
             container.onWidgetHide -= Dispose;
-            container.inventoriesData.Clear();
-            container.inventoriesData.AddRange(originalSections);
-            container.SelectedWidgetData = null;
-            container.HeaderLocaleId = originalHeader;
+            if (restoreSections && OwnsSections && (owner == null || ReferenceEquals(owner.Data, container)))
+            {
+                container.inventoriesData.Clear();
+                container.inventoriesData.AddRange(originalSections);
+                container.SelectedWidgetData = null;
+                container.HeaderLocaleId = originalHeader;
+            }
         }
         current = null;
         owner = null;

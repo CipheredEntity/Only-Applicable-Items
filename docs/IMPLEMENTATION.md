@@ -139,6 +139,38 @@ section header. Multi-section pickers retain the original window caption and sho
 their section headers. A failure or live disabling restores the entire picker.
 No additional Harmony patch or consumption logic is introduced. See STUDY_TABLE.md.
 
+Shared-picker compatibility (v0.14.2): section ownership requires the same section
+count, order, and exact view references that this session published. A partial or
+complete foreign takeover causes detachment: remove our source subscriptions and
+hide handler, unregister the session, and leave foreign sections, headers,
+selection, and callbacks alone. Tick, redraw decoration, and selection check this
+ownership; selection rechecks after native validation/render callbacks as well.
+Unsupported non-null secondary/down callbacks are rejected at construction rather
+than silently omitted by the virtual view.
+Partial takeover does not create a supported mixed session: any retained old
+virtual callbacks become inert, and the other mod controls subsequent UI rebuilds.
+
+Owned restoration still re-enumerates native inventories/bags and rebuilds the
+native layout. It detaches its own handlers before Hide, keeps the current views
+as an identity marker, and rechecks ownership after hide/selection callbacks
+before publishing or drawing further changes. Disposal before first binding also
+restores an owned commit, but leaves a foreign replacement intact. No Shop Selling,
+eligibility, aggregation, item mutation, or consumption logic is changed.
+
+SharedPickerCompatibilityChecks recorded eight failing regressions against the
+unchanged v0.14.1 production code: restore, dispose, disabling/fallback, partial
+Study takeover, stale selection, uniform secondary callbacks, uniform down
+callbacks, and takeover during Hide. Further cases cover passive takeover,
+pre-binding disposal, takeover during eligibility validation, and 24 open/close
+cycles reusing one window and source inventory. Subscription checks distinguish
+our four source handlers from another mod's retained handler. These tests execute
+the production session with in-memory UI boundaries; actual third-party mods,
+Unity pooling, and controller behavior still require in-game validation.
+
+The checks executable accepts exact test method names to reproduce a case without
+stopping at an earlier expected failure, for example:
+`dotnet run --project tests/OnlyApplicableItems.Checks.csproj -c Release --no-restore -- SharedPickerForeignSectionsSurviveRestore`.
+
 StudyResearchable additionally hides only its rendered count-label object after
 normal aggregation, preserving cached totals and real items. Its validated private
 label access is resolved lazily so unrelated pickers are unaffected. Both study
