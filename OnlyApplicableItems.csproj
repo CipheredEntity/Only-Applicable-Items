@@ -9,7 +9,7 @@
     <Nullable>enable</Nullable>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <GenerateDependencyFile>false</GenerateDependencyFile>
-    <GameManagedPath Condition="'$(GameManagedPath)' == ''">$(MSBuildProjectDirectory)\..\Game Assemblies Copies\Managed</GameManagedPath>
+    <GameManagedPath Condition="'$(GameManagedPath)' == ''">$(MSBuildProjectDirectory)\..\Game Assemblies Copies\1.012\Managed</GameManagedPath>
     <GameInstallPath Condition="'$(GameInstallPath)' == ''">$(MSBuildProgramFiles32)\Steam\steamapps\common\Graveyard Keeper 2</GameInstallPath>
     <BepInExCorePath Condition="'$(BepInExCorePath)' == ''">$(GameInstallPath)\BepInEx\core</BepInExCorePath>
     <!-- Compile against Unity's own BCL copies, without downloading a targeting pack. -->

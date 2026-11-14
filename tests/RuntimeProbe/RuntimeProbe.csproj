@@ -7,7 +7,7 @@
     <!-- The linked, unchanged native controller predates nullable annotations. -->
     <Nullable>annotations</Nullable>
     <PlatformTarget>x64</PlatformTarget>
-    <GameManagedPath Condition="'$(GameManagedPath)' == ''">$(MSBuildProjectDirectory)\..\..\..\Game Assemblies Copies\Managed</GameManagedPath>
+    <GameManagedPath Condition="'$(GameManagedPath)' == ''">$(MSBuildProjectDirectory)\..\..\..\Game Assemblies Copies\1.012\Managed</GameManagedPath>
     <GameInstallPath Condition="'$(GameInstallPath)' == ''">$(MSBuildProgramFiles32)\Steam\steamapps\common\Graveyard Keeper 2</GameInstallPath>
     <BepInExCorePath Condition="'$(BepInExCorePath)' == ''">$(GameInstallPath)\BepInEx\core</BepInExCorePath>
     <AutomaticallyUseReferenceAssemblyPackages>false</AutomaticallyUseReferenceAssemblyPackages>
@@ -29,7 +29,7 @@
     <Compile Include="..\..\src\Configuration\ConfigurationReload.cs" Link="Configuration\ConfigurationReload.cs" />
     <Compile Include="..\..\src\Core\WindowSortingTracker.cs" Link="Core\WindowSortingTracker.cs" />
     <Compile Include="..\..\src\Integration\WindowSortingFix.cs" Link="Integration\WindowSortingFix.cs" />
-    <Compile Include="..\..\..\Decompiled Source\LazyBearTechnology\LazyBearTechnology\LazyWindowsStackController.cs" Link="Native\LazyWindowsStackController.cs" />
+    <Compile Include="..\..\..\Decompiled Source\1.012\LazyBearTechnology\LazyBearTechnology\LazyWindowsStackController.cs" Link="Native\LazyWindowsStackController.cs" />
     <Reference Include="mscorlib" HintPath="$(GameManagedPath)\mscorlib.dll" Private="false" />
     <Reference Include="System" HintPath="$(GameManagedPath)\System.dll" Private="false" />
     <Reference Include="System.Core" HintPath="$(GameManagedPath)\System.Core.dll" Private="false" />

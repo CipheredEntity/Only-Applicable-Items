@@ -76,7 +76,7 @@ dotnet build tests/RuntimeProbe/RuntimeProbe.csproj -c Release
 # Run only after the probe build succeeds:
 & 'tests/RuntimeProbe/bin/Release/net472/RuntimeProbe.exe' `
   'C:/Program Files (x86)/Steam/steamapps/common/Graveyard Keeper 2' `
-  (Resolve-Path '../Game Assemblies Copies/Managed').Path
+  (Resolve-Path '../Game Assemblies Copies/1.012/Managed').Path
 ```
 
 The probe's tooling DLLs stay in ignored test output, never in the mod package.

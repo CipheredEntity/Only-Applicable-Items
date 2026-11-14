@@ -216,7 +216,7 @@ This project targets net472, using the installed .NET SDK and external Unity/BCL
 reference copies. It has no NuGet package dependencies and does not download a
 targeting pack. BepInEx 5.4.23.5 and Harmony are referenced from the game's
 BepInEx/core directory; Unity Mono and game DLLs come from:
-  ../Game Assemblies Copies/Managed
+  ../Game Assemblies Copies/1.012/Managed
 
 Keep those copyrighted reference files outside this repository. The production
 build does not copy them to its output or package. Never ship BepInEx, Harmony,

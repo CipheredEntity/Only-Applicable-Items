@@ -10,9 +10,21 @@ The mod is developed in C# using the game's supported modding framework.
 
 - `../Documentation Reference/README_MODDING.txt` contains the game's official modding instructions and should be consulted when configuring the project or implementing game integration.
 
-- `../Decompiled Source/` contains reconstructed game code for reference and investigation.
+- The current target game version is **1.012**.
 
-- `../Game Assemblies Copies/` contains copies of the game's compiled assemblies for reference and project dependencies.
+- `../Decompiled Source/1.012/` contains the current
+  decompiled game source for investigation and integration.
+
+- `../Game Assemblies Copies/1.012/Managed/` contains
+  the current compiled game assemblies for reference
+  and build dependencies.
+
+- The corresponding `1.011` directories contain the
+  previous game version and should be used only when
+  comparing changes or investigating regressions.
+
+- Always prioritize the current target version when
+  developing features or checking compatibility.
 
 - All file creation and modification should occur only within the `Only Applicable Items` repository. All sibling directories are read-only.
 
