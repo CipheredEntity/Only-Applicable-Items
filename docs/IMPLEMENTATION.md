@@ -104,6 +104,13 @@ Action-specific contracts create independent PickerPolicy<Item> objects:
 | Resurrection Collars | ItemType.Collar, including disabled entries | Original skull-range predicate | Resurrection Collars / Collars |
 | Prayers | CanUsePray | CanUsePray | Prayers |
 | Study Table | IsItemAllowed plus the resolved survey category | Same native eligibility/category | Study Table / Study, Decompose |
+| PR Machine | IsItemAllowed (native Load definitions) | Same native eligibility | PR Machine / PR Resources |
+
+PR Machine alone uses the session's optional SelectionDispatch to establish a
+quantity-dialog scope. Fresh source planning and a callback-free consumption
+phase allow distributed quantities while the original native loading effects run
+once. All other policies keep the original callback dispatch. See [PR_MACHINE.md](PR_MACHINE.md)
+for the guarded native-body seam, deferred notifications, and safety boundaries.
 
 By default, policies have no supplemental warning provider. Embalming adds the native
 collar-warning localization key through an optional provider on its virtual view,

@@ -2,14 +2,14 @@
 
 The standard BepInEx file is
 `BepInEx/config/ciphe.gk2.onlyapplicableitems.cfg`. No settings-menu mod is required.
-There are exactly 33 bound settings: 11 default-on toggles in **Actions**, 21 string
+There are exactly 35 bound settings: 12 default-on toggles in **Actions**, 22 string
 entries in **Inventory Names**, and the default-on **Window Sorting Order** in
 **Fixes**. Development-era setting migrations have been removed; obsolete entries
 may remain as unbound data in an existing BepInEx file but have no effect.
 
 ## Inventory Names
 
-All 21 name settings default to an empty string. Their descriptions are exactly
+All 22 name settings default to an empty string. Their descriptions are exactly
 `Leave blank to use "Default Name".`, substituting the corresponding fallback below.
 Existing saved values are preserved; no preference migration or reset is performed.
 
@@ -36,6 +36,7 @@ Existing saved values are preserved; no preference migration or reset is perform
 | Study Table - Study | Study | StudyResearchable |
 | Study Table - Decompose | Decompose | StudyDecomposable |
 | Shop Selling | Sellable | ShopSelling |
+| PR Machine | PR Resources | PrMachineResources |
 
 Blank settings resolve through `PickerTitles.GetDefault` and remain independent even when the
 displayed names match. Empty/whitespace-only values use the default without
@@ -81,7 +82,7 @@ placement, so we do not rename categories to force a different group order.
 String entries use its normal text editor, with no custom drawers or controls.
 Neither GK2 Mod Menu nor ConfigurationManager is referenced, packaged, or required.
 
-Action descriptions are limited to these five hints; all six other action
+Action descriptions are limited to these five hints; all seven other action
 descriptions are empty strings. Labels, categories, ordering, and default-on
 values are unchanged.
 
@@ -102,18 +103,18 @@ metadata in the standalone probe; final visual layout still needs in-game testin
 
 ## Validation
 
-The pure regression harness covers all 21 unique keys/defaults, independent and
-duplicate names, blank fallback, punctuation/markup-like values, the exact 33-entry
+The pure regression harness covers all 22 unique keys/defaults, independent and
+duplicate names, blank fallback, punctuation/markup-like values, the exact 35-entry
 schema and metadata, exact compact descriptions/ordering, unchanged policy delegates/snapshots, action-disabled names,
 next-opening behavior, stock refreshes, duplicate Study section titles/visuals,
 and the separate trading integration. Existing action and transfer tests still run.
 
 The standalone shipped-Mono probe uses the installed real BepInEx library to save
 and reload all names, disabled action preferences, and special/blank values. All
-21 fresh blank settings are separately saved/reloaded and checked against their
+22 fresh blank settings are separately saved/reloaded and checked against their
 original fallback titles before custom names are tested. It
 also checks manual file reload and invokes only GK2 Mod Menu's pure `BuildItems`
-configuration model to verify all 33 labels/categories/descriptions/orders and
+configuration model to verify all 35 labels/categories/descriptions/orders and
 editable-entry persistence. It does not instantiate that plugin/window or run Unity
 or game methods. Test files, including BepInEx's core config, are isolated under
 the probe output directory and removed after each run. The menu-model check skips
@@ -121,7 +122,7 @@ explicitly if that optional DLL is unavailable; BepInEx checks remain independen
 
 In-game checks before release:
 
-1. Confirm the three categories, 11 toggles, 21 editable names, help text, ordering,
+1. Confirm the three categories, 12 toggles, 22 editable names, help text, ordering,
    text entry, blank name defaults, empty action-description spacing, and
    reset-to-default behavior in GK2 Mod Menu (mouse/controller).
 2. Rename every inventory, especially both Collars entries, both Study sections,

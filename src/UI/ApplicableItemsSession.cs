@@ -27,6 +27,10 @@ internal sealed class ApplicableItemsSession : IDisposable
     private bool fallbackRequested;
     private float nextPoll;
     public bool IsDisposed { get; private set; }
+    internal MultiInventory Sources => realInventories;
+    internal bool IsCurrent => !IsDisposed && OwnsSections && owner != null &&
+        ReferenceEquals(owner.Data, container) && owner.gameObject.activeInHierarchy;
+    internal Action<UIItemCell, Action>? SelectionDispatch { get; set; }
 
     private bool OwnsSections => current != null && MatchesSections(current);
 
@@ -319,7 +323,8 @@ internal sealed class ApplicableItemsSession : IDisposable
             return;
         }
         // Deliberately outside the recovery catch: do not retry a game action after it starts.
-        template.OnItemCellPress!(cell);
+        if (SelectionDispatch != null) SelectionDispatch(cell, () => template.OnItemCellPress!(cell));
+        else template.OnItemCellPress!(cell);
     }
 
     public void RequestFallback(string operation, Exception exception)
@@ -408,6 +413,7 @@ internal sealed class ApplicableItemsSession : IDisposable
             }
         }
         current = null;
+        SelectionDispatch = null;
         owner = null;
         window = null;
         plugin.Unregister(this);

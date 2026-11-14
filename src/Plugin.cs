@@ -14,7 +14,7 @@ public sealed class Plugin : BaseUnityPlugin
 {
     public const string Guid = "ciphe.gk2.onlyapplicableitems";
     public const string Name = "Only Applicable Items";
-    public const string Version = "0.14.2";
+    public const string Version = "0.15.0";
     internal static Plugin? Instance { get; private set; }
     internal ActionSettings Settings { get; private set; } = null!;
     private InventoryNameSettings inventoryNames = null!;
@@ -29,6 +29,8 @@ public sealed class Plugin : BaseUnityPlugin
     private Harmony? resurrectionDisplayHarmony;
     private Harmony? studyDisplayHarmony;
     private Harmony? shopHarmony;
+    private Harmony? prHarmony;
+    private PrMachineNative? prNative;
     private GardenPickerContract? contract;
     private BodyPartPickerContract? bodyParts;
     private EmbalmingPickerContract? embalming;
@@ -41,6 +43,7 @@ public sealed class Plugin : BaseUnityPlugin
     internal StudySelectedItemDisplay? StudySelectedSlot { get; private set; }
     internal AlchemyFeatures? Alchemy { get; private set; }
     internal ShopSellingFeatures? ShopSelling { get; private set; }
+    internal PrMachineFeatures? PrMachine { get; private set; }
 
     private void Awake()
     {
@@ -82,7 +85,46 @@ public sealed class Plugin : BaseUnityPlugin
             InitializeSermons();
             InitializeStudyTable();
             InitializeStudySelectedItemDisplay();
+            InitializePrMachine();
         }
+    }
+
+    private void InitializePrMachine()
+    {
+        try
+        {
+            var pr = new PrMachineContract();
+            var fields = new PrItemFields();
+            prNative = new PrMachineNative(Guid + ".pr-native", pr.Picked, pr.Remove);
+            var bridge = prNative;
+            PrMachine = new PrMachineFeatures(pr, fields, () => Settings.PrMachine.Value, contract!.ValidatePlainItem,
+                (operation, exception) => WarnOnce("pr-machine-" + operation, "PR Machine fallback while " + operation + ". " + exception),
+                bridge.Verify, (owner, cell, carrier, plan) => bridge.Run(owner, cell, carrier, plan,
+                    exception => WarnOnce("pr-machine-notification", "PR resources were consumed; an inventory observer failed. " + exception)));
+            prHarmony = new Harmony(Guid + ".pr-machine");
+            var countOpen = typeof(UIItemCountWindow).GetMethod("Open", new[] { typeof(UIItemCountWindowData) })
+                ?? throw new MissingMethodException("PR quantity dialog Open");
+            prHarmony.Patch(countOpen, prefix: new HarmonyMethod(typeof(PrMachinePatches), nameof(PrMachinePatches.BeforeCountOpen)));
+            Logger.LogInfo("PR Machine ready. Enabled: " + Settings.PrMachine.Value);
+        }
+        catch (Exception exception)
+        {
+            ShutdownPrMachine();
+            WarnOnce("pr-machine-startup", "PR Machine remains native; other features are independent. " + exception);
+        }
+    }
+
+    private void ShutdownPrMachine()
+    {
+        var feature = PrMachine; PrMachine = null;
+        var bridge = prNative; prNative = null;
+        var patches = prHarmony; prHarmony = null;
+        try { feature?.Dispose(); }
+        catch (Exception exception) { WarnOnce("pr-machine-shutdown", "PR Machine requests were disabled but cleanup failed. " + exception); }
+        try { bridge?.Dispose(); }
+        catch (Exception exception) { WarnOnce("pr-native-shutdown", "PR Machine native-hook cleanup failed. " + exception); }
+        try { patches?.UnpatchSelf(); }
+        catch (Exception exception) { WarnOnce("pr-dialog-shutdown", "PR Machine dialog hooks are inactive but could not be removed. " + exception); }
     }
 
     private void InitializeShopSelling()
@@ -327,7 +369,8 @@ public sealed class Plugin : BaseUnityPlugin
             policy = contract.GetPolicy(callback, predicate, Settings) ?? Alchemy?.GetPolicy(callback, predicate)
                 ?? bodyParts?.GetPolicy(callback, predicate) ?? embalming?.GetPolicy(callback, predicate)
                 ?? graveDecorations?.GetPolicy(callback, predicate) ?? zombieEquipment?.GetPolicy(callback, predicate)
-                ?? ResurrectionCollars?.GetPolicy(callback, predicate) ?? sermons?.GetPolicy(callback, predicate);
+                ?? ResurrectionCollars?.GetPolicy(callback, predicate) ?? sermons?.GetPolicy(callback, predicate)
+                ?? PrMachine?.GetPolicy(data, callback, predicate);
             policies = policy != null ? new[] { policy } : studyTable?.GetPolicies(callback, predicate);
             if (policies == null)
                 return;
@@ -336,6 +379,7 @@ public sealed class Plugin : BaseUnityPlugin
                     return;
             policies = inventoryNames.Apply(policies);
             session = new ApplicableItemsSession(this, policies, data, predicate);
+            if (policies[0].Id == PickerId.PrMachineResources) PrMachine!.Bind(session, predicate);
             session.Commit();
         }
         catch (Exception exception)
@@ -352,6 +396,7 @@ public sealed class Plugin : BaseUnityPlugin
     {
         windowSorting?.Tick();
         ShopSelling?.Tick();
+        PrMachine?.Tick();
         foreach (var session in sessions.ToArray())
         {
             try
@@ -380,6 +425,7 @@ public sealed class Plugin : BaseUnityPlugin
 
     private void OnDestroy()
     {
+        ShutdownPrMachine();
         ShutdownShopSelling();
         try { windowSorting?.Dispose(); }
         catch (Exception exception)

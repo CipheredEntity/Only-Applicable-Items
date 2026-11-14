@@ -15,6 +15,7 @@ internal sealed class ActionSettings
     public ConfigEntry<bool> Sermons { get; }
     public ConfigEntry<bool> StudyTable { get; }
     public ConfigEntry<bool> ShopSelling { get; }
+    public ConfigEntry<bool> PrMachine { get; }
 
     public ActionSettings(ConfigFile config)
     {
@@ -29,6 +30,7 @@ internal sealed class ActionSettings
         Sermons = Bind("Prayers", string.Empty, 30);
         StudyTable = Bind("Study Table", "Controls Study and Decompose.", 20);
         ShopSelling = Bind("Shop Selling", string.Empty, 10);
+        PrMachine = Bind("PR Machine", string.Empty, 0);
 
         ConfigEntry<bool> Bind(string name, string description, int order)
             => config.Bind("Actions", name, true, SettingMetadata.Describe(name, description, order));

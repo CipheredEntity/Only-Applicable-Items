@@ -41,7 +41,7 @@ internal static class ConfigurationRuntimeChecks
             var actions = new ActionSettings(config);
             var names = new InventoryNameSettings(config);
             new FixSettings(config);
-            Require(config.Count == 33, "Release settings count differs from 11 + 21 + 1.");
+            Require(config.Count == 35, "Release settings count differs from 12 + 22 + 1.");
             foreach (PickerId id in Enum.GetValues(typeof(PickerId)))
                 Require(Entry(config, id).Value == "" && (string)Entry(config, id).DefaultValue == "" &&
                     names.GetTitle(id) == PickerTitles.GetDefault(id), "A fresh name must be blank and resolve to its original title: " + id);
@@ -51,7 +51,7 @@ internal static class ConfigurationRuntimeChecks
             foreach (PickerId id in Enum.GetValues(typeof(PickerId)))
                 Require(Entry(blankReload, id).Value == "" && blankNames.GetTitle(id) == PickerTitles.GetDefault(id),
                     "Blank-name fallback did not survive real BepInEx save/reload: " + id);
-            Console.WriteLine("PASS all 21 blank configuration defaults retain their original titles after real BepInEx save/reload.");
+            Console.WriteLine("PASS all 22 blank configuration defaults retain their original titles after real BepInEx save/reload.");
             var expected = new Dictionary<PickerId, string>();
             foreach (PickerId id in Enum.GetValues(typeof(PickerId)))
             {
@@ -70,13 +70,13 @@ internal static class ConfigurationRuntimeChecks
             var reloadedActions = new ActionSettings(reloaded);
             var reloadedNames = new InventoryNameSettings(reloaded);
             new FixSettings(reloaded);
-            Require(reloaded.Count == 33 && !reloadedActions.Seeds.Value && !reloadedActions.ShopSelling.Value &&
+            Require(reloaded.Count == 35 && !reloadedActions.Seeds.Value && !reloadedActions.ShopSelling.Value &&
                 reloadedActions.StudyTable.Value, "Action values did not survive real BepInEx save/reload.");
             foreach (var pair in expected)
                 Require(reloadedNames.GetTitle(pair.Key) == pair.Value &&
                     (string)Entry(reloaded, pair.Key).DefaultValue == "",
                     "Inventory title did not survive real BepInEx save/reload: " + pair.Key);
-            Console.WriteLine("PASS real BepInEx configuration: 33 entries, all 21 names, duplicate/blank/special values, and disabled-action preferences survive save/reload.");
+            Console.WriteLine("PASS real BepInEx configuration: 35 entries, all 22 names, duplicate/blank/special values, and disabled-action preferences survive save/reload.");
 
             var reloadErrors = new List<Exception>();
             var refresh = new ConfigurationReload(reloaded, reloadErrors.Add);
@@ -116,7 +116,7 @@ internal static class ConfigurationRuntimeChecks
             var model = menu.GetType("GK2ModMenu.ConfigModel", true)!;
             var build = model.GetMethod("BuildItems", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)!;
             var items = ((IEnumerable)build.Invoke(null, new object[] { reloaded })!).Cast<object>().ToArray();
-            Require(items.Length == 33, "GK2 Mod Menu did not expose every release setting.");
+            Require(items.Length == 35, "GK2 Mod Menu did not expose every release setting.");
             var previousOrder = new Dictionary<string, int>();
             foreach (var item in items)
             {
@@ -140,7 +140,7 @@ internal static class ConfigurationRuntimeChecks
             Require(!typeof(InventoryNameSettings).Assembly.GetReferencedAssemblies().Any(a => a.Name == "GK2ModMenu"),
                 "Optional GK2 Mod Menu acquired a compile-time dependency.");
             VerifyEmptyDescriptionRendering(menuPath);
-            Console.WriteLine("PASS installed GK2 Mod Menu " + menu.GetName().Version + ": all 33 labels/categories/descriptions/orders, editable names, and independent persistence (configuration model only).");
+            Console.WriteLine("PASS installed GK2 Mod Menu " + menu.GetName().Version + ": all 35 labels/categories/descriptions/orders, editable names, and independent persistence (configuration model only).");
         }
         finally { if (File.Exists(path)) File.Delete(path); }
     }

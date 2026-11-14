@@ -46,6 +46,7 @@ internal static class Program
         if (calls != 2) throw new InvalidOperationException("Reference-type generic sharing was not observed.");
         SortingRuntimeChecks.Run(managedPath);
         ShopMetadataChecks.Run(managedPath);
+        PrMachineRuntimeChecks.Run(managedPath);
         ConfigurationRuntimeChecks.Run(gamePath);
         return 0;
     }

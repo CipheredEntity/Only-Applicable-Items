@@ -5,10 +5,11 @@ using OnlyApplicableItems.Core;
 // Test-only game/UI stand-ins for the production virtual inventory data constructor.
 public sealed partial class Inventory
 {
-    public Item Data { get; }
-    public Inventory() : this("inventory", 0) { }
-    public Inventory(string id, int size) { Data = new Item(id, ItemType.None) { InventorySize = size }; }
-    public Inventory(Item data) { Data = data; }
+    private Item inventoryItem;
+    public Item Data => inventoryItem;
+    public Inventory() { inventoryItem = new Item(); }
+    public Inventory(string id, int size) { inventoryItem = new Item(id, ItemType.None) { InventorySize = size }; }
+    public Inventory(Item data) { inventoryItem = data; }
     public event Action<List<Item>>? OnItemsAdd;
     public event Action<List<Item>>? OnItemsRemove;
     public event Action<Item>? OnBagAdded;
@@ -18,6 +19,7 @@ public sealed partial class Inventory
         (OnBagRemoved?.GetInvocationList().Length ?? 0);
     public void Changed() => OnItemsAdd?.Invoke(new List<Item>());
     public void Removed() => OnItemsRemove?.Invoke(new List<Item>());
+    public void NotifyItemsRemoved(List<Item> items) => OnItemsRemove?.Invoke(items);
     public void BagAdded(Item item) => OnBagAdded?.Invoke(item);
     public void BagRemoved(Item item) => OnBagRemoved?.Invoke(item);
 }

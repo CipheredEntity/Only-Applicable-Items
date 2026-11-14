@@ -8,6 +8,10 @@
     <NuGetAudit>false</NuGetAudit>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\src\Integration\PrMachineStock.cs" Link="Integration\PrMachineStock.cs" />
+    <Compile Include="..\src\Integration\PrMachineContract.cs" Link="Integration\PrMachineContract.cs" />
+    <Compile Include="..\src\Integration\PrMachinePatches.cs" Link="Integration\PrMachinePatches.cs" />
+    <Compile Include="..\src\UI\PrMachineFeatures.cs" Link="UI\PrMachineFeatures.cs" />
     <Compile Remove="RuntimeProbe\**\*.cs" />
     <Compile Include="..\src\Core\StackAggregation.cs" Link="Core\StackAggregation.cs" />
     <Compile Include="..\src\Core\WindowSortingTracker.cs" Link="Core\WindowSortingTracker.cs" />

@@ -23,13 +23,16 @@ public sealed partial class Item
     public readonly string id;
     public readonly ItemDef Definition;
     public Guid UniqueId { get; } = Guid.NewGuid();
-    public int Count;
+    private int count;
+    public int Count { get => count; set => count = value; }
     public bool HasInstanceData;
     public int OccupiedPocketCount;
     public bool IsEmpty => Count <= 0;
     public bool IsBag => Definition.isBag;
-    public int InventorySize;
-    public System.Collections.Generic.List<Item> Inventory { get; } = new System.Collections.Generic.List<Item>();
+    private int inventorySize;
+    public int InventorySize { get => inventorySize; set => inventorySize = value; }
+    private System.Collections.Generic.List<Item> inventory = new System.Collections.Generic.List<Item>();
+    public System.Collections.Generic.List<Item> Inventory => inventory;
 
     public Item(string id, ItemType category, int count = 1)
     {

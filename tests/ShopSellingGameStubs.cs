@@ -8,6 +8,7 @@ using OnlyApplicableItems.Integration;
 public abstract class SerializedItemProperty { }
 public sealed class TestItemProperty : SerializedItemProperty { }
 public sealed class AutoExpandSerializedItemProperty : SerializedItemProperty { }
+public sealed class TakeOnlySerializedItemProperty : SerializedItemProperty { }
 public static class TestItemDefinitions { public static readonly Dictionary<string, ItemDef> Values = new(); }
 public sealed partial class ItemDef { public string id = ""; }
 public sealed partial class Item
@@ -28,8 +29,10 @@ public sealed partial class Item
         foreach (var bag in Inventory.Where(item => item.IsBag)) bag.RecalculateFillForCheck();
     }
     public int InventoryCount => Inventory.Count;
+    public Item() { id = "empty"; count = -1; Definition = null!; }
     public Item(string id, int count = 1)
     {
+        PrColdStartBalance.ReadDefinition();
         this.id = id; Count = count;
         Definition = TestItemDefinitions.Values.TryGetValue(id, out var definition) ? definition : new ItemDef { id = id };
     }
@@ -100,7 +103,7 @@ public sealed partial class Inventory
         Data.RecalculateFillForCheck(); Removed(); return count - left;
     }
 }
-public sealed class PlayerData { public Inventory inventory = new("inventory", 40); }
+public sealed class PlayerData { public Inventory inventory = new("inventory", 40); public int GetResInt(string id) => 0; }
 public static class MainGame { public static PlayerData PlayerData = new(); }
 public sealed class VendorTierData
 {
@@ -137,11 +140,12 @@ public sealed class UIItemCountWindowData
 public sealed class UIItemCountWindow
 {
     public bool IsShown;
-    public UIItemCountWindowData? Data;
+    private UIItemCountWindowData? data;
+    public UIItemCountWindowData? Data { get => data; set => data = value; }
     public Action? OnShown;
     public Action<UIItemCountWindowData>? BeforeOpenForCheck;
     public void Open(UIItemCountWindowData data)
-    { BeforeOpenForCheck?.Invoke(data); if (!ShopSellingPatches.BeforeCountOpen(this, data)) return; Data = data; IsShown = true; OnShown?.Invoke(); }
+    { BeforeOpenForCheck?.Invoke(data); if (!ShopSellingPatches.BeforeCountOpen(this, data) || !PrMachinePatches.BeforeCountOpen(this, data)) return; Data = data; IsShown = true; OnShown?.Invoke(); }
     public void Confirm(int count) { Data!.OnConfirm!(count); IsShown = false; }
 }
 public sealed class UIVendorWindow : LazyBearTechnology.LazyWidget<UIVendorWindowData>

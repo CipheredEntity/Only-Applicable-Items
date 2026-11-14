@@ -1,4 +1,4 @@
-Only Applicable Items 0.14.2
+Only Applicable Items 0.15.0
 ============================
 
 A BepInEx 5 plugin for Graveyard Keeper 2. Garden seed selection displays one
@@ -14,8 +14,8 @@ blocked by rune limits stay visible, grayed out and unselectable. Non-alchemical
 items and those that fail the native research requirements stay hidden. The
 native selection restrictions still apply, including repeated ingredient slots.
 Laboratory ingredient counters show total accessible stock rather than just the
-originally selected stack. All actions retain the game's own selection, crafting
-calculations, and consumption. Unsupported actions retain their original inventories.
+originally selected stack. Native crafting calculations and action effects are
+preserved. Unsupported actions retain their original inventories.
 
 Autopsy body-part insertion and zombie replacement display one category inventory:
 "Brains", "Hearts", "Guts", "Skulls", "Bones", or "Skins". Equivalent full item
@@ -97,6 +97,17 @@ space. A fresh six-slot deal with 50-per-stack carrots is limited to 300, preven
 the native -1 cache from incorrectly permitting 350. This protection applies only
 to active consolidated selling; native transactions and cancellation are retained.
 
+PR Machine loading displays one "PR Resources" inventory for Hypno-devices,
+Newspapers, and other supplies allowed by the native PR definition data. Totals
+include the backpack, directly held bags, and normally accessible zone storage.
+The native quantity dialog can load up to the combined total across real stacks.
+Confirmation checks current stock and consumes the complete request before the
+game applies its normal operating-day effects once. Stale or cancelled requests
+consume nothing. Inventory notifications are delivered after the native effects,
+so observers cannot interrupt a load halfway between stacks. Unsupported item
+properties, source layouts, or conflicting PR-loading patches restore vanilla.
+See docs/PR_MACHINE.md for implementation boundaries and in-game checks.
+
 Configuration
 -------------
 After the plugin first loads, BepInEx creates:
@@ -114,6 +125,7 @@ After the plugin first loads, BepInEx creates:
   Prayers = true
   Study Table = true
   Shop Selling = true
+  PR Machine = true
 
   [Inventory Names]
   Seeds =
@@ -137,6 +149,7 @@ After the plugin first loads, BepInEx creates:
   Study Table - Study =
   Study Table - Decompose =
   Shop Selling =
+  PR Machine =
 
   [Fixes]
   Window Sorting Order = true
@@ -150,7 +163,7 @@ windows and reopen). Reentrant callbacks or unexpected state suspend correction
 until that same fresh-root boundary. Existing inflated windows are not relayered.
 See docs/WINDOW_SORTING.md for compatibility limits and validation.
 
-All eleven action options are enabled by default and independent. Body Parts controls all
+All twelve action options are enabled by default and independent. Body Parts controls all
 six body-part categories and both insertion and replacement. Grave Decorations
 controls both Tombstones and Fences. Zombie Equipment controls Collars, Armor,
 Weapons, and Tools together; Resurrection Collars controls only resurrection-table
@@ -161,7 +174,7 @@ the original interface for that action. Existing settings are kept when the new
 entry is added. No configuration-manager plugin
 is required. Compatible managers expose the entries using these same names.
 
-Inventory Names has one editable name for each of the 21 virtual inventories.
+Inventory Names has one editable name for each of the 22 virtual inventories.
 All name settings default to blank, preserving the original displayed titles.
 Each hint says which title is used when blank, for example: Leave blank to use "Seeds".
 Existing saved names are retained; changing the default does not reset preferences.

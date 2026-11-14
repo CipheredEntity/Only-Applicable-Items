@@ -15,10 +15,10 @@ internal static partial class Program
     {
         var config = new ConfigFile();
         new ActionSettings(config); new InventoryNameSettings(config); new FixSettings(config);
-        Assert(config.Entries.Count == 33 && config.Entries.Keys.Count(k => k.StartsWith("Actions/")) == 11 &&
-            config.Entries.Keys.Count(k => k.StartsWith("Inventory Names/")) == 21 &&
+        Assert(config.Entries.Count == 35 && config.Entries.Keys.Count(k => k.StartsWith("Actions/")) == 12 &&
+            config.Entries.Keys.Count(k => k.StartsWith("Inventory Names/")) == 22 &&
             config.Entries.Keys.Count(k => k.StartsWith("Fixes/")) == 1,
-            "Expose only the requested 11 action toggles, 21 inventory names, and one fix.");
+            "Expose only 12 action toggles, 22 inventory names, and one fix.");
         foreach (object entry in config.Entries.Values)
         {
             ConfigDescription description;
@@ -42,7 +42,7 @@ internal static partial class Program
         var config = new ConfigFile();
         var names = new InventoryNameSettings(config);
         var ids = Enum.GetValues<PickerId>();
-        Assert(ids.Length == 21 && ids.Select(InventoryNameSettings.GetKey).Distinct().Count() == 21 &&
+        Assert(ids.Length == 22 && ids.Select(InventoryNameSettings.GetKey).Distinct().Count() == 22 &&
             InventoryNameSettings.GetKey(PickerId.ZombieCollars) == "Zombie Equipment - Collars" &&
             InventoryNameSettings.GetKey(PickerId.ResurrectionCollars) == "Resurrection Collars",
             "Keep every stable inventory independently identifiable, including the two Collars names.");
@@ -50,7 +50,7 @@ internal static partial class Program
             Assert(names.GetTitle(id) == PickerTitles.GetDefault(id) && NameEntry(config, id).DefaultValue == "" &&
                 NameEntry(config, id).Value == "" && NameEntry(config, id).Description.Description ==
                     "Leave blank to use \"" + PickerTitles.GetDefault(id) + "\".",
-                "All 21 name entries default to blank with the exact concise hint, while original titles remain unchanged.");
+                "All 22 name entries default to blank with the exact concise hint, while original titles remain unchanged.");
         foreach (PickerId id in ids)
         {
             NameEntry(config, id).Value = "Custom " + id;
@@ -75,7 +75,7 @@ internal static partial class Program
             ("Grave Decorations", "Controls Tombstones and Fences.", 60),
             ("Zombie Equipment", "Controls Collars, Armor, Weapons, and Tools.", 50),
             ("Resurrection Collars", "", 40), ("Prayers", "", 30),
-            ("Study Table", "Controls Study and Decompose.", 20), ("Shop Selling", "", 10)
+            ("Study Table", "Controls Study and Decompose.", 20), ("Shop Selling", "", 10), ("PR Machine", "", 0)
         };
         foreach (var item in expected)
         {

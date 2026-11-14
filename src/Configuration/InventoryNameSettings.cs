@@ -60,6 +60,7 @@ internal sealed class InventoryNameSettings
             case PickerId.StudyResearchable: return "Study Table - Study";
             case PickerId.StudyDecomposable: return "Study Table - Decompose";
             case PickerId.ShopSelling: return "Shop Selling";
+            case PickerId.PrMachineResources: return "PR Machine";
             default: throw new ArgumentOutOfRangeException(nameof(id));
         }
     }

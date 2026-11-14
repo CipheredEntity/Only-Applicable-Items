@@ -19,6 +19,10 @@
     <NuGetAudit>false</NuGetAudit>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\PrColdStartCheck.cs" Link="PrColdStartCheck.cs" />
+    <Compile Include="..\..\src\Integration\PrMachineStock.cs" Link="Integration\PrMachineStock.cs" />
+    <Compile Include="..\..\src\Integration\PrMachineNative.cs" Link="Integration\PrMachineNative.cs" />
+    <Compile Include="..\..\src\Integration\PlainItemValidator.cs" Link="Integration\PlainItemValidator.cs" />
     <Compile Include="..\..\src\Core\StackAggregation.cs" Link="Core\StackAggregation.cs" />
     <Compile Include="..\..\src\Core\PickerIdentity.cs" Link="Core\PickerIdentity.cs" />
     <Compile Include="..\..\src\Core\PickerPolicy.cs" Link="Core\PickerPolicy.cs" />

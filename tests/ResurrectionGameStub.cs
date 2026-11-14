@@ -23,6 +23,7 @@ namespace OnlyApplicableItems
         public UI.ResurrectionCollarDisplay? ResurrectionCollarSlot { get; set; }
         public UI.StudySelectedItemDisplay? StudySelectedSlot { get; set; }
         public UI.ShopSellingFeatures? ShopSelling { get; set; }
+        public UI.PrMachineFeatures? PrMachine { get; set; }
         public System.Collections.Generic.HashSet<UI.ApplicableItemsSession> Sessions { get; } = new();
         public System.Collections.Generic.List<string> Warnings { get; } = new();
         public void Register(UI.ApplicableItemsSession session) => Sessions.Add(session);

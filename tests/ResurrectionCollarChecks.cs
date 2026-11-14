@@ -36,7 +36,8 @@ internal static partial class Program
             (PickerId.ZombieArmor, "Armor"), (PickerId.ZombieWeapons, "Weapons"),
             (PickerId.ZombieTools, "Tools"), (PickerId.ResurrectionCollars, "Collars"),
             (PickerId.Sermons, "Prayers"), (PickerId.StudyResearchable, "Study"),
-            (PickerId.StudyDecomposable, "Decompose"), (PickerId.ShopSelling, "Sellable")
+            (PickerId.StudyDecomposable, "Decompose"), (PickerId.ShopSelling, "Sellable"),
+            (PickerId.PrMachineResources, "PR Resources")
         };
         Assert(Enum.GetValues(typeof(PickerId)).Length == expected.Length, "Every picker has an explicit default name.");
         foreach (var entry in expected)

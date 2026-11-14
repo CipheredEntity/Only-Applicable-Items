@@ -16,6 +16,23 @@ internal static partial class Program
     {
         var checks = new Action[]
         {
+            PrAccessorsInitializeBeforeGameBalanceLoads,
+            PrUidSuccessMustMeanCompleteConsumption,
+            PrPrevalidationMustNotExposePartialConsumption,
+            PrAggregatesBackpackBagsAndStorageAndLoadsAcrossStacks,
+            PrFullExhaustionAndPartialStackPreserveIdentity,
+            PrRejectsStaleOrInvalidPlansWithoutPartialWrites,
+            PrPendingDialogsFollowTheSavedIdNotReusedCells,
+            PrPendingDialogsRejectInsufficientStockAndRepeatedConfirmation,
+            PrCancellationReplacementAndUnrelatedDialogsStaySafe,
+            PrNotificationsCannotInterruptOrReplayEffects,
+            PrFailedCommitAndNativeEffectFailureAreNeverRetried,
+            PrToggleForeignOwnershipAndSourceChangesInvalidateRequests,
+            PrEligibilityVariantsSafetyAndConfigurationRemainIsolated,
+            PrFinalValidationRejectsPropertiesAndOffThreadConsumption,
+            PrCannotReachNestedBagsOrAmbiguousSources,
+            PrUnsupportedDialogsAndChangedEligibilityKeepStockIntact,
+            PrAllQuantityBoundariesConserveSuppliesAndApplyOneEffect,
             CombinesContainersWithoutChangingSources,
             KeepsQualityDefinitionsSeparate,
             DoesNotCountAliasedStacksTwice,
