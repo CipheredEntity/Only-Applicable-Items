@@ -1,12 +1,13 @@
 # Resurrection collars
 
+[Development guide](DEVELOPMENT.md) · [Configuration](CONFIGURATION.md)
+
 `[Actions] Resurrection Collars = true` independently controls the resurrection
 table's collar picker. It defaults on without changing saved Zombie Equipment
 or other settings. Both collar pickers display **Collars**, while their stable
 IDs are `ResurrectionCollars` and `ZombieCollars`. Default titles are centralized
-in `Core/PickerIdentity.cs`. `[Inventory Names] Resurrection Collars` and
+in `src/Core/PickerIdentity.cs`. `[Inventory Names] Resurrection Collars` and
 `Zombie Equipment - Collars` independently customize their next-open names.
-See [CONFIGURATION.md](CONFIGURATION.md).
 
 ## Integration
 

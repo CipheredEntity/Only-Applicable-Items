@@ -1,6 +1,8 @@
 # Global window sorting correction
 
-Version 0.12.0 adds `[Fixes] Window Sorting Order = true`, independently of every
+[Development guide](DEVELOPMENT.md) · [Configuration](CONFIGURATION.md)
+
+`[Fixes] Window Sorting Order = true` operates independently of every
 action setting and picker contract. A separate Harmony owner is initialized before
 inventory integration; failure on either side does not disable the other.
 
@@ -20,9 +22,9 @@ rendering override for a stack assignment.
 
 ## Implementation and fallback
 
-- `Core/WindowSortingTracker.cs` records each window opening's native allocation
+- [WindowSortingTracker.cs](../src/Core/WindowSortingTracker.cs) records each window opening's native allocation
   by reference identity. It has no canvas API and cannot change existing canvases.
-- `Integration/WindowSortingFix.cs` validates private field types, method signatures,
+- [WindowSortingFix.cs](../src/Integration/WindowSortingFix.cs) validates private field types, method signatures,
   reference-type constraints, and the original increment/reset IL before patching.
   Only `AddToStack<LazyWidgetDataBase>` and `RemoveFromStack<LazyWidgetDataBase>`
   receive prefixes/finalizers, on a dedicated owner. Originals always run normally.
@@ -65,19 +67,8 @@ openings; native event order/counts, focus/modality; out-of-order closures; 3000
 canvas overrides; exception identity; reentrancy; late initialization/live toggles;
 foreign counter changes; unpatching; and disposal/reinitialization during callbacks.
 
-From the repository in PowerShell, with the existing .NET SDK and local game:
-
-```powershell
-$env:DOTNET_CLI_HOME = Join-Path (Get-Location) '.dotnet'
-$env:DOTNET_CLI_TELEMETRY_OPTOUT = '1'
-dotnet build OnlyApplicableItems.csproj -c Release
-dotnet run --project tests/OnlyApplicableItems.Checks.csproj -c Release
-dotnet build tests/RuntimeProbe/RuntimeProbe.csproj -c Release
-# Run only after the probe build succeeds:
-& 'tests/RuntimeProbe/bin/Release/net472/RuntimeProbe.exe' `
-  'C:/Program Files (x86)/Steam/steamapps/common/Graveyard Keeper 2' `
-  (Resolve-Path '../Game Assemblies Copies/1.012/Managed').Path
-```
+Use the shared [build and probe procedure](DEVELOPMENT.md#build-and-checks).
+The native controller link and managed references must both target 1.012.
 
 The probe's tooling DLLs stay in ignored test output, never in the mod package.
 Neither build nor probe installs the mod or launches the game. It requires the

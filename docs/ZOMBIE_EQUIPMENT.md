@@ -1,9 +1,14 @@
 # Zombie Equipment
 
+[Development guide](DEVELOPMENT.md) · [Configuration](CONFIGURATION.md)
+
 The existing [Actions] Zombie Equipment = true setting controls "Collars", "Armor",
 "Weapons", and "Tools" together. Its saved value is retained. Disabling restores
 an open equipment picker on the next plugin frame; enabling applies on its next
 opening. Other actions remain independently configurable.
+The four `[Inventory Names] Zombie Equipment - ...` keys independently customize
+their next-open titles. In particular, Zombie Equipment - Collars is distinct from
+Resurrection Collars even though both default to **Collars**.
 
 ## Native scope and action matching
 
@@ -49,15 +54,11 @@ native predicates.
 
 ## Safe aggregation and source identity
 
-Read-only inspection of GameBalance.itemDefs in the installed resources.assets
-found 10 armor, 13 zombie-weapon, and 39 tool definitions matching the native filters.
-Every matching definition had stackCount=1, hasDurability=false, durDecreaseOnUse=0,
-no internal inventory capacity, and no bag flag. Counts include NPC/test definitions
-and do not establish obtainability. Full definition IDs preserve quality, damage,
-and talent differences.
-
-These observations are not universal invariants: Item.Count is writable and the
-game supports serialized properties and conditional durability. ValidatePlainItem
+Full definition IDs preserve definition-based quality, damage, and talent
+differences. Do not infer stackability or durability from the equipment label or
+a historical asset scan: Item.Count is writable, serialized balance data can
+change, and the game supports instance properties and conditional durability.
+Support depends on the live definition and instance checks. ValidatePlainItem
 still rejects properties, durability, bags, contents, or capacity. Armor/Weapons/Tools
 additionally require both Definition.stackCount==1 and actual Count==1. Any included
 unexpected item, even if disabled, causes the entire picker to fall back. Unrelated
@@ -88,25 +89,23 @@ reservation, or mod consumption is introduced.
 ## Validation
 
 Checks execute the production contract and aggregation/snapshot/delegate code with
-test-only game stand-ins. They cover existing collar behavior, all three new titles
+test-only game stand-ins. They cover collar behavior and all three equipment titles
 for insertion/replacement, exact owners and methods, native category exclusions,
 disabled visibility, availability-only changes, source depletion, variant separation,
-quantity/instance-data fallback, and one shared live toggle. All 128 combinations
-of seven settings are checked. Native transfers, skull arithmetic, Unity, and
+quantity/instance-data fallback, and one shared live toggle. Independent settings
+are also covered by configuration/policy checks. Native transfers, skull arithmetic, Unity, and
 Harmony are not executed.
 Additional checks cover same-ID disabled groups and totals, full-ID/slot isolation,
 live equipped-item changes, stale selection rejection, safety/native-rule preservation,
 and the production virtual-view constructor using the full policy for UI availability.
-The collar methods/getter and all five insertion/replacement/filter signatures
-were also verified against the reference Assembly-CSharp.dll using the installed
-SDK's metadata-only reader, without executing game code.
-The Armor/Weapon/Hand getters used by the duplicate-equipment restriction are also
-validated in the reference assembly.
+The production contract validates the collar methods/linked-zombie getter and
+checks the optional insertion/replacement/filter methods and Armor/Weapon/Hand
+getters at startup. Missing optional support leaves Collars available.
 
-Collars was tested in-game before this extension. Manual validation remains:
+In-game regression checklist:
 
 1. Confirm the startup log reports equipment support and the existing setting is kept.
-2. Open insertion and replacement pickers for each new category. Check titles,
+2. Open insertion and replacement pickers for each equipment category. Check titles,
    player/bag totals, excluded zone storage, scrolling, empty results, tooltips,
    mouse/controller navigation, cancellation, and repeated openings.
 3. Put identical pieces in separate slots/bags; confirm combined quantities, separate

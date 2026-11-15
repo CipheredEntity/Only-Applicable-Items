@@ -1,4 +1,10 @@
-# Alchemical Ingredients (0.3.1)
+# Alchemical Ingredients
+
+[Development guide](DEVELOPMENT.md) · [Configuration](CONFIGURATION.md)
+
+The default **Alchemical Ingredients** title has its own blank-by-default
+`[Inventory Names] Alchemical Ingredients` setting. The action setting controls
+both consolidation and the laboratory quantity-display correction below.
 
 ## Scope and selection
 
@@ -87,7 +93,7 @@ removing patches. No per-slot backup survives a count-update invocation.
 
 ## Configuration and failure isolation
 
-`[Actions] Alchemical Ingredients = true` is independent of Seeds and Fertilizers.
+`[Actions] Alchemical Ingredients = true` is independent of the other actions.
 It controls BOTH picker consolidation and quantity correction. False restores
 an open consolidated ingredient picker via the existing session mechanism and
 refreshes the laboratory with its native cached counters.
@@ -110,5 +116,22 @@ stale-click rejection, independent setting combinations, corrected totals/colors
 a simulated native renderer, disabled-mode restoration, alias deduplication,
 counting/setter rollback, exception cleanup, and cleanup after one restore fails.
 They do not execute game assemblies or prove Harmony/Unity rendering behavior.
-Use the README manual checklist for actual small/large laboratories, research,
-boosts/flasks, batch size, result counters, configuration changes, and consumption.
+In-game regression checklist:
+
+1. In small and larger laboratories, split researched ingredients across the
+   player, bags, and native zone storage. Check full-ID variants, totals, and empty
+   results. Unresearched/non-alchemical items must remain hidden; researched items
+   outside either rune bound must remain visible but disabled.
+2. Replace ingredients and check the other-slot rune sum, tooltips, scrolling,
+   mouse/controller input, cancellation, and repeated openings.
+3. With 100 units across two stacks of 50, select the same ingredient in two slots
+   at batch 50: each row should show 100/100. Three matching slots at batch 33
+   should show 100/99. Above-stock requirements must still warn. The result counter
+   must remain the actual batch output, including after background stock changes.
+4. Compare actual native crafting costs, research, boosts, folio/flask limits,
+   source depletion/replenishment, and rewards with vanilla. Selection alone must
+   not consume or reserve ingredients.
+5. Toggle with the laboratory and picker open. Restore native stack-based labels
+   when disabled, preserve selections/batch size, and apply consolidation on the
+   next opening when enabled. Check custom names, close/reopen, scene changes,
+   pooled reuse, and unrelated actions.

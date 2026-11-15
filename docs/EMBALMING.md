@@ -1,9 +1,14 @@
 # Embalming Fluids integration
 
+[Development guide](DEVELOPMENT.md) · [Configuration](CONFIGURATION.md)
+
 `[Actions] Embalming Fluids = true` independently enables the "Embalming Fluids"
 virtual inventory. Existing configuration entries are retained. Disabling restores
 an open embalming picker on the next plugin frame; enabling applies on the next
 picker opening. Other actions keep their own settings and contracts.
+`[Inventory Names] Embalming Fluids` independently customizes the next-open title;
+blank values use **Embalming Fluids**. The same action toggle also controls the
+supplemental native collar warning below.
 
 ## Scope and native rules
 
@@ -98,9 +103,9 @@ validation forwarding, full pockets/special fluids, missing context, failures,
 reason-only refreshes, original provider precedence, live toggling/reopening, and
 cell reuse across every picker identity and vanilla inventory data. Native craft
 rules, skull arithmetic, actual consumption, and Unity rendering are not executed.
-The TryEmbalm/CanEmbalm signatures and ItemType.Embalm were also verified against
-the reference Assembly-CSharp.dll through reflection-only metadata loading,
-without executing game code.
+The production contract validates TryEmbalm/CanEmbalm signatures at startup and
+uses the game's ItemType.Embalm constant. Optional warning-context field mismatch
+suppresses the added warning rather than disabling otherwise valid consolidation.
 
 Manual in-game checklist:
 

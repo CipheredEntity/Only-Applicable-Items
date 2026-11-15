@@ -1,15 +1,19 @@
 # Grave Decorations integration
 
+[Development guide](DEVELOPMENT.md) · [Configuration](CONFIGURATION.md)
+
 `[Actions] Grave Decorations = true` independently enables both "Tombstones" and
 "Fences". The setting is shared by the two categories and preserves existing
 configuration values for all other features. Disabling restores an open decoration
 picker on the next plugin frame; enabling applies on its next opening.
+`[Inventory Names] Grave Decorations - Tombstones` and `Grave Decorations - Fences`
+independently customize the next-open titles, with blank values using the defaults.
 
 ## Scope and eligibility
 
 UIGraveElementWidgetData.OnGraveElementClicked opens UIMultiInventoryWindowData
 with OnGraveItemSelected/IsGraveItem when its slot is empty. The public
-GraveElementType property selects Top (headstones) or Bot (fences). Tool availability
+GraveElementType property selects Top (tombstones) or Bot (fences). Tool availability
 is checked by the original grave slot UI before opening and is left untouched.
 
 GraveDecorationPickerContract validates both method signatures and the category
@@ -66,11 +70,10 @@ and production aggregation/snapshot/delegate code. They cover both titles/groups
 one shared live toggle, unknown contexts/categories, variant separation, alias
 deduplication, disabled visibility and availability-only refreshes, instance-data
 rejection, real surviving sources, and preservation of the selected definition.
-The shared settings check covers all 128 combinations of seven action settings.
-These checks do not execute native crafting, Unity, or Harmony.
-The two callback/predicate signatures, public category getter, and group constants
-were also verified against the reference Assembly-CSharp.dll using reflection-only
-metadata loading, without executing game code.
+Configuration/policy checks cover independent settings. These checks do not execute
+native crafting, Unity, or Harmony. The production contract validates the two
+callback/predicate signatures and public category getter at startup and uses the
+game's group constants; it does not substitute its own decoration definitions.
 
 Manual in-game checklist:
 

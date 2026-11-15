@@ -1,11 +1,63 @@
 # Configuration
 
+[Development guide](DEVELOPMENT.md)
+
 The standard BepInEx file is
 `BepInEx/config/ciphe.gk2.onlyapplicableitems.cfg`. No settings-menu mod is required.
 There are exactly 35 bound settings: 12 default-on toggles in **Actions**, 22 string
 entries in **Inventory Names**, and the default-on **Window Sorting Order** in
 **Fixes**. Development-era setting migrations have been removed; obsolete entries
 may remain as unbound data in an existing BepInEx file but have no effect.
+
+The declarations in `src/Configuration/ActionSettings.cs`, `FixSettings.cs`, and
+`InventoryNameSettings.cs`, and the identities/titles in `src/Core/PickerIdentity.cs`
+are the source of truth. All setting names below are literal keys, independent of
+the configurable text shown in the inventory window.
+
+## Actions and live behavior
+
+Every action defaults to `true`. This is the declared descending menu order;
+existing orders are retained, with PR Machine last. Blank descriptions below are
+actual empty strings, not placeholder text or extra menu rows.
+
+| `[Actions]` key | Description |
+| --- | --- |
+| Seeds | |
+| Fertilizers | |
+| Alchemical Ingredients | Also corrects ingredient quantity counters. |
+| Body Parts | Controls Brains, Hearts, Guts, Skulls, Bones, and Skins. |
+| Embalming Fluids | |
+| Grave Decorations | Controls Tombstones and Fences. |
+| Zombie Equipment | Controls Collars, Armor, Weapons, and Tools. |
+| Resurrection Collars | |
+| Prayers | |
+| Study Table | Controls Study and Decompose. |
+| Shop Selling | |
+| PR Machine | |
+
+Menu-driven changes update ConfigEntry values directly. Shared picker sessions
+restore their owned vanilla sections on the next plugin frame or before a click
+when disabled. Enabling consolidation applies on the next picker opening. An
+already-retained native selection is not cancelled, reserved, or replaced.
+
+Action-specific effects share their action's setting:
+
+- Alchemical Ingredients also refreshes open laboratory quantity displays.
+- Resurrection Collars also refreshes its selected-slot quantity display.
+- Study Table controls both section visuals and its research-only selected-slot
+  quantity correction; those open displays respond to live changes.
+- Shop Selling blocks new confirmations when disabled, then waits for its owned
+  quantity dialog to close before releasing captured cells and restoring the player
+  panel. Staged goods are not accepted, cancelled, or cleared. Enabling waits for
+  the next merchant session.
+- PR Machine invalidates pending quantity requests when disabled. Its shared picker
+  restores normally; obsolete confirmation callbacks remain inert.
+
+See the [feature index](DEVELOPMENT.md#supported-actions) for precise scopes and
+fallback behavior. A declared toggle can exist even when that integration failed
+initialization. Startup failures do not become active merely by toggling off/on;
+resolve the logged compatibility problem and restart where the feature requires it.
+`[Actions] Prayers` is the supported key; an obsolete `Sermons` key is not bound.
 
 ## Inventory Names
 
@@ -58,6 +110,15 @@ quantity dialogs. The next opening reads the current preferences. Disabled actio
 keep all name entries bound and saved. Disabling an action retains its existing
 native restoration behavior; name edits never trigger fallback or alter gameplay.
 
+## Fixes
+
+`[Fixes] Window Sorting Order = true` is the only fix setting and is independent
+of all action toggles. Its description is
+`Prevents tooltips from appearing behind windows after repeatedly opening them.`
+Disabling stops correction; enabling while windows are already open waits for the
+stack to close and a fresh root to open. Existing canvases are not rearranged.
+See [WINDOW_SORTING.md](WINDOW_SORTING.md) for the allocation contract and limits.
+
 ## File edits and optional menus
 
 BepInEx saves menu-driven ConfigEntry changes normally. ConfigurationReload checks
@@ -67,35 +128,22 @@ There is no background watcher, polling of configuration during a deal, or resta
 requirement. Deleted/temporarily unreadable files do not prevent a window opening.
 Avoid simultaneous text-editor and menu edits: BepInEx saves the full file.
 
-The installed **GK2 Mod Menu 1.3.0.0** was inspected read-only at
-`BepInEx/plugins/GK2ModMenu/GK2ModMenu.dll`, corresponding to the user's
-[Nexus #216 reference](https://www.nexusmods.com/graveyardkeeper2/mods/216).
-The Nexus page itself returned HTTP 403 during inspection.
+The recorded local compatibility target is **GK2 Mod Menu 1.3.0.0**, inspected at
+`BepInEx/plugins/GK2ModMenu/GK2ModMenu.dll`; the optional menu is listed as
+[GK2 Mod Menu (Nexus #216)](https://www.nexusmods.com/graveyardkeeper2/mods/216).
+Compatibility evidence comes from its local DLL/model checks, not an assumption
+about future menu versions.
 
 Its `ConfigModel.ReadTags` recognizes a tag by the simple type name
 `ConfigurationManagerAttributes` and reads public fields/properties. This plugin
 provides only optional `DispName` and nullable `Order` fields in ConfigDescription
 tags. Descriptions remain standard BepInEx descriptions; category names remain
 the actual file sections. `BuildItems` sorts categories alphabetically and orders
-entries within each category by descending Order. The mod controls category
+entries within each category by descending Order. The menu controls category
 placement, so we do not rename categories to force a different group order.
 String entries use its normal text editor, with no custom drawers or controls.
 Neither GK2 Mod Menu nor ConfigurationManager is referenced, packaged, or required.
 
-Action descriptions are limited to these five hints; all seven other action
-descriptions are empty strings. Labels, categories, ordering, and default-on
-values are unchanged.
-
-| Action | Description |
-| --- | --- |
-| Alchemical Ingredients | Also corrects ingredient quantity counters. |
-| Body Parts | Controls Brains, Hearts, Guts, Skulls, Bones, and Skins. |
-| Grave Decorations | Controls Tombstones and Fences. |
-| Zombie Equipment | Controls Collars, Armor, Weapons, and Tools. |
-| Study Table | Controls Study and Decompose. |
-
-The Window Sorting Order hint is `Prevents tooltips from appearing behind windows
-after repeatedly opening them.` (one line in the actual setting).
 The installed menu's `ModSettingsWindow.AddItem` creates a hint label only when
 `Item.Info.Length > 0`. Empty descriptions therefore add no description row;
 no menu layout patch is necessary. This branch is checked through assembly
@@ -126,7 +174,7 @@ In-game checks before release:
    text entry, blank name defaults, empty action-description spacing, and
    reset-to-default behavior in GK2 Mod Menu (mouse/controller).
 2. Rename every inventory, especially both Collars entries, both Study sections,
-   and Sellable. Check section headings, window captions, and Keeper's caption.
+   Sellable, and PR Resources. Check section headings, window captions, and Keeper's caption.
 3. Try duplicate names, blank values, accents, punctuation, literal `<b>` and
    `</noparse>`, and a locale-like name such as `ui_multiinventory`. Check font
    coverage and long-title clipping; verify quantities/tooltips remain correct.

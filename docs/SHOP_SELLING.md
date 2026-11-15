@@ -1,14 +1,17 @@
 # Shop Selling
 
-Version 0.13.0 adds `[Actions] Shop Selling = true`. Stable `PickerId.ShopSelling`
+[Development guide](DEVELOPMENT.md) · [Configuration](CONFIGURATION.md)
+
+`[Actions] Shop Selling = true` controls stable `PickerId.ShopSelling`, which
 maps to the centralized default title **Sellable**. Trading uses its own session,
 separate Harmony owner, and independent initialization; shared picker sessions and
 the global sorting fix do not depend on it. `[Inventory Names] Shop Selling`
 customizes its section title for the next merchant session, preserving the current
-deal's captured title and the outer Keeper caption. See [CONFIGURATION.md](CONFIGURATION.md).
+deal's captured title and the outer Keeper caption.
 
-Version 0.13.1 corrects section-header visibility and protects consolidated sales
-against the native uninitialized capacity cache. Existing transactions are retained.
+The current implementation includes a visible icon-free section header and
+selling-specific validation of the native capacity cache. Existing transactions
+are retained.
 
 ## Native integration
 
@@ -101,9 +104,9 @@ The native bug is specific: Item.inventoryFillSize starts at -1, but its capacit
 method reads the raw field. An empty six-slot inventory can report 7*50=350, and
 Item.AddItemToInventory can split seven stacks while inserting only six. Trading
 then removes the requested 350. VendorDealInventoryWidget draws from Inventory.Count
-and does not initialize that cache. v0.13.0 trusted that native answer; its original
-test stand-in used actual counts and therefore missed the bug. The updated fixture
-retains both the sentinel and split-before-insert behavior. Reading the public getter
+and does not initialize that cache. The regression fixture deliberately retains
+both the sentinel and split-before-insert behavior; replacing its cache with actual
+counts would mask this native hazard. Reading the public getter
 in active selling corrects metadata only, never stored item counts or ownership.
 
 Root inventory notifications mark the view dirty; periodic snapshots catch raw bag
@@ -145,7 +148,7 @@ distributed sales, native price-helper forwarding, pending-dialog stock/capacity
 eligibility checks, safe fallback with staged goods, toggles, reentrant callbacks,
 context changes, cleanup, and controller focus. Test failures print diagnostics
 and return exit code 1 rather than opening unhandled-exception dialogs.
-New regressions prove the fresh disabled 350->300 loss in the fixture, the enabled
+Capacity regressions reproduce the fresh disabled 350->300 loss in the fixture, the enabled
 300-unit dialog bound, rejection of an explicit 350-unit callback, 50 units left
 owned after a valid sale, and all 350 owned after cancellation. Partial matching
 stacks, mixed/full slots, changes at dialog binding/confirmation/native entry,
@@ -153,10 +156,10 @@ stale-cache fallback, and native header restoration are covered as well.
 
 The standalone runtime probe additionally inspects copied Assembly-CSharp.dll
 metadata for the actual shop hook/delegate signatures, fields, initial -1 sentinel,
-and raw-cache capacity calculation. Its seven shipped
-Mono/Harmony controller tests remain sorting-fix regressions, not shop gameplay
-integration tests. No game assembly methods or Unity scenes execute in these tests.
-Build/probe commands are documented in README.txt and WINDOW_SORTING.md.
+and raw-cache capacity calculation. Its executable controller and PR bridge
+checks are not shop gameplay integration tests. No game assembly methods or Unity
+scenes execute in these tests. Build/probe commands and their validation boundaries
+are documented in [Development](DEVELOPMENT.md#build-and-checks).
 
 In-game checklist:
 

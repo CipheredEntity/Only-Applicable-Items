@@ -1,9 +1,31 @@
 # PR Machine resources
 
-Version 0.15.0 adds `[Actions] PR Machine = true` and stable
+[Development guide](DEVELOPMENT.md) · [Configuration](CONFIGURATION.md)
+
+`[Actions] PR Machine = true` controls stable
 `PickerId.PrMachineResources`, titled **PR Resources** by default. The independent
 `[Inventory Names] PR Machine` entry defaults to blank and uses the existing name
 fallback, menu metadata, and next-opening configuration refresh.
+The single section includes Hypno-devices and Newspapers together, using native
+Load definitions rather than hard-coded item IDs. Exact IDs, stack limits, days
+per supply, and expressions come from serialized game balance data.
+
+## Startup and readiness
+
+`Plugin.InitializePrMachine` runs during `Awake`: it validates PrMachineContract,
+constructs PrItemFields, installs the native bridge, creates PrMachineFeatures,
+and registers the quantity-dialog prefix. Only then does it log
+`PR Machine ready. Enabled: True` when enabled. A failed initialization cleans up
+this feature and leaves it native for that plugin session; toggling cannot retry
+missing initialization. Other integrations remain independently available.
+
+GameBalanceBase.Instance can still be null at this stage. Even
+`new Item("empty", 0)` resolves a definition and caused the initial 0.15.0 startup
+failure seen in the level-V in-game test. The current accessor warm-up uses
+`new Item()` and `new Inventory()`, both balance-independent parameterless
+constructors. It still resolves/warms the raw accessors before real consumption,
+without forcing balance loading or creating a displayed/consumable probe.
+The probe does not need a UID. No post-fix in-game success is asserted here.
 
 ## Native contract (1.012)
 
@@ -34,15 +56,22 @@ stack clamp would therefore be unsafe.
   events, keeps native dialog controls, changes Max to the total, and replaces
   confirmation with a one-use request carrying a full ID and owner/session tokens.
 - Confirmation requires the original live machine, current owned picker, original
-  native roots, enabled setting, and a live matching dialog. Fresh source enumeration
+  player/player inventory, native roots, enabled setting, and the same live dialog
+  data. Fresh source enumeration
   permits stock to move or be replenished within those roots. Insufficient stock,
   expired/replaced/cancelled dialogs, or changed ownership reject without mutation.
   The old pooled cell never determines which ID is loaded.
+  The saved opening maximum remains the dialog bound; added stock requires a new
+  dialog to choose more. A request exceeding current stock is rejected, not partly
+  consumed or silently reduced. Disabling invalidates pending requests;
+  shared-picker restoration does not need to wait for that dialog.
 - PrMachineNative patches only OnResourcePicked and TryRemoveLoadedItem, under a
   separate Harmony owner. One guarded transpiler replaces the single selected-item
   getter with a scoped read of a detached count carrier. The native clamp remains;
-  its input now describes the validated request. The carrier's fresh UID cannot
-  consume real stock if the removal hook is absent. Outside the authorized scope,
+  its input now describes the validated request. The carrier is detached and has
+  its own UID; no real source UID is copied into it. Native UID removal is not the
+  authorized batch-consumption path. Hook integrity is checked before dispatch.
+  Outside the authorized scope,
   the getter, clamp, removal, and effects all retain native behavior.
 - The removal prefix commits the exact prepared request once, then returns true to
   the original effect body. Operating days, late-day adjustment, activation,
@@ -55,7 +84,8 @@ stack clamp would therefore be unsafe.
 ## Consumption and failure boundary
 
 PrMachineStock snapshots root identity, direct lists/bags, item references, counts,
-full IDs, unique UIDs, and container property membership. Every eligible source
+full IDs, and container property membership, and validates distinct eligible UIDs.
+Every eligible source
 passes PlainItemValidator. Aliases, duplicate UIDs, invalid stack sizes, and
 dynamically resized take-only containers remain vanilla. Deeper bag contents are
 not silently included. Potential operating-day integer overflow is rejected.
@@ -95,9 +125,20 @@ bridge/raw accessors against an in-memory PR effect boundary, and Cecil verifies
 the matching seams and field shapes in the external 1.012 assembly. Neither suite
 executes game assembly methods or claims to validate Unity rendering.
 
+PrColdStartCheck is shared by both harnesses. With its balance boundary unavailable,
+it first demonstrates that a named empty item throws, then exercises production
+PrItemFields initialization and every raw accessor without a definition read.
+It failed before the probe correction and passed afterward. Probe metadata checks
+also compare the native parameterless/named Item constructors and default Inventory
+constructor, tying this fixture assumption to 1.012. It does not execute a complete
+Unity Plugin.Awake sequence. See the development guide for the recorded suite
+baseline and remaining release-level validation limits.
+
 In-game checklist:
 
-1. Split one supply type across backpack, bags, and accessible storage. Confirm
+1. After a full restart, confirm the loaded plugin and PR readiness log, including
+   the level-V machine used in the original failure report. Split one supply type
+   across backpack, bags, and accessible storage. Confirm
    the combined row/dialog maximum, a quantity larger than any stack, partial
    consumption, and complete exhaustion. Check exact before/after stock totals.
 2. Test Hypno-devices and Newspapers together. Confirm their separate rows and

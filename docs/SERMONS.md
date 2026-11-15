@@ -1,11 +1,13 @@
 # Prayers
 
+[Development guide](DEVELOPMENT.md) · [Configuration](CONFIGURATION.md)
+
 `[Actions] Prayers = true` independently controls the prayer stand's picker.
 `PickerId.Sermons` keeps the centralized default title **Prayers**. Its independent
 `[Inventory Names] Prayers` string changes the next opened picker's title.
-The internal identity and native sermon APIs are unchanged. Development-era
-Sermons-setting migration has been removed; `[Actions] Prayers` defaults on.
-See [CONFIGURATION.md](CONFIGURATION.md).
+The internal `Sermons` identity and native sermon APIs remain intentional; the
+player-facing action key and title are **Prayers**, as listed in the configuration
+reference. The action defaults on.
 
 ## Native contract and integration
 

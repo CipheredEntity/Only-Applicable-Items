@@ -1,12 +1,13 @@
 # Study Table
 
+[Development guide](DEVELOPMENT.md) · [Configuration](CONFIGURATION.md)
+
 `[Actions] Study Table = true` controls both sections independently of other
 actions. The stable IDs `StudyResearchable` and `StudyDecomposable` have centralized
 default titles **Study** and **Decompose**, in that order. Both headers
 remain visible when empty. `[Inventory Names] Study Table - Study` and
 `Study Table - Decompose` customize their next-open titles independently, including
 identical names, without changing section identities/order or visual rules.
-See [CONFIGURATION.md](CONFIGURATION.md).
 
 Study hides only its item quantity labels; Decompose keeps its combined
 counts. Both category headers use the game's icon-free header mode. The same
@@ -45,7 +46,7 @@ completion and any cached-list staleness remain unchanged.
   before either section is published. Duplicate section IDs or overlapping item
   membership reject the entire plan. Quantities remain checked sums without
   stack caps; no stored Count, UID, properties, or ownership is changed.
-- ApplicableItemsSession now holds an ordered array of views. Existing actions
+- ApplicableItemsSession holds an ordered array of views. Other shared actions
   use the same path with one view and retain their previous title/header behavior.
   Each view carries its own policy and section index for native availability and
   fresh click resolution. A source that changes category before clicking is
@@ -87,10 +88,12 @@ InventoryHeaderWidget.UpdateHeader hides its icon and enables decorWhenNoHeaderI
 it restores the icon for subsequent nonempty IDs. Original header data and defaults
 remain untouched. Check the native icon-free spacing/decoration visually in-game.
 
-A read-only scan of the installed GameBalance.surveyDefs found all 395 primary-item
-quantity expressions equal to 1. This supports hiding research stock labels in
-the current build; the native code still supports other quantities, and those
-requirements remain enforced if game data or other mods change them.
+Research does not consume its main item, but native requirements still determine
+how much stock must be present. The code supports data-defined quantities greater
+than one; historical asset observations are not a guarantee for every survey or
+other mod. Hiding labels does not relax those requirements, and supporting-resource
+counters remain visible. Recheck multiple-unit surveys if balance data changes:
+the hidden stock label can otherwise obscure why a craft is unavailable.
 
 ## Selected-item slot
 
@@ -163,8 +166,8 @@ Manual checklist:
 5. Check missing resources and source changes, cancellation, and live disabling.
    Both virtual sections must restore together; other action toggles stay independent.
 6. Test eligible unusual tools/containers: safe native fallback is expected. Recheck
-   Seeds, Fertilizers, Alchemy, Body Parts, Embalming, Graves, Zombie Equipment,
-   Resurrection Collars (including its selected-slot display), and Prayers.
+   other single-section pickers, including PR Resources, plus Shop Selling and
+   Resurrection Collars' selected-slot display.
 7. Check Study quantity labels are hidden at 1 and larger combined totals,
    while Decompose (including a total of 1) and resource requirements keep their
    quantities. The selected slot should hide research quantities and show native

@@ -1,8 +1,13 @@
 # Body Parts integration
 
+[Development guide](DEVELOPMENT.md) · [Configuration](CONFIGURATION.md)
+
 `[Actions] Body Parts = true` independently controls Brains, Hearts, Guts, Skulls,
 Bones, and Skins. The titles map explicitly to ItemType.Brain, Heart, Guts, Skull,
 Bones, and Skin in BodyPartPickerContract. Existing settings are retained.
+Each category has an independent blank-by-default name key, such as
+`[Inventory Names] Body Parts - Brains`; the configuration reference lists all six.
+Titles affect presentation only. They do not identify the selected body-part type.
 
 ## Native flow and scope
 
@@ -69,14 +74,13 @@ stand-ins for its game types, plus the real aggregation/snapshot/delegate code.
 They cover all six titles for insertion/replacement, exact delegate ownership,
 unsupported categories, full-ID variants, alias deduplication, disabled/mistake
 visibility, changed availability, safety rejection, surviving source resolution,
-and the shared live toggle. Other checks cover all 128 action-toggle
-combinations and existing seed/fertilizer/alchemy behavior. These do not execute
+and the shared live toggle. Configuration and policy checks also cover independent
+settings and existing picker regressions. These do not execute
 game assemblies, native collar arithmetic, Harmony, or Unity prefabs.
 
-The four private method signatures and selectedItemType field were also verified
-against the reference Assembly-CSharp.dll using reflection-only metadata loading;
-no game code was executed by that check. The Release build targets net472 and
-packages only the plugin DLL and modinfo.json into the local artifacts folder.
+At startup the production contract validates the four method signatures and the
+selectedItemType field's type. Build/package procedures and the distinction
+between source inspection, stand-ins, and native execution are in the development guide.
 
 Manual in-game checks:
 
