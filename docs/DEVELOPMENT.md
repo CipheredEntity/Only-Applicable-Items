@@ -145,8 +145,11 @@ canvases, and has independent configuration and compatibility boundaries.
 
 ## Prerequisites and external references
 
-Use the [official modding contract](<../../Documentation Reference/README_MODDING.txt>)
-and [AGENTS.md](../AGENTS.md) for local development rules. The supported plugin
+Use the official game modding documentation at
+`../Documentation Reference/README_MODDING.txt` (relative to the repository root)
+and [AGENTS.md](../AGENTS.md) for local development rules. The official documentation
+is an external reference developers must obtain separately; it is not included in
+this repository. The supported plugin
 framework is BepInEx 5 for Unity Mono; this project targets `net472`, not BepInEx 6
 or IL2CPP. The checks project targets `net10.0`, so the local workflow requires a
 .NET 10 SDK. The standalone probe additionally requires Windows x64 and the
@@ -262,7 +265,8 @@ other UI mods. Compare real before/after quantities and native effects; test bot
 cancellation and completion. Configuration layout/persistence and global layering
 have their own checklists.
 
-Earlier user reports of working features are not a complete 0.15.0/1.012 release
-test record. PR's post-fix activation is not yet documented; follow its
-[startup and loading checks](PR_MACHINE.md#startup-and-readiness). Manual checklists
-describe required regression coverage, not invented pass results.
+The user reports a successful initial in-game test of the corrected 0.15.0 PR
+Machine integration in Graveyard Keeper 2 1.012 using a level V machine. This is
+not a complete release regression or compatibility test record; retain the
+[PR startup and loading checks](PR_MACHINE.md#startup-and-readiness) and other
+feature checklists for scenarios and edge cases not established by that report.

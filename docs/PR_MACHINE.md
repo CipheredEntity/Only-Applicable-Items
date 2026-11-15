@@ -25,7 +25,11 @@ failure seen in the level-V in-game test. The current accessor warm-up uses
 `new Item()` and `new Inventory()`, both balance-independent parameterless
 constructors. It still resolves/warms the raw accessors before real consumption,
 without forcing balance loading or creating a displayed/consumable probe.
-The probe does not need a UID. No post-fix in-game success is asserted here.
+The probe does not need a UID. The user has since reported that the corrected
+0.15.0 integration appears to work correctly in-game in Graveyard Keeper 2 1.012
+using a level V PR Machine. This successful initial post-fix test does not establish
+that every loading scenario, compatibility condition, or edge case has passed;
+the regression checklist below remains applicable.
 
 ## Native contract (1.012)
 
