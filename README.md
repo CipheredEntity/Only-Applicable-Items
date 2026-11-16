@@ -1,5 +1,7 @@
 # Only Applicable Items
 
+**Version: 1.0.0**
+
 **A quality-of-life mod for Graveyard Keeper 2 that simplifies item selection by showing you only what you need, wherever it's stored.**
 
 Tired of scrolling through multiple inventories and bags just to find the items you need for an action?
@@ -70,6 +72,7 @@ Only Applicable Items uses the official modding support included with Graveyard 
    └── Code/
        └── OnlyApplicableItems/
            ├── modinfo.json
+           ├── LICENSE
            └── BepInEx/
                └── plugins/
                    └── OnlyApplicableItems/

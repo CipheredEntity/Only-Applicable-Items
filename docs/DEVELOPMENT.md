@@ -1,6 +1,6 @@
 # Development guide
 
-This guide describes **Only Applicable Items 0.15.0** for **Graveyard Keeper 2
+This guide describes **Only Applicable Items 1.0.0** for **Graveyard Keeper 2
 1.012**. It is the entry point for architecture, local development, and validation.
 [CONFIGURATION.md](CONFIGURATION.md) is the authoritative reference for settings,
 names, and live changes. Feature documents below own the action-specific details.
@@ -223,9 +223,11 @@ dotnet run --project tests/OnlyApplicableItems.Checks.csproj -c Release -- Share
 | PR runtime checks | Actual PR bridge/raw accessors on an in-memory effect boundary, cold-start access, reentrancy and cleanup | Execution of the real PR effect body or serialized balance expressions |
 | Metadata/configuration probe checks | Copied assembly contracts/IL, native constructor dependency shapes, real BepInEx persistence/reload, optional GK2 Mod Menu model/metadata | Unity menu rendering or a complete `Plugin.Awake`/game-start sequence |
 
-The last recorded automated baseline before this documentation reorganization
-passed 195 logic checks, seven controller checks, nine PR checks, and the
-configuration/metadata checks. Use each run's actual output as the current result.
+Automated release validation for 1.0.0 passed 195 logic checks, seven controller
+checks, nine PR checks, and ten configuration/metadata checks, with no failures or
+skips. Both Release builds completed without warnings or errors. These results do
+not establish in-game behavior. Use each subsequent run's actual output as the
+current result.
 The named test registry and feature test files are the coverage authority. The
 legacy exhaustive action-policy test covers 11 toggles; separate PR/configuration
 tests cover the twelfth. Do not describe that as all combinations of 12 actions.
@@ -244,12 +246,14 @@ refresh this local item layout:
 ```text
 artifacts/OnlyApplicableItems/
   modinfo.json
+  LICENSE
   BepInEx/plugins/OnlyApplicableItems/OnlyApplicableItems.dll
 ```
 
-Game, Unity, BCL, BepInEx, Harmony, and test outputs must not be packaged. No build
-step installs the mod or starts the game. Keep plugin, project, and manifest
-versions consistent when intentionally changing the release version.
+The packaged license is copied verbatim from the repository's `LICENSE` on every
+Release build. Game, Unity, BCL, BepInEx, Harmony, and test outputs must not be
+packaged. No build step installs the mod or starts the game. Keep plugin, project,
+and manifest versions consistent when intentionally changing the release version.
 
 For user-authorized manual testing, the official local item route is the item
 folder under `%USERPROFILE%\AppData\LocalLow\Lazy Bear Games\Graveyard Keeper 2\Mods\Code\`.
