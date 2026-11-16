@@ -112,4 +112,34 @@ For a complete explanation of the settings, see the [Configuration Documentation
 - **Framework:** The game's included BepInEx 5 modding support
 - **Additional required mods:** None
 
+Only Applicable Items is designed to work alongside other mods where possible. If an unsupported inventory layout or unsafe item configuration is detected, the affected feature attempts to preserve or restore the original interface rather than risk modifying items incorrectly.
+
+Compatibility with future game updates and every other mod cannot be guaranteed.
+
+## Issues and Feedback
+
+If you encounter a bug, unexpected behavior, or a compatibility problem, please report it through the repository's GitHub Issues page.
+
+When reporting a problem, please include the game version, the affected feature, a description of what happened, and steps to reproduce it if possible.
+
+## Development
+
+Only Applicable Items is written in C# for Graveyard Keeper 2's BepInEx modding framework.
+
+For information about the project's architecture, development environment, building from source, and testing, see the [Development Guide](docs/DEVELOPMENT.md).
+
+Detailed technical documentation for individual features is also available in the [`docs`](docs/) directory.
+
+### AI Assistance
+
+Only Applicable Items was developed with the assistance of **OpenAI Codex**, an AI coding agent. Codex was used to assist with implementation, debugging, testing, and documentation. The project's direction, feature decisions, and in-game validation were guided and reviewed by the project maintainer.
+
+## License
+
+Only Applicable Items is licensed under the **GNU General Public License v3.0 (GPL-3.0-only)**.
+
+You are free to use, modify, and redistribute this mod under the terms of the license. Distributed modified versions and other derivative works covered by the GPL must comply with its licensing and source-code requirements.
+
+See the [LICENSE](LICENSE) file for the full terms.
+
 Only Applicable Items is designed to work alongside other mods where possible. If an unsupported inventory layout or unsafe item configuration is detected, the affected feature attempts
