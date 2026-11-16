@@ -141,5 +141,3 @@ Only Applicable Items is licensed under the **GNU General Public License v3.0 (G
 You are free to use, modify, and redistribute this mod under the terms of the license. Distributed modified versions and other derivative works covered by the GPL must comply with its licensing and source-code requirements.
 
 See the [LICENSE](LICENSE) file for the full terms.
-
-Only Applicable Items is designed to work alongside other mods where possible. If an unsupported inventory layout or unsafe item configuration is detected, the affected feature attempts
