@@ -12,7 +12,7 @@ namespace OnlyApplicableItems;
 [BepInPlugin(Guid, Name, Version)]
 public sealed class Plugin : BaseUnityPlugin
 {
-    public const string Guid = "ciphe.gk2.onlyapplicableitems";
+    public const string Guid = "cipheredentity.gk2.onlyapplicableitems";
     public const string Name = "Only Applicable Items";
     public const string Version = "0.15.0";
     internal static Plugin? Instance { get; private set; }

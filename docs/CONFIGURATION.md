@@ -3,7 +3,7 @@
 [Development guide](DEVELOPMENT.md)
 
 The standard BepInEx file is
-`BepInEx/config/ciphe.gk2.onlyapplicableitems.cfg`. No settings-menu mod is required.
+`BepInEx/config/cipheredentity.gk2.onlyapplicableitems.cfg`. No settings-menu mod is required.
 There are exactly 35 bound settings: 12 default-on toggles in **Actions**, 22 string
 entries in **Inventory Names**, and the default-on **Window Sorting Order** in
 **Fixes**. Development-era setting migrations have been removed; obsolete entries

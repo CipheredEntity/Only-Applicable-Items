@@ -99,7 +99,7 @@ an open consolidated ingredient picker via the existing session mechanism and
 refreshes the laboratory with its native cached counters.
 
 AlchemyContract validates its own methods and slot-field type. Its patches have
-a separate Harmony owner (`ciphe.gk2.onlyapplicableitems.alchemy`), so initialization
+a separate Harmony owner (`cipheredentity.gk2.onlyapplicableitems.alchemy`), so initialization
 failure removes only alchemy patches. Runtime reflection/count/display failures
 disable both alchemy improvements for that plugin session and log once per failure
 category; existing alchemy picker sessions then fall back. Restart after resolving
