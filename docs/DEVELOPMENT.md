@@ -1,6 +1,6 @@
 # Development guide
 
-This guide describes **Only Applicable Items 1.0.0** for **Graveyard Keeper 2
+This guide describes **Only Applicable Items 1.1.0** for **Graveyard Keeper 2
 1.012**. It is the entry point for architecture, local development, and validation.
 [CONFIGURATION.md](CONFIGURATION.md) is the authoritative reference for settings,
 names, and live changes. Feature documents below own the action-specific details.
@@ -228,7 +228,9 @@ dotnet run --project tests/OnlyApplicableItems.Checks.csproj -c Release -- Share
 
 Automated release validation for 1.0.0 passed 195 logic checks, seven controller
 checks, nine PR checks, and ten configuration/metadata checks, with no failures or
-skips. Both Release builds completed without warnings or errors. These results do
+skips. Release validation for 1.1.0 passed 200 logic checks, seven controller
+checks, nine PR checks, and ten configuration/metadata checks, with no failures or
+skips. Both 1.1.0 Release builds completed without warnings or errors. These results do
 not establish in-game behavior. Use each subsequent run's actual output as the
 current result.
 The named test registry and feature test files are the coverage authority. The

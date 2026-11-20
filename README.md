@@ -1,6 +1,6 @@
 # Only Applicable Items
 
-**Version: 1.0.0**
+**Version: 1.1.0**
 
 **A quality-of-life mod for Graveyard Keeper 2 that simplifies item selection by showing you only what you need, wherever it's stored.**
 
