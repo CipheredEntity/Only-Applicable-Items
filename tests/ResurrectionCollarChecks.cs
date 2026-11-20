@@ -37,11 +37,16 @@ internal static partial class Program
             (PickerId.ZombieTools, "Tools"), (PickerId.ResurrectionCollars, "Collars"),
             (PickerId.Sermons, "Prayers"), (PickerId.StudyResearchable, "Study"),
             (PickerId.StudyDecomposable, "Decompose"), (PickerId.ShopSelling, "Sellable"),
-            (PickerId.PrMachineResources, "PR Resources")
+            (PickerId.PrMachineResources, "PR Resources"), (PickerId.StudyTableHeader, "Study Table")
         };
         Assert(Enum.GetValues(typeof(PickerId)).Length == expected.Length, "Every picker has an explicit default name.");
         foreach (var entry in expected)
         {
+            if (entry.Item1 == PickerId.StudyTableHeader)
+            {
+                Assert(PickerTitles.GetDefault(entry.Item1) == entry.Item2, "The window header has its own centralized default.");
+                continue;
+            }
             var policy = new PickerPolicy<Item>(entry.Item1, () => true, _ => true, _ => true, _ => { });
             Assert(policy.Id == entry.Item1 && policy.Title == entry.Item2,
                 "Identity migration must retain every existing visible title.");

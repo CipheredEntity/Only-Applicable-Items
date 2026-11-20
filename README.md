@@ -32,7 +32,7 @@ The mod is designed to make everyday interactions faster and more convenient whi
 | **Zombie Equipment** | Organizes collars, armor, weapons, and tools when equipping zombies. |
 | **Resurrection Collars** | Shows owned collars during resurrection, with unsuitable collars disabled. |
 | **Prayers** | Consolidates available prayers when preparing sermons. |
-| **Study Table** | Separates items into Study and Decompose categories. |
+| **Study Table** | Separates items into Study and Decompose categories under a separately customizable Study Table header. |
 | **Shop Selling** | Shows items relevant to the current merchant, including items they may buy at higher trading tiers. |
 | **PR Machine** | Consolidates resources such as Hypno-devices and Newspapers, allowing quantities to be loaded across multiple stacks. |
 

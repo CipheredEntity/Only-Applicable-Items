@@ -100,6 +100,7 @@ public sealed class MultiInventoryWidget
     public List<InventoryWidget> DrawnInventories { get; } = new();
     public int NavigationRefreshes;
     public bool FailNextRedraw;
+    public string RenderedHeaderToken = "";
     public void Draw(MultiInventoryWidgetData data)
     {
         Data = data;
@@ -116,6 +117,8 @@ public sealed class MultiInventoryWidget
     public void Redraw()
     {
         if (FailNextRedraw) { FailNextRedraw = false; throw new InvalidOperationException("Native redraw failed"); }
+        // Models MultiInventoryWidget.UpdateHeader's data binding, not localization/rendering.
+        RenderedHeaderToken = string.IsNullOrEmpty(Data.HeaderLocaleId) ? "ui_multiinventory" : Data.HeaderLocaleId;
         if (Data.inventoriesData.Count != DrawnInventories.Count) throw new InvalidOperationException("Section count changed without rebuilding widgets");
         for (int i = 0; i < DrawnInventories.Count; i++) DrawnInventories[i].Draw(Data.inventoriesData[i]);
         NavigationRefreshes++; // Models the notification used by native controller rebuilding.

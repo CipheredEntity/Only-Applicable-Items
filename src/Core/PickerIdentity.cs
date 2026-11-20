@@ -2,8 +2,8 @@ using System;
 
 namespace OnlyApplicableItems.Core;
 
-// Identity never comes from the displayed title. Separate categories can share a
-// default title and receive independent naming settings without changing IDs.
+// Identity never comes from the displayed title. Separate categories and window
+// headers can receive independent naming settings without changing existing IDs.
 internal enum PickerId
 {
     Seeds,
@@ -27,7 +27,8 @@ internal enum PickerId
     StudyResearchable,
     StudyDecomposable,
     ShopSelling,
-    PrMachineResources
+    PrMachineResources,
+    StudyTableHeader // Presentation only; never an inventory section policy.
 }
 
 internal static class PickerTitles
@@ -66,6 +67,7 @@ internal static class PickerTitles
             case PickerId.StudyDecomposable: return "Decompose";
             case PickerId.ShopSelling: return "Sellable";
             case PickerId.PrMachineResources: return "PR Resources";
+            case PickerId.StudyTableHeader: return "Study Table";
             default: throw new ArgumentOutOfRangeException(nameof(id));
         }
     }

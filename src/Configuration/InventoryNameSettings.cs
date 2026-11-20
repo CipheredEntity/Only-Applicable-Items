@@ -17,7 +17,7 @@ internal sealed class InventoryNameSettings
             string title = PickerTitles.GetDefault(id);
             entries.Add(id, config.Bind("Inventory Names", key, string.Empty, SettingMetadata.Describe(key,
                 "Leave blank to use \"" + title + "\".",
-                1000 - (int)id)));
+                GetOrder(id))));
         }
     }
 
@@ -33,6 +33,14 @@ internal sealed class InventoryNameSettings
         for (int i = 0; i < result.Length; i++)
             result[i] = policies[i].WithTitle(GetTitle(policies[i].Id));
         return result;
+    }
+
+    private static int GetOrder(PickerId id)
+    {
+        // Insert the header before its sections without renumbering stable IDs.
+        if (id == PickerId.StudyTableHeader)
+            return 1000 - (int)PickerId.StudyResearchable;
+        return 1000 - (int)id - (id >= PickerId.StudyResearchable ? 1 : 0);
     }
 
     public static string GetKey(PickerId id)
@@ -61,6 +69,7 @@ internal sealed class InventoryNameSettings
             case PickerId.StudyDecomposable: return "Study Table - Decompose";
             case PickerId.ShopSelling: return "Shop Selling";
             case PickerId.PrMachineResources: return "PR Machine";
+            case PickerId.StudyTableHeader: return "Study Table - Header";
             default: throw new ArgumentOutOfRangeException(nameof(id));
         }
     }

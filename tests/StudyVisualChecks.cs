@@ -57,7 +57,7 @@ internal static partial class Program
             "Never mutate the original header data or the native default icon.");
         foreach (PickerId id in Enum.GetValues(typeof(PickerId)))
         {
-            if (id == PickerId.StudyResearchable || id == PickerId.StudyDecomposable) continue;
+            if (id == PickerId.StudyResearchable || id == PickerId.StudyDecomposable || id == PickerId.StudyTableHeader) continue;
             Func<Item, bool> eligible = item => item != null && !item.IsEmpty;
             var policy = new PickerPolicy<Item>(id, () => true, eligible, eligible, _ => { });
             using var other = new SessionFixture(new[] { policy }, SessionSources(new Item("plain", ItemType.None, 2)), eligible);
@@ -86,7 +86,7 @@ internal static partial class Program
 
         foreach (PickerId id in Enum.GetValues(typeof(PickerId)))
         {
-            if (id == PickerId.StudyResearchable) continue;
+            if (id == PickerId.StudyResearchable || id == PickerId.StudyTableHeader) continue;
             StudyTableVisuals.HideResearchQuantity(reused); // Model a cell released from Study.
             Func<Item, bool> eligible = item => item != null && !item.IsEmpty;
             var policy = new PickerPolicy<Item>(id, () => true, eligible, eligible, _ => { });

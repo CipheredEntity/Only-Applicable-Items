@@ -15,10 +15,10 @@ internal static partial class Program
     {
         var config = new ConfigFile();
         new ActionSettings(config); new InventoryNameSettings(config); new FixSettings(config);
-        Assert(config.Entries.Count == 35 && config.Entries.Keys.Count(k => k.StartsWith("Actions/")) == 12 &&
-            config.Entries.Keys.Count(k => k.StartsWith("Inventory Names/")) == 22 &&
+        Assert(config.Entries.Count == 36 && config.Entries.Keys.Count(k => k.StartsWith("Actions/")) == 12 &&
+            config.Entries.Keys.Count(k => k.StartsWith("Inventory Names/")) == 23 &&
             config.Entries.Keys.Count(k => k.StartsWith("Fixes/")) == 1,
-            "Expose only 12 action toggles, 22 inventory names, and one fix.");
+            "Expose only 12 action toggles, 22 inventory names plus the Study header name, and one fix.");
         foreach (object entry in config.Entries.Values)
         {
             ConfigDescription description;
@@ -42,7 +42,7 @@ internal static partial class Program
         var config = new ConfigFile();
         var names = new InventoryNameSettings(config);
         var ids = Enum.GetValues<PickerId>();
-        Assert(ids.Length == 22 && ids.Select(InventoryNameSettings.GetKey).Distinct().Count() == 22 &&
+        Assert(ids.Length == 23 && ids.Select(InventoryNameSettings.GetKey).Distinct().Count() == 23 &&
             InventoryNameSettings.GetKey(PickerId.ZombieCollars) == "Zombie Equipment - Collars" &&
             InventoryNameSettings.GetKey(PickerId.ResurrectionCollars) == "Resurrection Collars",
             "Keep every stable inventory independently identifiable, including the two Collars names.");
@@ -50,7 +50,7 @@ internal static partial class Program
             Assert(names.GetTitle(id) == PickerTitles.GetDefault(id) && NameEntry(config, id).DefaultValue == "" &&
                 NameEntry(config, id).Value == "" && NameEntry(config, id).Description.Description ==
                     "Leave blank to use \"" + PickerTitles.GetDefault(id) + "\".",
-                "All 22 name entries default to blank with the exact concise hint, while original titles remain unchanged.");
+                "All 23 name entries default to blank with the exact concise hint, while original titles remain unchanged.");
         foreach (PickerId id in ids)
         {
             NameEntry(config, id).Value = "Custom " + id;
@@ -89,6 +89,34 @@ internal static partial class Program
             "Prevents tooltips from appearing behind windows after repeatedly opening them." &&
             ((ConfigurationManagerAttributes)fixes.WindowSortingOrder.Description.Tags.Single()).Order == 10 &&
             fixes.WindowSortingOrder.Value, "Keep the sorting fix's concise description, order, and default enabled state.");
+    }
+
+    private static void InventoryNameOrderingGroupsStudyHeaderWithItsSections()
+    {
+        var config = new ConfigFile();
+        new InventoryNameSettings(config);
+        PickerId[] expected =
+        {
+            PickerId.Seeds, PickerId.Fertilizers, PickerId.AlchemicalIngredients,
+            PickerId.Brains, PickerId.Hearts, PickerId.Guts, PickerId.Skulls, PickerId.Bones, PickerId.Skins,
+            PickerId.EmbalmingFluids, PickerId.Tombstones, PickerId.Fences,
+            PickerId.ZombieCollars, PickerId.ZombieArmor, PickerId.ZombieWeapons, PickerId.ZombieTools,
+            PickerId.ResurrectionCollars, PickerId.Sermons, PickerId.StudyTableHeader,
+            PickerId.StudyResearchable, PickerId.StudyDecomposable, PickerId.ShopSelling, PickerId.PrMachineResources
+        };
+        int Order(PickerId id) => ((ConfigurationManagerAttributes)NameEntry(config, id).Description.Tags.Single()).Order!.Value;
+        Assert(expected.OrderByDescending(Order).SequenceEqual(expected) && expected.Select(Order).Distinct().Count() == expected.Length,
+            "Use unique descending menu orders: Prayers, Study header, Study, Decompose, Shop Selling, PR Machine; retain every other relative order.");
+        foreach (PickerId id in expected)
+        {
+            var entry = NameEntry(config, id);
+            Assert(entry.Value == "" && entry.DefaultValue == "" && entry.Definition.Key == InventoryNameSettings.GetKey(id) &&
+                entry.Description.Description == "Leave blank to use \"" + PickerTitles.GetDefault(id) + "\".",
+                "Ordering must not change any setting key, description, default, or configured value.");
+        }
+        Assert((int)PickerId.StudyResearchable == 18 && (int)PickerId.StudyDecomposable == 19 &&
+            (int)PickerId.ShopSelling == 20 && (int)PickerId.PrMachineResources == 21 && (int)PickerId.StudyTableHeader == 22,
+            "Display order must not renumber existing stable identities.");
     }
 
     private static void InventoryNamesAllowDuplicatesWhitespaceAndOrdinarySpecialCharacters()
@@ -146,6 +174,7 @@ internal static partial class Program
         Func<Item, bool> eligible = item => item != null && !item.IsEmpty;
         foreach (PickerId id in Enum.GetValues<PickerId>())
         {
+            if (id == PickerId.StudyTableHeader) continue; // This name is not an inventory policy.
             NameEntry(config, id).Value = "First " + id;
             var policy = new PickerPolicy<Item>(id, () => true, eligible, eligible, _ => { });
             var item = new Item("plain", ItemType.None, 2);

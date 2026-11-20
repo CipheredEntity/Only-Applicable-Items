@@ -17,12 +17,12 @@ internal static partial class Program
         public MultiInventoryWidgetData Container => Data.MultiInventoryWidgetData;
 
         public SessionFixture(IReadOnlyList<PickerPolicy<Item>> policies, MultiInventory sources,
-            Func<Item, bool> eligible, Action<UIItemCell>? callback = null)
+            Func<Item, bool> eligible, Action<UIItemCell>? callback = null, Func<PickerId, string>? getTitle = null)
         {
             UnityEngine.Time.unscaledTime = 0;
             Data = new UIMultiInventoryWindowData(sources, callback ?? (_ => { }), eligible);
             Originals = Container.inventoriesData.ToArray();
-            Session = new ApplicableItemsSession(Plugin, policies, Data, eligible);
+            Session = new ApplicableItemsSession(Plugin, policies, Data, eligible, getTitle);
         }
         public void Open() { Session.Commit(); Window.Widget.Draw(Container); }
         public ApplicableInventoryWidgetData View(int index) => (ApplicableInventoryWidgetData)Container.inventoriesData[index];

@@ -9,6 +9,14 @@ remain visible when empty. `[Inventory Names] Study Table - Study` and
 `Study Table - Decompose` customize their next-open titles independently, including
 identical names, without changing section identities/order or visual rules.
 
+The inventory picker's main caption is **Study Table** while consolidation is
+active. `[Inventory Names] Study Table - Header` customizes it independently of
+both section names. Its default value is blank, falling back to **Study Table**;
+the hint is `Leave blank to use "Study Table".` Empty or whitespace-only names
+retain that fallback. Names are captured on opening, so edits apply next time.
+Disabling Study Table or falling back restores the native **Inventory** caption.
+The surrounding crafting window and other inventory interfaces are unchanged.
+
 Study hides only its item quantity labels; Decompose keeps its combined
 counts. Both category headers use the game's icon-free header mode. The same
 Study Table toggle controls these visuals, with vanilla restored when disabled.
@@ -51,6 +59,15 @@ completion and any cached-list staleness remain unchanged.
   Each view carries its own policy and section index for native availability and
   fresh click resolution. A source that changes category before clicking is
   rejected in its old category; both sections refresh without executing an action.
+- The native `UIResourceBasedCraftWindowData.OnResourcePickerPressed` opens the
+  shared picker without a custom caption, leaving `HeaderLocaleId=ui_multiinventory`.
+  `MultiInventoryWidget.UpdateHeader` binds that value to its localized label on
+  redraw. The session captures `StudyTableHeader` through the existing naming
+  resolver only for the exact ordered Study/Decompose pair, then commits the
+  replacement `HeaderLocaleId` with both views. Custom names use the existing
+  literal-text escaping. No new UI patch, label lookup, or prefab change is needed.
+  Existing restoration/disposal restores the saved native header when sections
+  are still owned; foreign-owned sections and captions remain untouched.
 - Refresh replaces both data views together and redraws the existing child
   widgets. Section count stays fixed, including empty categories. Native redraw
   notifications rebuild controller navigation; the inspected navigation code
@@ -152,6 +169,11 @@ and native counter/icon restoration after disabling or fallback. Selected-slot
 checks additionally cover resolver changes for the same ID, category switching,
 clearing/depletion, missing definitions, reopening/reuse, live toggle and shutdown
 restoration, failure isolation, and exact item-reference/UID/count/cache preservation.
+Header checks cover independent names, blanks/whitespace, duplicate and special
+names, stable captions during stock refresh, next-opening changes, empty sections,
+disable/fallback/disposal, reused widget data binding, failed title resolution,
+and foreign ownership. These model native header binding, not Unity text rendering.
+Real BepInEx save/reload and optional GK2 Mod Menu model checks include the new name.
 
 Manual checklist:
 
@@ -175,3 +197,8 @@ Manual checklist:
    reopen, and toggle Study Table while the window is open. Close/reopen and switch to vanilla storage
    or another picker to check pooled counters restore. Check both icon-free header
    titles and spacing, then disable Study Table to compare vanilla icons/counters.
+8. Verify the main picker caption reads Study Table, then rename its header and
+   each section independently. Try blank, whitespace, duplicate, locale-like, and
+   markup-like titles. Refresh stock while open, reopen after editing, and restart
+   to check persistence. Disable while open and confirm Inventory returns. Reuse
+   the picker for another action or vanilla inventory and check its caption/layout.

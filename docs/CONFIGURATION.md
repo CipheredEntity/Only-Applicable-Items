@@ -4,8 +4,9 @@
 
 The standard BepInEx file is
 `BepInEx/config/cipheredentity.gk2.onlyapplicableitems.cfg`. No settings-menu mod is required.
-There are exactly 35 bound settings: 12 default-on toggles in **Actions**, 22 string
-entries in **Inventory Names**, and the default-on **Window Sorting Order** in
+There are exactly 36 bound settings: 12 default-on toggles in **Actions**, 23 string
+entries in **Inventory Names** (22 inventories and the Study Table window header),
+and the default-on **Window Sorting Order** in
 **Fixes**. Development-era setting migrations have been removed; obsolete entries
 may remain as unbound data in an existing BepInEx file but have no effect.
 
@@ -44,8 +45,9 @@ Action-specific effects share their action's setting:
 
 - Alchemical Ingredients also refreshes open laboratory quantity displays.
 - Resurrection Collars also refreshes its selected-slot quantity display.
-- Study Table controls both section visuals and its research-only selected-slot
-  quantity correction; those open displays respond to live changes.
+- Study Table controls its main picker header, both section visuals, and its
+  research-only selected-slot quantity correction. Disabling restores the native
+  Inventory header along with the sections; those open displays respond to live changes.
 - Shop Selling blocks new confirmations when disabled, then waits for its owned
   quantity dialog to close before releasing captured cells and restoring the player
   panel. Staged goods are not accepted, cancelled, or cleared. Enabling waits for
@@ -61,7 +63,7 @@ resolve the logged compatibility problem and restart where the feature requires 
 
 ## Inventory Names
 
-All 22 name settings default to an empty string. Their descriptions are exactly
+All 23 name settings default to an empty string. Their descriptions are exactly
 `Leave blank to use "Default Name".`, substituting the corresponding fallback below.
 Existing saved values are preserved; no preference migration or reset is performed.
 
@@ -85,6 +87,7 @@ Existing saved values are preserved; no preference migration or reset is perform
 | Zombie Equipment - Tools | Tools | ZombieTools |
 | Resurrection Collars | Collars | ResurrectionCollars |
 | Prayers | Prayers | Sermons |
+| Study Table - Header | Study Table | StudyTableHeader (window header only) |
 | Study Table - Study | Study | StudyResearchable |
 | Study Table - Decompose | Decompose | StudyDecomposable |
 | Shop Selling | Sellable | ShopSelling |
@@ -101,7 +104,11 @@ clip or wrap according to the existing game layout; names are not truncated.
 InventoryNameSettings applies names to fresh policies at the shared picker's
 opening boundary, preserving all eligibility, filtering, validation, warning,
 and live-toggle delegates. Study section identities/order and their quantity/icon
-rules remain independent of names. Shop Selling captures its name separately
+rules remain independent of names. The ordered Study/Decompose session captures
+`Study Table - Header` separately for its main window caption, using the same
+literal-text protection and next-opening behavior. Its stable identity is not an
+inventory section; it does not change the Study or Decompose names or policies.
+Other window captions are unaffected. Shop Selling captures its name separately
 when its trading session is created; it changes the section header, preserving
 the surrounding Keeper caption and transaction controls.
 
@@ -151,18 +158,19 @@ metadata in the standalone probe; final visual layout still needs in-game testin
 
 ## Validation
 
-The pure regression harness covers all 22 unique keys/defaults, independent and
-duplicate names, blank fallback, punctuation/markup-like values, the exact 35-entry
+The pure regression harness covers all 23 unique keys/defaults, independent and
+duplicate names, blank fallback, punctuation/markup-like values, the exact 36-entry
 schema and metadata, exact compact descriptions/ordering, unchanged policy delegates/snapshots, action-disabled names,
-next-opening behavior, stock refreshes, duplicate Study section titles/visuals,
+next-opening behavior, stock refreshes, independent Study window/section titles,
+native header restoration, widget reuse, foreign section ownership,
 and the separate trading integration. Existing action and transfer tests still run.
 
 The standalone shipped-Mono probe uses the installed real BepInEx library to save
 and reload all names, disabled action preferences, and special/blank values. All
-22 fresh blank settings are separately saved/reloaded and checked against their
+23 fresh blank settings are separately saved/reloaded and checked against their
 original fallback titles before custom names are tested. It
 also checks manual file reload and invokes only GK2 Mod Menu's pure `BuildItems`
-configuration model to verify all 35 labels/categories/descriptions/orders and
+configuration model to verify all 36 labels/categories/descriptions/orders and
 editable-entry persistence. It does not instantiate that plugin/window or run Unity
 or game methods. Test files, including BepInEx's core config, are isolated under
 the probe output directory and removed after each run. The menu-model check skips
@@ -170,10 +178,10 @@ explicitly if that optional DLL is unavailable; BepInEx checks remain independen
 
 In-game checks before release:
 
-1. Confirm the three categories, 12 toggles, 22 editable names, help text, ordering,
+1. Confirm the three categories, 12 toggles, 23 editable names, help text, ordering,
    text entry, blank name defaults, empty action-description spacing, and
    reset-to-default behavior in GK2 Mod Menu (mouse/controller).
-2. Rename every inventory, especially both Collars entries, both Study sections,
+2. Rename every inventory, especially both Collars entries, the Study header and both sections,
    Sellable, and PR Resources. Check section headings, window captions, and Keeper's caption.
 3. Try duplicate names, blank values, accents, punctuation, literal `<b>` and
    `</noparse>`, and a locale-like name such as `ui_multiinventory`. Check font

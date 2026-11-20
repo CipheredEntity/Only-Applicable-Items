@@ -34,6 +34,9 @@ item validator and optional native-warning provider. `PickerSnapshot` and
 `StackAggregation` retain source references and quantities. `ApplicableItemsSession`
 publishes virtual `ApplicableInventoryWidgetData` views using those snapshots.
 Study Table supplies two ordered policies; other shared pickers use one.
+Its main picker header has a separate `StudyTableHeader` naming identity, with
+the default title Study Table, independent of both section identities. The session
+captures that title on opening and restores the native header with its sections.
 
 Shop Selling uses a dedicated trading session rather than the shared picker.
 PR Machine reuses the shared view but adds a scoped quantity/consumption adapter.

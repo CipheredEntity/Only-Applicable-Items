@@ -124,7 +124,8 @@ internal static partial class Program
             fixture.View(1).Groups[0].Total == 4 && fixture.View(0).InventoryHeaderWidgetData.CustomHeaderId == "Study" &&
             fixture.View(1).InventoryHeaderWidgetData.CustomHeaderId == "Decompose" &&
             fixture.View(0).InventoryHeaderWidgetData.DrawHeader && fixture.View(1).InventoryHeaderWidgetData.DrawHeader &&
-            fixture.Container.HeaderLocaleId == "ui_multiinventory", "The real session must create two named sections without replacing the window caption.");
+            fixture.Container.HeaderLocaleId == "Study Table" && fixture.Window.Widget.RenderedHeaderToken == "Study Table",
+            "The real session must create two named sections under the Study Table window caption.");
         Assert(fixture.Window.Widget.DrawnInventories[0].Cells[0].Value == 105 && a.Count == 20 && b.Count == 35 &&
             c.Count == 50 && decomposable.Count == 4 && a.UniqueId == uid && ReferenceEquals(fixture.Data.MultiInventory, sources),
             "Combined counters must not change source quantities, identities, or the real inventory list.");
@@ -223,7 +224,7 @@ internal static partial class Program
     {
         foreach (PickerId id in Enum.GetValues(typeof(PickerId)))
         {
-            if (id == PickerId.StudyResearchable || id == PickerId.StudyDecomposable) continue;
+            if (id == PickerId.StudyResearchable || id == PickerId.StudyDecomposable || id == PickerId.StudyTableHeader) continue;
             bool enabled = true;
             Func<Item, bool> eligible = item => item != null && !item.IsEmpty;
             var policy = new PickerPolicy<Item>(id, () => enabled, eligible, eligible, _ => { });

@@ -17,6 +17,7 @@ internal sealed class ApplicableItemsSession : IDisposable
     private readonly InventoryWidgetDataBase template;
     private readonly Func<Item, bool> eligible;
     private readonly string originalHeader;
+    private readonly string replacementHeader;
     private readonly HashSet<Inventory> subscriptions = new HashSet<Inventory>(ReferenceComparer<Inventory>.Instance);
     private ApplicableInventoryWidgetData[]? current;
     private MultiInventoryWidget? owner;
@@ -51,7 +52,7 @@ internal sealed class ApplicableItemsSession : IDisposable
     }
 
     public ApplicableItemsSession(Plugin plugin, IReadOnlyList<PickerPolicy<Item>> policies, UIMultiInventoryWindowData data,
-        Func<Item, bool> eligible)
+        Func<Item, bool> eligible, Func<PickerId, string>? getTitle = null)
     {
         this.plugin = plugin;
         if (policies.Count == 0)
@@ -76,6 +77,12 @@ internal sealed class ApplicableItemsSession : IDisposable
         }
         if (template.OnItemCellPress == null)
             throw new NotSupportedException("The original " + Policy.Title + " callback is missing.");
+        // Capture titles at opening. Only the recognized ordered Study pair gets
+        // a separate window title; refresh, selection, and restoration stay native.
+        replacementHeader = policies.Count == 1 ? PickerTitles.GetHeaderText(Policy.Id, Policy.Title) : originalHeader;
+        if (policies.Count == 2 && policies[0].Id == PickerId.StudyResearchable && policies[1].Id == PickerId.StudyDecomposable)
+            replacementHeader = PickerTitles.GetHeaderText(PickerId.StudyTableHeader,
+                getTitle?.Invoke(PickerId.StudyTableHeader) ?? PickerTitles.GetDefault(PickerId.StudyTableHeader));
     }
 
     public void Commit()
@@ -85,7 +92,7 @@ internal sealed class ApplicableItemsSession : IDisposable
         current = views;
         container.inventoriesData.Clear();
         container.inventoriesData.AddRange(views);
-        container.HeaderLocaleId = policies.Length == 1 ? PickerTitles.GetHeaderText(Policy.Id, Policy.Title) : originalHeader;
+        container.HeaderLocaleId = replacementHeader;
         container.onWidgetHide += Dispose;
         committed = true;
     }

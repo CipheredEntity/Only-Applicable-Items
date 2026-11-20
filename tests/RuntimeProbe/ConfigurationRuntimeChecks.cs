@@ -41,7 +41,7 @@ internal static class ConfigurationRuntimeChecks
             var actions = new ActionSettings(config);
             var names = new InventoryNameSettings(config);
             new FixSettings(config);
-            Require(config.Count == 35, "Release settings count differs from 12 + 22 + 1.");
+            Require(config.Count == 36, "Settings count differs from 12 + 23 + 1.");
             foreach (PickerId id in Enum.GetValues(typeof(PickerId)))
                 Require(Entry(config, id).Value == "" && (string)Entry(config, id).DefaultValue == "" &&
                     names.GetTitle(id) == PickerTitles.GetDefault(id), "A fresh name must be blank and resolve to its original title: " + id);
@@ -51,7 +51,7 @@ internal static class ConfigurationRuntimeChecks
             foreach (PickerId id in Enum.GetValues(typeof(PickerId)))
                 Require(Entry(blankReload, id).Value == "" && blankNames.GetTitle(id) == PickerTitles.GetDefault(id),
                     "Blank-name fallback did not survive real BepInEx save/reload: " + id);
-            Console.WriteLine("PASS all 22 blank configuration defaults retain their original titles after real BepInEx save/reload.");
+            Console.WriteLine("PASS all 23 blank configuration defaults retain their original titles after real BepInEx save/reload.");
             var expected = new Dictionary<PickerId, string>();
             foreach (PickerId id in Enum.GetValues(typeof(PickerId)))
             {
@@ -70,23 +70,29 @@ internal static class ConfigurationRuntimeChecks
             var reloadedActions = new ActionSettings(reloaded);
             var reloadedNames = new InventoryNameSettings(reloaded);
             new FixSettings(reloaded);
-            Require(reloaded.Count == 35 && !reloadedActions.Seeds.Value && !reloadedActions.ShopSelling.Value &&
+            Require(reloaded.Count == 36 && !reloadedActions.Seeds.Value && !reloadedActions.ShopSelling.Value &&
                 reloadedActions.StudyTable.Value, "Action values did not survive real BepInEx save/reload.");
             foreach (var pair in expected)
                 Require(reloadedNames.GetTitle(pair.Key) == pair.Value &&
                     (string)Entry(reloaded, pair.Key).DefaultValue == "",
                     "Inventory title did not survive real BepInEx save/reload: " + pair.Key);
-            Console.WriteLine("PASS real BepInEx configuration: 35 entries, all 22 names, duplicate/blank/special values, and disabled-action preferences survive save/reload.");
+            Console.WriteLine("PASS real BepInEx configuration: 36 entries, all 23 names, duplicate/blank/special values, and disabled-action preferences survive save/reload.");
 
             var reloadErrors = new List<Exception>();
             var refresh = new ConfigurationReload(reloaded, reloadErrors.Add);
             string edited = File.ReadAllText(path).Replace("Zombie Equipment - Collars = Same name", "Zombie Equipment - Collars = From file")
+                // Match the serialized value: BepInEx escapes punctuation such as apostrophes.
+                .Replace("Study Table - Header = " + TomlTypeConverter.ConvertToString(expected[PickerId.StudyTableHeader], typeof(string)),
+                    "Study Table - Header = My renamed table")
                 .Replace("Seeds = false", "Seeds = true");
             File.WriteAllText(path, edited);
             File.SetLastWriteTimeUtc(path, DateTime.UtcNow.AddSeconds(2));
             refresh.Refresh();
             Require(reloadedNames.GetTitle(PickerId.ZombieCollars) == "From file" &&
                 reloadedNames.GetTitle(PickerId.ResurrectionCollars) == "Same name" && reloadedActions.Seeds.Value &&
+                reloadedNames.GetTitle(PickerId.StudyTableHeader) == "My renamed table" &&
+                reloadedNames.GetTitle(PickerId.StudyResearchable) == expected[PickerId.StudyResearchable] &&
+                reloadedNames.GetTitle(PickerId.StudyDecomposable) == expected[PickerId.StudyDecomposable] &&
                 !reloadedActions.ShopSelling.Value && reloadErrors.Count == 0,
                 "Manual file edits did not apply at the next-opening refresh boundary.");
             refresh.Refresh();
@@ -116,7 +122,7 @@ internal static class ConfigurationRuntimeChecks
             var model = menu.GetType("GK2ModMenu.ConfigModel", true)!;
             var build = model.GetMethod("BuildItems", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)!;
             var items = ((IEnumerable)build.Invoke(null, new object[] { reloaded })!).Cast<object>().ToArray();
-            Require(items.Length == 35, "GK2 Mod Menu did not expose every release setting.");
+            Require(items.Length == 36, "GK2 Mod Menu did not expose every setting.");
             var previousOrder = new Dictionary<string, int>();
             foreach (var item in items)
             {
@@ -131,6 +137,13 @@ internal static class ConfigurationRuntimeChecks
                     "GK2 Mod Menu settings are not in the declared descending order.");
                 previousOrder[category] = order;
             }
+            var nameKeys = items.Select(item => (ConfigEntryBase)item.GetType().GetField("Entry")!.GetValue(item))
+                .Where(entry => entry.Definition.Section == "Inventory Names").Select(entry => entry.Definition.Key).ToArray();
+            int headerIndex = Array.IndexOf(nameKeys, "Study Table - Header");
+            Require(headerIndex > 0 && headerIndex + 3 < nameKeys.Length && nameKeys[headerIndex - 1] == "Prayers" &&
+                nameKeys[headerIndex + 1] == "Study Table - Study" && nameKeys[headerIndex + 2] == "Study Table - Decompose" &&
+                nameKeys[headerIndex + 3] == "Shop Selling",
+                "GK2 Mod Menu must place the Study Table header immediately before Study and Decompose, preserving surrounding settings.");
             reloaded.SaveOnConfigSet = true;
             Entry(reloaded, PickerId.ZombieCollars).BoxedValue = "Edited through menu entry";
             var savedAgain = new ConfigFile(path, false) { SaveOnConfigSet = false };
@@ -140,7 +153,7 @@ internal static class ConfigurationRuntimeChecks
             Require(!typeof(InventoryNameSettings).Assembly.GetReferencedAssemblies().Any(a => a.Name == "GK2ModMenu"),
                 "Optional GK2 Mod Menu acquired a compile-time dependency.");
             VerifyEmptyDescriptionRendering(menuPath);
-            Console.WriteLine("PASS installed GK2 Mod Menu " + menu.GetName().Version + ": all 35 labels/categories/descriptions/orders, editable names, and independent persistence (configuration model only).");
+            Console.WriteLine("PASS installed GK2 Mod Menu " + menu.GetName().Version + ": all 36 labels/categories/descriptions/orders, editable names, and independent persistence (configuration model only).");
         }
         finally { if (File.Exists(path)) File.Delete(path); }
     }

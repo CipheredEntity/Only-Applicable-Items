@@ -378,7 +378,7 @@ public sealed class Plugin : BaseUnityPlugin
                 if (!section.IsEnabled)
                     return;
             policies = inventoryNames.Apply(policies);
-            session = new ApplicableItemsSession(this, policies, data, predicate);
+            session = new ApplicableItemsSession(this, policies, data, predicate, inventoryNames.GetTitle);
             if (policies[0].Id == PickerId.PrMachineResources) PrMachine!.Bind(session, predicate);
             session.Commit();
         }
